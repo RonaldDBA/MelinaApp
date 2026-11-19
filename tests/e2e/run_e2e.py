@@ -166,8 +166,19 @@ def main():
                 page.get_by_role('button', name=re.compile('terminé sur papier')).click()
                 page.get_by_text(re.compile('Appelle un parent')).wait_for()
 
-            # 1. Open
+            def enter_as(pg, name='Melina'):
+                """«Qui joue?»: the picker shows at start; pick the player."""
+                pg.get_by_test_id('players').wait_for(timeout=10000)
+                pg.locator(f'.player-card[data-player="{name}"]').click()
+                pg.get_by_role('button', name=re.compile('jardin de Lila')).wait_for(timeout=10000)
+
+            # 1. Open: «Qui joue?» first, then the home screen of the chosen player
             page.goto(base)
+            page.get_by_test_id('players').wait_for(timeout=10000)
+            check(page.locator('.player-card[data-player="Melina"]').count() == 1 and page.get_by_test_id('add-player').count() == 1, 'start: «Qui joue?» shows Melina and «Nouveau joueur»')
+            shot('00-players')
+            enter_as(page)
+            check('Le jardin de Melina' in page.locator('.home-title').inner_text(), 'home screen with the chosen player’s name')
             page.get_by_role('button', name=re.compile('jardin de Lila')).wait_for()
             page.wait_for_timeout(500)
             shot('01-start')
@@ -208,6 +219,50 @@ def main():
             before = json.load(urllib.request.urlopen(f'{base}/api/game-progress'))['state']
             page.keyboard.down('ArrowLeft'); page.wait_for_timeout(300); page.keyboard.up('ArrowLeft')
             finish_on_paper()
+
+            # 4a. A sheet waiting for a parent never pops up by itself. Bug seen by the guardian (18/11/2026): entering
+            # the garden (or clicking on it) showed «Bravo pour ton travail! Appelle un parent» without her playing,
+            # because every `ready` of the scene re-opened the waiting sheet. Same state as the family's data: the
+            # mission step sheet in 'answered_on_paper' since two days ago, done_at NULL, never confirmed by a parent.
+            page.get_by_role('button', name=re.compile('Retour au jardin')).click()
+            page.locator('.world-bar button').first.click()  # home
+            con = sqlite3.connect(db_file)
+            two_days = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime(time.time() - 2 * 86400))
+            seeded = con.execute("UPDATE assignments SET done_at = NULL, created_at = ?, updated_at = ? WHERE mission_step = 0 AND status = 'answered_on_paper'", (two_days, two_days)).rowcount
+            con.commit(); con.close()
+            check(seeded == 1, 'seeded: the step-1 sheet waits for a parent since two days ago (answered_on_paper, done_at NULL)')
+            page.get_by_role('button', name=re.compile('jardin de Lila')).click()
+            page.locator('canvas').wait_for()
+            page.wait_for_timeout(1200)
+            canvas_click(330, 470)  # empty grass
+            page.wait_for_timeout(4000)
+            popped = page.locator('.overlay').count()
+            check(popped == 0 and page.get_by_text(re.compile('Bravo pour ton travail')).count() == 0,
+                  f'garden with a sheet waiting for a parent: entering and clicking on the grass opens no message ({popped} overlay)')
+            # click on the grass = she walks there (the help line says «Tu peux aussi cliquer»)
+            pos = json.load(urllib.request.urlopen(f'{base}/api/game-progress'))['state']
+            check(abs(pos['x'] - 330) < 30 and abs(pos['y'] - 470) < 30, f"click on the grass: the child walks to the clicked spot ({pos['x']}, {pos['y']})")
+            waiting_attr = page.locator('canvas').get_attribute('data-waiting')
+            check(waiting_attr == 'shed', f'the remise shows that its sheet waits for a parent (data-waiting={waiting_attr!r})')
+            shot('04b-garden-sheet-waiting')
+            # she can still talk to Lila and play at another station meanwhile
+            canvas_click(420, 262)
+            page.get_by_role('button', name='D’accord').wait_for()
+            lila_says = page.locator('.overlay').inner_text()
+            check('attend un parent' in lila_says and 'Bravo' not in lila_says, f'Lila explains that the story waits for a parent («{lila_says[:80]}»)')
+            page.get_by_role('button', name='D’accord').click()
+            canvas_click(790, 320)
+            page.get_by_role('button', name='Non merci').wait_for()
+            well_says = page.locator('.overlay').inner_text()
+            check('petit défi ici' in well_says and page.get_by_role('button', name='Oui!').count() == 1, f'the puits still offers a challenge while the sheet waits («{well_says[:80]}»)')
+            shot('04c-garden-other-station')
+            page.get_by_role('button', name='Non merci').click()
+            # the station of the sheet explains it kindly, only when she goes there, without a «Bravo» she did not earn
+            canvas_click(165, 150)
+            page.get_by_test_id('waiting-sheet').wait_for()
+            card = page.locator('.overlay').inner_text()
+            check('Ta feuille attend un parent' in card and 'Bravo' not in card and 'Appelle un parent' in card, f'the remise explains the waiting sheet, with no «Bravo» («{card[:70]}»)')
+            shot('04d-garden-sheet-waiting-card')
             answer1 = expected_answer(db_file)
             img1 = os.path.join(img_dir, 'resp1.jpg'); synthetic_image(img1, answer1)
             open_parents_and_pass_gate()
@@ -685,6 +740,7 @@ def main():
             nv.add_init_script("""try { const all = speechSynthesis.getVoices.bind(speechSynthesis);
               speechSynthesis.getVoices = () => all().filter((v) => !v.lang.toLowerCase().startsWith('en')); } catch (e) {}""")
             nv.goto(base)
+            enter_as(nv)
             nv.locator('[data-game="game.listen-garden"]').click()
             nv.get_by_test_id('no-english-voice').wait_for(timeout=8000)
             con = sqlite3.connect(db_file)
@@ -765,6 +821,81 @@ def main():
             page.locator('[data-testid=report-english]').screenshot(path=str(OUT / '25d-report-english.png'))
             page.get_by_role('button', name=re.compile('Retour au jeu')).click()
             page.locator('.card-game').first.wait_for()
+
+            # 11a''. Players: a friend gets his own history (nothing inherited from Melina), then back to Melina
+            page.get_by_test_id('switch-player').click()
+            page.get_by_test_id('players').wait_for()
+            page.get_by_test_id('add-player').click()
+            q = page.get_by_text(re.compile(r'Combien font \d × \d')).inner_text()
+            a, b = map(int, re.findall(r'(\d) × (\d)', q)[0])
+            page.get_by_label('Réponse', exact=True).fill(str(a * b))
+            page.get_by_role('button', name='Entrer').click()
+            page.get_by_test_id('new-player').wait_for()
+            page.get_by_label('Prénom').fill('Léo')
+            page.get_by_role('radio', name='🐼').click()
+            shot('26a-new-player')
+            page.get_by_role('button', name='Créer').click()
+            page.locator('.player-card[data-player="Léo"]').wait_for()
+            shot('26b-players-two')
+            enter_as(page, 'Léo')
+            badges = page.locator('[data-testid=card-badge]').all_inner_texts()
+            title = page.locator('.home-title').inner_text()
+            check('Le jardin de Léo' in title and badges and all(t.strip().startswith('Niveau 1') and '🌻' not in t for t in badges),
+                  f'a new player starts from zero: «Le jardin de Léo», every game at level 1, no flowers ({badges[:3]})')
+            page.locator('[data-game="game.number-train"]').click()
+            page.locator('.game[data-phase=question]').wait_for()
+            con = sqlite3.connect(db_file)
+            leo = con.execute("SELECT id FROM profiles WHERE display_name = 'Léo'").fetchone()[0]
+            lvl = con.execute("SELECT a.difficulty, a.profile_id FROM assignments a WHERE exercise_id = 'game.number-train' AND status = 'presented' ORDER BY created_at DESC LIMIT 1").fetchone()
+            melina_attempts = con.execute("SELECT COUNT(*) FROM attempts WHERE profile_id = 'local-profile'").fetchone()[0]
+            con.close()
+            check(lvl == (1, leo), f'the friend’s train round is his own, at level 1 (Melina’s level does not carry over) {lvl}')
+            page.keyboard.type(expected_answer(db_file, 'screen').replace(' ', ''))
+            page.keyboard.press('Enter')
+            page.locator('.game[data-phase=result]').wait_for()
+            page.locator('.hud-btn').first.click()
+            page.locator('.card-game').first.wait_for()
+            con = sqlite3.connect(db_file)
+            after = con.execute("SELECT COUNT(*) FROM attempts WHERE profile_id = 'local-profile'").fetchone()[0]
+            leo_n = con.execute("SELECT COUNT(*) FROM attempts WHERE profile_id = ?", (leo,)).fetchone()[0]
+            con.close()
+            check(after == melina_attempts and leo_n == 1, f'the friend’s answer went to his history only (Melina {melina_attempts} → {after}, Léo {leo_n})')
+            open_parents_and_pass_gate()
+            page.get_by_test_id('parent-player').wait_for()
+            check('Léo' in page.get_by_test_id('parent-player').inner_text(), 'parents’ area shows whose data it is (Léo)')
+            page.get_by_role('button', name=re.compile('Retour au jeu')).click()
+            page.locator('.card-game').first.wait_for()
+            page.get_by_test_id('switch-player').click()
+            enter_as(page, 'Melina')
+            check('Le jardin de Melina' in page.locator('.home-title').inner_text(), 'back to Melina with «Changer de joueur»')
+
+            # 11a'''. Math mistakes: after the 2nd one Lila says HOW to calculate; after the 3rd, the worked steps fit in the panel
+            for gid, skill, level in [('frog-jump', 'math.add-sub', 3), ('number-train', 'math.sequences', 2)]:
+                urllib.request.urlopen(urllib.request.Request(f'{base}/api/settings', data=json.dumps({'parent.nextChoice': {'skillId': skill, 'difficulty': level}}).encode(), method='PATCH', headers={'content-type': 'application/json', 'x-melina-client': '1', 'Origin': base}))
+                page.locator(f'[data-game="game.{gid}"]').click()
+                page.locator('.game[data-phase=question]').wait_for()
+                page.wait_for_timeout(400)
+                right = expected_answer(db_file, 'screen').replace(' ', '')
+                msgs = []
+                for k in range(3):
+                    if gid == 'frog-jump':
+                        opts = page.locator('[data-option]').evaluate_all('els => els.filter(e => !e.disabled).map(e => e.dataset.option)')
+                        page.locator(f'[data-option="{next(o for o in opts if o != right)}"]').click(force=True)  # the lily pads float (never «stable»)
+                    else:
+                        page.keyboard.type(str(int(right) + 1 + k))
+                        page.keyboard.press('Enter')
+                    page.wait_for_timeout(700)
+                    msgs.append(page.locator('.bubble').inner_text())
+                page.locator('.game[data-phase=result]').wait_for()
+                page.wait_for_timeout(700)
+                worked = page.get_by_test_id('worked')
+                txt = worked.inner_text() if worked.count() else ''
+                check('Voici comment faire' in msgs[1] and f'= {right}' not in msgs[1] and 'Comment calculer' in txt and right in txt,
+                      f'{gid}: after the 2nd mistake Lila explains how to calculate (without the answer); at the end, the worked steps ({msgs[1][:60]})')
+                panel_fit(f'{gid} worked steps')
+                shot(f'27-worked-{gid}')
+                page.locator('.hud-btn').first.click()
+                page.locator('.card-game').first.wait_for()
 
             # 11b. Le chemin des nombres: empty stones, right stones locked after an error, hundred chart at level 3
             def path_values():

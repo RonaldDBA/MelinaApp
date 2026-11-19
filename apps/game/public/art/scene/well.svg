@@ -1,7 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="1024" height="1024">
-  <!-- Placeholder for the puits (original app drawing). -->
-  <polygon points="55,58 100,34 145,58" fill="#a0522d"/>
-  <rect x="64" y="58" width="8" height="64" fill="#8b5a2b"/><rect x="128" y="58" width="8" height="64" fill="#8b5a2b"/>
-  <circle cx="100" cy="128" r="40" fill="#9aa5ad" stroke="#6d7880" stroke-width="6"/>
-  <circle cx="100" cy="128" r="26" fill="#2b5d80"/>
+  <!-- Le puits: original app drawing (stone well with a small roof, used until the parents approve a photo). -->
+  <defs>
+    <linearGradient id="stone" x1="0" x2="1">
+      <stop offset="0" stop-color="#d9e0e5"/>
+      <stop offset=".65" stop-color="#bcc6cd"/>
+      <stop offset="1" stop-color="#9aa6af"/>
+    </linearGradient>
+    <linearGradient id="roofb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5aa2ea"/>
+      <stop offset="1" stop-color="#3b7fcc"/>
+    </linearGradient>
+    <radialGradient id="deep" cx=".5" cy=".4" r=".7">
+      <stop offset="0" stop-color="#5cc0f0"/>
+      <stop offset="1" stop-color="#1f5f99"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="102" cy="171" rx="64" ry="9" fill="#1f4d24" opacity=".25"/>
+  <!-- posts and axle -->
+  <rect x="57" y="40" width="10" height="84" rx="3" fill="#a46a37" stroke="#7a4a22" stroke-width="2"/>
+  <rect x="133" y="40" width="10" height="84" rx="3" fill="#a46a37" stroke="#7a4a22" stroke-width="2"/>
+  <rect x="62" y="58" width="76" height="7" rx="3.5" fill="#8a5528"/>
+  <path d="M143 61h10v14h-6" fill="none" stroke="#6d6d6d" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- roof -->
+  <path d="M36 52 100 14l64 38z" fill="#2e66a8"/>
+  <path d="M42 48 100 16l58 32z" fill="url(#roofb)"/>
+  <g stroke="#3473bd" stroke-width="2" fill="none" opacity=".8"><path d="M58 40h84"/><path d="M76 30h48"/><path d="M70 40v8M90 40v8M110 40v8M130 40v8M88 30v10M112 30v10"/></g>
+  <path d="M34 53 100 13l66 40" fill="none" stroke="#fff4e0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- rope and bucket -->
+  <line x1="100" y1="65" x2="100" y2="86" stroke="#c9a36a" stroke-width="2.5"/>
+  <path d="M90 86h20l-3 17H93z" fill="#c98b4b" stroke="#8a5a2b" stroke-width="2"/>
+  <path d="M91 92h18" stroke="#8a5a2b" stroke-width="2"/>
+  <path d="M90 87q10-10 20 0" fill="none" stroke="#6d6d6d" stroke-width="1.8"/>
+  <!-- stone body -->
+  <path d="M54 112v44q0 14 46 14t46-14v-44z" fill="url(#stone)" stroke="#7d8992" stroke-width="3"/>
+  <g fill="none" stroke="#8d99a2" stroke-width="1.8" opacity=".9">
+    <path d="M55 128q45 9 90 0"/><path d="M55 144q45 9 90 0"/>
+    <path d="M70 116v15M96 119v15M122 117v15M84 133v15M110 133v15M136 131v14M64 147v13M98 151v14M126 148v14"/>
+  </g>
+  <ellipse cx="100" cy="112" rx="47" ry="13" fill="#e4eaee" stroke="#7d8992" stroke-width="3"/>
+  <ellipse cx="100" cy="113" rx="36" ry="8" fill="url(#deep)"/>
+  <path d="M82 112q10-4 22-3" stroke="#d6f3ff" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8"/>
+  <!-- a little moss -->
+  <g fill="#6cbf5a"><ellipse cx="62" cy="160" rx="8" ry="3.5"/><ellipse cx="136" cy="156" rx="6" ry="3"/></g>
 </svg>

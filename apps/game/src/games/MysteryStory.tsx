@@ -4,6 +4,7 @@ import { speak } from '../audio';
 import { art, icon, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, useChoices, useRounds } from './shell';
+import { playerName } from '../player';
 
 const END = 'Bravo! Tu as trouvé toutes les réponses dans les histoires.';
 const zones = scene.zones as Record<'book' | 'question' | 'panel' | 'endPanel', Rect>;
@@ -57,7 +58,7 @@ export function MysteryStory({ onExit }: { onExit: () => void }) {
           <p className="big-answer">{outcome.correctAnswerDisplay}</p>
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('books')} title="Bravo, Melina!" text="Tu as cherché les indices dans chaque histoire." onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('books')} title={`Bravo, ${playerName()}!`} text="Tu as cherché les indices dans chaque histoire." onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

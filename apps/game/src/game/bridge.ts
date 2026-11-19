@@ -9,6 +9,8 @@ export interface WorldView {
   objective: PointId | null; // point marked with a star
   objectiveText: string;
   start?: { x: number; y: number };
+  /** Stations with a sheet she finished that waits for a parent (shown calmly on the map, never as a pop-up). */
+  waiting?: PointId[];
 }
 
 type GameToReact = {

@@ -4,6 +4,7 @@ import scene from '../../../../content/scenes/number-train.json';
 import { approvedArt, art, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, NumberQuestion, ResultPanel, useRounds } from './shell';
+import { playerName } from '../player';
 
 const END = 'Bravo! Le train peut repartir. Tchou tchou!';
 const zones = scene.zones as Record<'train' | 'panel' | 'endPanel', Rect>;
@@ -68,7 +69,7 @@ export function NumberTrain({ onExit }: { onExit: () => void }) {
           <></>
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('train.locomotive')} title="Bravo, Melina!" text="Tous les wagons ont leur nombre. Le train repart!" onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('train.locomotive')} title={`Bravo, ${playerName()}!`} text="Tous les wagons ont leur nombre. Le train repart!" onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

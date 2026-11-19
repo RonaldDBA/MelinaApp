@@ -6,6 +6,7 @@ import { englishVoiceInfo, isMuted, speakEnglish, waitForEnglishVoice } from '..
 import { art, icon, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, useChoices, useRounds } from './shell';
+import { playerName } from '../player';
 
 /**
  * « Le potager qui écoute » — English by ear (research report «English learning games for kids»): the app says a word,
@@ -124,7 +125,7 @@ function ListenRounds({ onExit }: { onExit: () => void }) {
           </div>
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('speaker_high_volume')} title="Bravo, Melina!" text="Tu as bien écouté l’anglais. Ton potager a de grandes oreilles!" onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('speaker_high_volume')} title={`Bravo, ${playerName()}!`} text="Tu as bien écouté l’anglais. Ton potager a de grandes oreilles!" onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

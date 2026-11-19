@@ -4,6 +4,7 @@ import scene from '../../../../content/scenes/dominoes.json';
 import { approvedArt, art, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, useChoices, useRounds } from './shell';
+import { playerName } from '../player';
 
 /**
  * « Les dominos des nombres » — on the table, a domino with a free end; in the hand, 4 tiles.
@@ -128,7 +129,7 @@ export function Dominoes({ onExit }: { onExit: () => void }) {
           <span hidden />
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image="/art/scene/domino-card.svg" title="Bravo, Melina!" text="Tu as attaché tous les dominos des nombres." onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image="/art/scene/domino-card.svg" title={`Bravo, ${playerName()}!`} text="Tu as attaché tous les dominos des nombres." onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

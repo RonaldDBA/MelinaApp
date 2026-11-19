@@ -3,6 +3,7 @@ import scene from '../../../../content/scenes/frog-jump.json';
 import { approvedArt, art, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, useChoices, useRounds } from './shell';
+import { playerName } from '../player';
 
 const END = 'Bravo! La grenouille a traversé tout l’étang!';
 const zones = scene.zones as Record<'pond' | 'startPad' | 'sign' | 'panel' | 'endPanel', Rect>;
@@ -50,7 +51,7 @@ export function FrogJump({ onExit }: { onExit: () => void }) {
 
       {status === 'result' && outcome?.result !== 'correct' && <ResultPanel rect={zones.panel} rounds={rounds} endMessage={END} />}
       {status === 'result' && outcome?.result === 'correct' && <ResultPanel rect={{ ...zones.panel, h: 560 }} rounds={rounds} endMessage={END} />}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('pond.frog')} title="Bravo, Melina!" text="La grenouille est arrivée de l’autre côté de l’étang." onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('pond.frog')} title={`Bravo, ${playerName()}!`} text="La grenouille est arrivée de l’autre côté de l’étang." onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

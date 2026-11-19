@@ -28,6 +28,19 @@ C:\MelinaApp\
 - Nothing is loaded from a CDN. The Internet is only used by the optional reading with Claude.
 - To package it as a desktop application in the future (Electron or Tauri), it is enough to wrap the server and the interface. The teaching packages do not depend on the presentation layer.
 
+## Players (18/11/2026)
+
+- Every request carries the player in the `x-melina-profile` header (`apps/game/src/player.ts`, `api.ts`). The server
+  builds a per-request context (`cx(req)` in `app.ts`) and every query on a child's data uses `pid(c)`; without the
+  header it is Melina's original profile (`local-profile`), so older clients and the tests keep working. An unknown
+  player is refused (400): data is never written to the wrong child.
+- A round or sheet of another player is «not found» (404).
+- The learner model's cache is per database and per player. Player-specific settings are stored as `key#profileId`
+  (Melina keeps the plain key: no migration).
+- The app is mounted again for each player (`<App key={player.id} />` in `screens/Players.tsx`), so nothing of the
+  previous player stays on screen. A reload of the same window keeps the player (sessionStorage); a new start shows
+  the picker.
+
 ## Main flow
 
 ```

@@ -251,6 +251,12 @@ export function GameHud({ title, rounds, onExit }: { title: string; rounds: Roun
       </button>
       <h1>{title}</h1>
       <div className="hud-right">
+        {rounds.round && (
+          // the level of THIS round: it climbs by itself when she succeeds (staircase), no need to ask
+          <span key={rounds.round.exercise.difficulty} className="hud-level" data-testid="hud-level" title="Le niveau monte tout seul quand tu réussis">
+            Niveau {rounds.round.exercise.difficulty}
+          </span>
+        )}
         <div className="round-dots" aria-label={`Manche ${Math.min(rounds.roundIndex + 1, rounds.total)} sur ${rounds.total}`}>
           {Array.from({ length: rounds.total }, (_, i) => (
             <span key={i} className={i < rounds.roundIndex || rounds.status === 'end' ? 'done' : i === rounds.roundIndex ? 'now' : ''} />
@@ -499,11 +505,27 @@ export function ResultPanel({ rect, rounds, endMessage, children }: { rect: Rect
         </p>
       )}
       {children ?? <p className="big-number">{outcome.correctAnswerDisplay}</p>}
-      <p className="q-text small">{outcome.explanation}</p>
+      {outcome.worked ? <WorkedSteps w={outcome.worked} /> : <p className="q-text small">{outcome.explanation}</p>}
       <button className="big-btn" onClick={go} data-next>
         {rounds.roundIndex + 1 >= rounds.total ? 'Terminer' : 'Continuer'} ➜
       </button>
       </div>
+    </div>
+  );
+}
+
+/** «Comment calculer»: the strategy, step by step, in big friendly lines (after a mistake or a success with help). */
+export function WorkedSteps({ w }: { w: { plan: string; steps: string[]; answer: string } }) {
+  return (
+    <div className="worked" data-testid="worked">
+      <p className="worked-title">🧮 Comment calculer</p>
+      <p className="worked-plan">{w.plan}</p>
+      <ol>
+        {w.steps.map((s) => (
+          <li key={s}>{s}</li>
+        ))}
+      </ol>
+      <p className="worked-answer">{w.answer}</p>
     </div>
   );
 }

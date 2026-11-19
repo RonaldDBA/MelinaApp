@@ -10,14 +10,20 @@ export class ApiError extends Error {
   }
 }
 
-const HEADERS = { 'x-melina-client': '1' };
+import { currentPlayer } from './player';
+
+/** Own header (against CSRF) and the player in use: each child's data stays with that child. */
+const headers = (): Record<string, string> => {
+  const p = currentPlayer();
+  return p ? { 'x-melina-client': '1', 'x-melina-profile': p.id } : { 'x-melina-client': '1' };
+};
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
     res = await fetch(url, {
       method,
-      headers: body !== undefined ? { ...HEADERS, 'content-type': 'application/json' } : HEADERS,
+      headers: body !== undefined ? { ...headers(), 'content-type': 'application/json' } : headers(),
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
@@ -29,6 +35,13 @@ async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
     throw new ApiError(res.status, e?.code ?? 'error', e?.message ?? `Erreur ${res.status}`);
   }
   return data as T;
+}
+
+export interface PlayerInfo {
+  id: string;
+  name: string;
+  avatar: string;
+  createdAt: string;
 }
 
 export interface Review {
@@ -60,6 +73,8 @@ export interface Outcome {
   errorMessage: string | null;
   correctAnswerDisplay: string;
   explanation: string;
+  /** «Comment calculer» (math): steps a child can follow, after a mistake or a success with help. */
+  worked?: { plan: string; steps: string[]; answer: string } | null;
   /** process praise (what she did right), only on correct answers */
   praise: string | null;
   /** weak spot overcome with this answer (big celebration) */
@@ -290,7 +305,7 @@ async function sendForm<T>(url: string, fields: Record<string, unknown>, file: B
   fd.append('image', file, 'arte');
   let res: Response;
   try {
-    res = await fetch(url, { method: 'POST', headers: HEADERS, body: fd });
+    res = await fetch(url, { method: 'POST', headers: headers(), body: fd });
   } catch {
     throw new ApiError(0, 'offline', 'Le serveur local n’a pas répondu.');
   }
@@ -337,7 +352,7 @@ export const api = {
     fd.append('photo', blob, 'answer.jpg');
     let res: Response;
     try {
-      res = await fetch(`/api/assignments/${id}/photo`, { method: 'POST', headers: HEADERS, body: fd });
+      res = await fetch(`/api/assignments/${id}/photo`, { method: 'POST', headers: headers(), body: fd });
     } catch {
       throw new ApiError(0, 'offline', 'Le serveur local n’a pas répondu.');
     }
@@ -353,10 +368,13 @@ export const api = {
   confirm: (reviewId: string, b: { text?: string; illegible?: boolean; help?: HelpLevel; saveSample?: boolean; allowExternal?: boolean; quality?: number }) =>
     req<ConfirmResponse>('POST', `/api/reviews/${reviewId}/confirm`, b),
   async photoUrl(photoId: string): Promise<string> {
-    const res = await fetch(`/api/photos/${photoId}`, { headers: HEADERS });
+    const res = await fetch(`/api/photos/${photoId}`, { headers: headers() });
     if (!res.ok) throw new ApiError(res.status, 'photo', 'Photo non disponible.');
     return URL.createObjectURL(await res.blob());
   },
+  profiles: () => req<PlayerInfo[]>('GET', '/api/profiles'),
+  createProfile: (b: { name: string; avatar: string }) => req<PlayerInfo>('POST', '/api/profiles', b),
+  updateProfile: (id: string, b: { name?: string; avatar?: string }) => req<PlayerInfo>('PATCH', `/api/profiles/${id}`, b),
   report: (kind: 'week' | 'month', offset: number) => req<ProgressReport>('GET', `/api/report?kind=${kind}&offset=${offset}`),
   progress: () => req<{ skills: SkillProgress[]; totals: Record<string, number>; learned: LearnedSkill[] }>('GET', '/api/progress'),
   history: () => req<Array<Record<string, unknown>>>('GET', '/api/history'),

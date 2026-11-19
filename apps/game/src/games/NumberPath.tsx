@@ -5,6 +5,7 @@ import { sfx } from '../audio';
 import { approvedArt, art, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, focusedControl, repeated, useRounds } from './shell';
+import { playerName } from '../player';
 
 /**
  * « Le chemin des nombres » — fill in the empty stones of a number path.
@@ -229,7 +230,7 @@ export function NumberPath({ onExit }: { onExit: () => void }) {
           {grid ? <p className="big-answer">{outcome.correctAnswerDisplay}</p> : <span hidden />}
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('path.basket')} title="Bravo, Melina!" text="Tu as complété tous les chemins de nombres." onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('path.basket')} title={`Bravo, ${playerName()}!`} text="Tu as complété tous les chemins de nombres." onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

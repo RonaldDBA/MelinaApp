@@ -78,13 +78,15 @@ def main():
         page.on('console', lambda m: m.type == 'error' and errors.append(m.text))
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.goto(args.base)
+        page.get_by_test_id('players').wait_for()  # «Qui joue?» first
+        page.locator('.player-card[data-player="Melina"]').click()
         page.get_by_role('button', name=re.compile('jardin de Lila')).wait_for()
         page.wait_for_timeout(500)
         page.screenshot(path=str(OUT / '01-start.png'))
 
         games = [('apple-crates', 'Les caisses de pommes'), ('number-train', 'Le train des nombres'), ('frog-jump', 'Saute-grenouille'),
                  ('word-fishing', 'La pêche aux mots'), ('mystery-story', 'L’histoire mystère'), ('number-path', 'Le chemin des nombres'),
-                 ('hidden-words', 'Les mots cachés'), ('dominoes', 'Les dominos des nombres')]
+                 ('hidden-words', 'Les mots cachés'), ('dominoes', 'Les dominos des nombres'), ('listen-garden', 'Le potager qui écoute'), ('garden-says', 'La jardinière dit')]
         check(page.locator('[data-game]').count() == len(games), f'home screen with the {len(games)} games')
         for gid, label in games:
             before = screen_attempts(db_file)
@@ -120,6 +122,11 @@ def main():
                     page.locator(f'[data-slot="{k}"]').click()
                     page.locator(f'[data-letter="{list(right)[i]}"]').click()
                 page.locator('.letter-bank .key.ok').click()
+            elif gid == 'garden-says':
+                # English commands: tap each thing of the answer, in order
+                for t in right.split(','):
+                    page.locator(f'[data-option="{t}"]').click(force=True)
+                    page.wait_for_timeout(120)
             elif page.locator('[data-option]').count() == 0:
                 page.keyboard.type(right); page.keyboard.press('Enter')
             else:

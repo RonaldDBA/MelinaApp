@@ -6,6 +6,7 @@ import { cheer, cheerAfter, sfx } from '../audio';
 import { hintDelayMs } from '../hints';
 import { conquestPhrase, milestonePhrase, successPhrase, almostPhrase } from '../praise';
 import { Confetti } from '../games/shell';
+import { WorkedSteps } from '../games/shell';
 
 const t = i18n.child;
 
@@ -145,17 +146,32 @@ export function ExerciseCard({ assignment, onDone, onClose, onStopped }: { assig
   );
 }
 
-export function WaitingCard({ assignment, onParents, onClose, illegibleNote }: { assignment: Assignment; onParents: () => void; onClose: () => void; illegibleNote?: boolean }) {
+/**
+ * A sheet she finished that waits for a parent. It opens right after «J'ai terminé sur papier», or when she walks to
+ * the station of that sheet — never by itself on entering the garden. No «Bravo» here: nothing has been checked yet
+ * (the praise comes with the result, after a parent confirms). `onMore` offers another challenge at a practice station.
+ */
+export function WaitingCard({ assignment, onParents, onClose, illegibleNote, onMore }: { assignment: Assignment; onParents: () => void; onClose: () => void; illegibleNote?: boolean; onMore?: () => void }) {
+  const inReview = assignment.status === 'in_review';
   return (
-    <Modal label="Envoyer la réponse">
+    <Modal label="Ta feuille attend un parent">
       <div className="speaker">🦔 Lila</div>
-      {illegibleNote && <p className="big-text">📷 {t.illegibleChild}</p>}
-      <p className="big-text">{assignment.status === 'in_review' ? t.waitingParent : t.callParent}</p>
-      <p className="muted">« {assignment.exercise.statement} »</p>
+      <div className="waiting-sheet" data-testid="waiting-sheet">
+        <h2 className="waiting-title">✏️ Ta feuille attend un parent</h2>
+        {illegibleNote && <p className="big-text">📷 {t.illegibleChild}</p>}
+        <p className="big-text">{inReview ? t.waitingParent : 'Appelle un parent : il va regarder ta réponse avec toi.'}</p>
+        <p className="waiting-statement">📄 « {assignment.exercise.statement} »</p>
+        <p className="muted">En attendant, tu peux te promener et jouer ailleurs dans le jardin.</p>
+      </div>
       <div className="actions">
         <button className="btn" onClick={onClose}>
           {t.backToWorld}
         </button>
+        {onMore && (
+          <button className="btn" onClick={onMore} data-testid="waiting-more">
+            🌱 Un autre défi
+          </button>
+        )}
         <button className="btn primary" onClick={onParents}>
           👨‍👩‍👧 {t.parentsArea}
         </button>
@@ -211,7 +227,8 @@ export function FeedbackCard({
         {conquered && <p className="reward big">🌟 Point fort gagné : {conquered.label}!</p>}
         {ok && !conquered && outcome.almost && <p className="reward">🌱 {almostPhrase(outcome.almost.label)}</p>}
         {!ok && outcome.errorMessage && <p className="hint">💡 {outcome.errorMessage}</p>}
-        <p className="explanation">{outcome.explanation}</p>
+        {/* paper math too: «Comment calculer», step by step, after a mistake or a success with help */}
+        {outcome.worked ? <WorkedSteps w={outcome.worked} /> : <p className="explanation">{outcome.explanation}</p>}
         {!ok && (
           <p>
             {t.theAnswerWas} <strong>{outcome.correctAnswerDisplay}</strong>

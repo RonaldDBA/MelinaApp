@@ -6,6 +6,7 @@ import { Kpi, Report, SKILL_ICON } from './Report';
 import { fmtDate, fmtDateTime, fmtDay, fmtTime } from '../dates';
 import { api, ApiError, type Assignment, type ConfirmResponse, type LearnedSkill, type Review, type Settings, type SkillProgress } from '../api';
 import { Visual } from '../components/Visual';
+import { currentPlayer, playerName } from '../player';
 
 const p = i18n.parent;
 type Tab = 'review' | 'dashboard' | 'report' | 'history' | 'samples' | 'art' | 'settings';
@@ -13,7 +14,7 @@ const TAB_ICON: Record<Tab, string> = { review: '✅', dashboard: '📊', report
 
 // ------------------------------------------------------------------ gate
 
-function Gate({ onPass, onClose }: { onPass: () => void; onClose: () => void }) {
+export function Gate({ onPass, onClose }: { onPass: () => void; onClose: () => void }) {
   const [q] = useState(() => ({ a: 6 + Math.floor(Math.random() * 4), b: 6 + Math.floor(Math.random() * 4) }));
   const [v, setV] = useState('');
   const [err, setErr] = useState(false);
@@ -183,7 +184,7 @@ function ReviewFlow({ assignmentId, settings, onConfirmed, onBack }: { assignmen
   const confirm = async (illegible: boolean) => {
     if (!review) return;
     if (!illegible && !help) {
-      setErr('Indiquez si Melina a reçu de l’aide pour résoudre.');
+      setErr(`Indiquez si ${playerName()} a reçu de l’aide pour résoudre.`);
       return;
     }
     if (!illegible && !text.trim()) {
@@ -197,7 +198,7 @@ function ReviewFlow({ assignmentId, settings, onConfirmed, onBack }: { assignmen
       if (r.outcome === 'illegible') {
         setReview(null);
         setText('');
-        setNotice('Marqué comme illisible. Cela NE compte PAS comme une erreur de Melina. Prenez une autre photo ou saisissez la réponse.');
+        setNotice(`Marqué comme illisible. Cela NE compte PAS comme une erreur de ${playerName()}. Prenez une autre photo ou saisissez la réponse.`);
         await load();
       } else setDone(r);
     } catch (e) {
@@ -241,7 +242,7 @@ function ReviewFlow({ assignmentId, settings, onConfirmed, onBack }: { assignmen
         )}
         <div className="actions">
           <button className="btn primary" onClick={() => onConfirmed(done)}>
-            Montrer le résultat à Melina
+            Montrer le résultat à {playerName()}
           </button>
         </div>
       </section>
@@ -504,7 +505,7 @@ function Dashboard() {
         })}
       </div>
 
-      <h3 className="rp-h">🧠 Ce que le jeu a appris de Melina</h3>
+      <h3 className="rp-h">🧠 Ce que le jeu a appris de {playerName()}</h3>
       <p className="pa-note">
         Après chaque réponse, le jeu ajuste un petit modèle statistique, sur cet ordinateur, sans IA externe. Il renforce
         les points à travailler et propose, pour les points forts, des défis d’un niveau plus haut, même au-delà de ce que
@@ -777,7 +778,7 @@ function Samples() {
   return (
     <section>
       <p className="muted">
-        Exemples confirmés de l’écriture de Melina. Ils restent sur cet ordinateur. Seuls ceux cochés « utiliser avec l’IA » peuvent être envoyés à Claude comme contexte pour de nouvelles lectures — cela n’entraîne pas le modèle.
+        Exemples confirmés de l’écriture de {playerName()}. Ils restent sur cet ordinateur. Seuls ceux cochés « utiliser avec l’IA » peuvent être envoyés à Claude comme contexte pour de nouvelles lectures — cela n’entraîne pas le modèle.
         Supprimer retire l’exemple de la collection; l’historique de l’activité est conservé.
       </p>
       {items.length === 0 ? <p className="muted">Aucun exemple enregistré pour l’instant.</p> : <div className="samples">{items.map((s) => <SampleCard key={s.id} s={s} onChange={reload} />)}</div>}
@@ -855,7 +856,7 @@ function SettingsPanel({ onSettings }: { onSettings: (s: Settings) => void }) {
       <div className="consent">
         <p>
           <strong>Avant d’activer :</strong> lorsque vous demandez une lecture, la photo de la réponse et jusqu’à {s['ai.maxSamples']} exemple(s) d’écriture autorisé(s) sont envoyés à Anthropic (fournisseur de Claude) par Internet. Chaque lecture peut
-          entraîner des frais sur votre compte de l’API. Rien n’est envoyé automatiquement : seulement quand vous cliquez sur « Lire avec l’IA ». Le nom de Melina, l’école et la réponse attendue ne sont pas envoyés.
+          entraîner des frais sur votre compte de l’API. Rien n’est envoyé automatiquement : seulement quand vous cliquez sur « Lire avec l’IA ». Le nom de l’enfant, l’école et la réponse attendue ne sont pas envoyés.
         </p>
         {s['ai.enabled'] ? (
           <p>
@@ -977,6 +978,9 @@ export function ParentArea({ initialAssignmentId, onClose, onConfirmed }: { init
               <span aria-hidden="true">🌻 </span>
               {p.areaTitle}
             </h2>
+            <span className="parent-player" data-testid="parent-player" title="Les données affichées sont celles de ce joueur">
+              <span aria-hidden="true">{currentPlayer()?.avatar ?? '🦔'}</span> {playerName()}
+            </span>
             <nav>
               {tabs.map(([k, label]) => (
                 <button key={k} className={`tab ${tab === k ? 'active' : ''}`} onClick={() => setTab(k)}>

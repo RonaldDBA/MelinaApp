@@ -134,12 +134,41 @@ To just try out the screen, at no cost: `IMAGE_PROVIDER=mock` generates test sha
 
 Stage 3 added `path.stone` (path stone, drawn by code without a photo) and `path.basket` (finish basket; built-in: `/art/basket.png`), used by *Le chemin des nombres*. The prompts for generating outside the app are in [art-prompts.md](art-prompts.md). With more than 5 games, the home screen shows 4 compact cards per row (`.cards.many`). *Les dominos des nombres* added `domino.table` (game scenery: wooden table; built-in: the orchard) and `domino.tile` (blank tile, drawn by code without a photo; dots, numbers, sums and rods are always drawn by the app on top). *Les mots cachés* added `hidden.sheet` (grid sheet, drawn by code without a photo) and `hidden.loupe` (magnifying glass; built-in: `/art/scene/loupe.svg`).
 
+### 10.5 Visual memory game (18/11/2026)
+
+
 **Jardin de Lila (Phaser, `GardenScene.ts`):** scenery, remise, puits, potager, pousse, tournesol and Lila come from the cards
-`garden.*` and `lila.idle` (`PhaserGame` waits for the catalogue and passes `{url, approved}` through the registry). The girl is still
-drawn by code. There are two layouts: `DRAWN` (fallback drawing seen from above, the usual positions, used by the E2E) and
-`PHOTO`. The latter applies when the photo scenery is approved: landscape in perspective, pieces on the lawn, the girl does not go
+`garden.*` and `lila.idle` (`PhaserGame` waits for the catalogue and for the Fredoka font, and passes `{url, approved}` through the
+registry). There are two layouts: `DRAWN` (fallback drawing seen from above, the usual positions, used by the E2E) and
+`PHOTO`. The latter applies when the photo scenery is approved: landscape in perspective, pieces on the lawn, the child does not go
 above `top` = 250 and grows as she gets closer to the camera. In both layouts, depth = base of the piece. If the parents
 approve a scenery with a lower horizon, it is enough to adjust `PHOTO`.
+
+Redesign of 18/11/2026 (the guardian found the world «horrible», with flat rectangles and circles):
+- **Sharp at any size:** the world keeps its 960×600 coordinates (saved positions, layouts, tests), but the canvas is
+  1920×1200 (`RENDER_SCALE` = 2) and the camera zooms ×2. SVGs are rasterized at twice their on-screen size and the canvas
+  texts use `resolution: 2`.
+- **Original SVG art** (fallbacks of the cards, all drawn for the app): `garden-bg.svg` (lawn with soft patches, tufts and meadow
+  flowers, sand paths to each station and a little square for Lila, a pond with lily pads and reeds, round trees with
+  shadows, bushes, a picket fence, a soft vignette; generated once by a small script with a fixed seed), `shed.svg`
+  (plank shed, red roof, blue door, flower boxes), `well.svg` (stone well, blue roof, bucket on its rope), `bed.svg` (raised
+  wooden bed with three soil rows where the pousses grow), `sprout.svg`, `sunflower.svg`, and the child's avatar `girl.svg`
+  (a drawn character, never a photo). Trees, bushes, pond and fence of the drawing are obstacles (`DRAWN.scenery`).
+- **Chips instead of dark labels:** each station has a white rounded chip with a Fluent icon (abacus = remise/maths, open
+  book = puits/French, sprout = potager, Lila's picture = Lila). The objective is a cream chip at the top; the star is the
+  Fluent `glowing_star.png` above the station, with a gold halo pulsing on the ground where she must stand.
+- **Gentle arrival:** when she reaches a station, its chip turns yellow and bounces, the piece squashes a little, a white ring
+  appears under her and four sparkles rise. A green chip above her head says «Espace : parler à Lila» / «Espace : on y va!».
+- **Life:** Lila breathes and hops now and then; the child waddles while walking and has a soft shadow; pousses and
+  tournesols sway; two faint cloud shadows drift across the lawn (fallback drawing only).
+- **Click / tap to walk:** a click on the grass makes her walk there (a ring shows the spot); a click on a station makes her
+  walk to it and talk on arrival (or as soon as she is blocked, so a click never «does nothing»). The keyboard always
+  takes over from a click in progress.
+- **Sheet waiting for a parent:** an orange chip «✏️ Ta feuille attend un parent» under the station of that sheet (instead
+  of the star), and the objective chip says so. The card only opens when she goes to that station (see `game/waiting.ts`).
+  The canvas carries `data-waiting` (stations with a waiting sheet) for the browser test.
+- **Top bar** (`.world-bar`, end of `game.css`): rounded pill buttons, a green «🌱 Graines trouvées» chip, the canvas with
+  rounded corners and a shadow on a grass-coloured background.
 
 **Celebration (`Confetti` in `games/shell.tsx`, CSS in `game.css`):**
 - **Sizes:** in container units (`cqw`/`cqh`). That is why the same confetti works on the 1920×1080 stage and, with `fixed`, on the whole window (paper sheet card).

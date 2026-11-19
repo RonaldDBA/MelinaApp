@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
+import { Root } from './screens/Players';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import '@fontsource/fredoka/latin-500.css';
 import '@fontsource/fredoka/latin-600.css';
@@ -15,6 +15,6 @@ Object.assign(window, { melinaSoundCheck: measureSound, melinaSoundWav: exportSo
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <ErrorBoundary>
-    <App />
+    <Root />
   </ErrorBoundary>,
 );

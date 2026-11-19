@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSyn
 import { join } from 'node:path';
 import { almostTags, applyEvidence, comfortableLevel, conqueredTags, defaultParams, dueWords, initialState, isKnown, learnInto, retention, wordSchedule, type WordEvent, learnProfile, roundProfile, parentChoice, planRound, selectNext, sessionLevel, strongTags, weakTags, type EngineParams, type LearnEvent, type LearnerProfile, type RoundPlan } from '@melina/adaptive-engine';
 import { readHandwriting, ReadingError } from '@melina/ai';
-import { evaluate, games, generateExercise, generateGameRound, getGame, getMission, hasPaper, isSchoolWeek, missions, schoolWeeks, skills, skillsBySubject, strategyPraise, tagsOf, TAG_LABELS, templates, toPublic } from '@melina/curriculum';
+import { evaluate, games, generateExercise, generateGameRound, getGame, getMission, hasPaper, workedFor, workedHint, isSchoolWeek, missions, schoolWeeks, skills, skillsBySubject, strategyPraise, tagsOf, TAG_LABELS, templates, toPublic } from '@melina/curriculum';
 import { imageLimits, kindForResponse, selectSamples, sniffImage, stripMetadata, type SampleCandidate } from '@melina/handwriting';
 import type {
   AssignmentStatus,
@@ -37,11 +37,15 @@ export interface Ctx {
   cfg: AppConfig;
   now: () => Date;
   fetchImpl?: typeof fetch;
+  /** Player whose data this request reads and writes (profile picker; default: Melina's original profile). */
+  profileId?: string;
   /** injected image provider (tests); in normal use it comes from the configuration */
   imageProvider?: import('@melina/art').ImageProvider;
 }
 
 export const PROFILE_ID = 'local-profile';
+/** The player of this request. Every query on a child's data goes through it: each player has their own history. */
+export const pid = (c: Ctx) => c.profileId ?? PROFILE_ID;
 
 // ------------------------------------------------------------------ util
 
@@ -106,6 +110,56 @@ export function bootstrap(c: Ctx) {
   recoverFiles(c);
 }
 
+// ------------------------------------------------------------------ players
+
+/** Avatars a player can choose (no photo, no real picture of the child). */
+export const AVATARS = ['🦔', '🦊', '🐼', '🐸', '🦁', '🐰', '🐢', '🦄', '🐧', '🐙', '🦋', '🐝'] as const;
+
+export const profileExists = (c: Ctx, id: string) => Boolean(one(c, 'SELECT id FROM profiles WHERE id = ?', id));
+
+function profileView(r: Record<string, unknown>) {
+  const prefs = json<{ avatar?: string }>(String(r.prefs_json ?? '{}'), {});
+  return { id: String(r.id), name: String(r.display_name), avatar: prefs.avatar ?? (r.id === PROFILE_ID ? '🦔' : '🦊'), createdAt: String(r.created_at) };
+}
+
+/** Players, oldest first (Melina's original profile is always the first one). */
+export function listProfiles(c: Ctx) {
+  return all(c, 'SELECT id, display_name, prefs_json, created_at FROM profiles ORDER BY created_at, id').map(profileView);
+}
+
+const cleanName = (v: unknown) => {
+  const name = typeof v === 'string' ? v.normalize('NFC').replace(/\s+/g, ' ').trim() : '';
+  if (!/^[\p{L}][\p{L}' -]{0,19}$/u.test(name)) throw new HttpError(400, 'invalid-name', 'Écris un prénom de 1 à 20 lettres.');
+  return name;
+};
+const cleanAvatar = (v: unknown) => {
+  if (typeof v !== 'string' || !(AVATARS as readonly string[]).includes(v)) throw new HttpError(400, 'invalid-avatar', 'Choisis un des animaux.');
+  return v;
+};
+
+/** A new player starts from zero: no history, no level, no settings inherited from another child. */
+export function createProfile(c: Ctx, body: { name?: unknown; avatar?: unknown }) {
+  const name = cleanName(body.name);
+  const avatar = cleanAvatar(body.avatar ?? '🦊');
+  const n = Number((one(c, 'SELECT COUNT(*) AS n FROM profiles') as { n: number }).n);
+  if (n >= 8) throw new HttpError(409, 'too-many-profiles', 'Maximum 8 joueurs.');
+  if (listProfiles(c).some((p) => p.name.toLocaleLowerCase('fr-CA') === name.toLocaleLowerCase('fr-CA'))) throw new HttpError(409, 'name-taken', 'Ce prénom existe déjà.');
+  const id = `p-${randomUUID()}`;
+  run(c, 'INSERT INTO profiles (id, display_name, grade, prefs_json, created_at) VALUES (?, ?, 2, ?, ?)', id, name, JSON.stringify({ avatar }), iso(c));
+  return profileView(one(c, 'SELECT id, display_name, prefs_json, created_at FROM profiles WHERE id = ?', id) as Record<string, unknown>);
+}
+
+export function updateProfile(c: Ctx, id: string, body: { name?: unknown; avatar?: unknown }) {
+  const row = one(c, 'SELECT id, display_name, prefs_json, created_at FROM profiles WHERE id = ?', id);
+  if (!row) throw new HttpError(404, 'unknown-profile', 'Joueur inconnu.');
+  const prefs = json<Record<string, unknown>>(String(row.prefs_json ?? '{}'), {});
+  if (body.avatar !== undefined) prefs.avatar = cleanAvatar(body.avatar);
+  const name = body.name !== undefined ? cleanName(body.name) : String(row.display_name);
+  if (name !== row.display_name && listProfiles(c).some((p) => p.id !== id && p.name.toLocaleLowerCase('fr-CA') === name.toLocaleLowerCase('fr-CA'))) throw new HttpError(409, 'name-taken', 'Ce prénom existe déjà.');
+  run(c, 'UPDATE profiles SET display_name = ?, prefs_json = ? WHERE id = ?', name, JSON.stringify(prefs), id);
+  return profileView(one(c, 'SELECT id, display_name, prefs_json, created_at FROM profiles WHERE id = ?', id) as Record<string, unknown>);
+}
+
 /** Orphan files: failure between writing the photo and writing to the database. Moves them to data/photos/orphans. */
 export function recoverFiles(c: Ctx): { tmpRemoved: number; orphansMoved: number } {
   const dir = photosDir(c);
@@ -141,15 +195,27 @@ function safeList(dir: string): string[] {
 
 // ------------------------------------------------------------------ settings
 
+/**
+ * Settings that belong to ONE player: the parents' next choice, the school week and the consent to read handwriting with
+ * the AI (given for Melina only). Melina's original profile keeps the plain key (no migration); another player stores
+ * «key#profileId» and starts from the defaults, never from Melina's values.
+ */
+const PLAYER_KEYS: SettingKey[] = ['parent.nextChoice', 'french.schoolWeek', 'ai.enabled', 'ai.consentAt'];
+const storedKey = (c: Ctx, key: SettingKey) => (PLAYER_KEYS.includes(key) && pid(c) !== PROFILE_ID ? `${key}#${pid(c)}` : key);
+
 export function getSettings(c: Ctx) {
   const rows = all(c, 'SELECT key, value_json FROM settings');
   const out: Record<string, unknown> = { ...defaultSettings };
-  for (const r of rows) out[String(r.key)] = json(String(r.value_json), null);
+  for (const r of rows) {
+    const [key, owner] = String(r.key).split('#') as [SettingKey, string | undefined];
+    const mine = PLAYER_KEYS.includes(key) ? (owner ?? PROFILE_ID) === pid(c) : owner === undefined;
+    if (mine) out[key] = json(String(r.value_json), null);
+  }
   return out as typeof defaultSettings;
 }
 
 export function setSetting<K extends SettingKey>(c: Ctx, key: K, value: (typeof defaultSettings)[K]) {
-  run(c, 'INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at', key, JSON.stringify(value), iso(c));
+  run(c, 'INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at', storedKey(c, key), JSON.stringify(value), iso(c));
 }
 
 export function patchSettings(c: Ctx, body: Record<string, unknown>) {
@@ -238,22 +304,29 @@ const LEARN_SQL = `SELECT t.rowid AS rowid, t.skill_id, t.difficulty, t.result, 
  * (before, the whole history was re-read 2 to 4 times per answer: ~850 ms with 20 000 answers).
  * Safeguards: if any answer disappeared or arrived out of order, everything is recomputed.
  */
-const learnCache = new WeakMap<DB, { count: number; lastRowid: number; lastAt: string; profile: LearnerProfile }>();
+type LearnCacheEntry = { count: number; lastRowid: number; lastAt: string; profile: LearnerProfile };
+/** One stored profile per database AND per player (each player has their own model). */
+const learnCache = new WeakMap<DB, Map<string, LearnCacheEntry>>();
 /** Forgets the stored profile (tests; or after deleting answers). */
 export const resetLearnerCache = (db: DB) => learnCache.delete(db);
+const cacheOf = (c: Ctx) => {
+  let m = learnCache.get(c.db);
+  if (!m) learnCache.set(c.db, (m = new Map()));
+  return m;
+};
 
 /** Model profile with all answers up to `until` (ISO, inclusive) or with the whole history. */
 export function learnerProfile(c: Ctx, until?: string): LearnerProfile {
-  const head = one(c, 'SELECT COUNT(*) AS n, MAX(created_at) AS at FROM attempts WHERE profile_id = ?', PROFILE_ID) as { n: number; at: string | null };
+  const head = one(c, 'SELECT COUNT(*) AS n, MAX(created_at) AS at FROM attempts WHERE profile_id = ?', pid(c)) as { n: number; at: string | null };
   // past period (report, old answer): full computation up to the requested date
   if (until !== undefined && head.at !== null && until < head.at) {
-    const rows = all(c, `${LEARN_SQL} AND t.created_at <= ? ORDER BY t.created_at, t.id`, PROFILE_ID, until) as unknown as LearnRow[];
+    const rows = all(c, `${LEARN_SQL} AND t.created_at <= ? ORDER BY t.created_at, t.id`, pid(c), until) as unknown as LearnRow[];
     return learnProfile(rows.map(toEvent));
   }
-  const cached = learnCache.get(c.db);
+  const cached = cacheOf(c).get(pid(c));
   let fresh: LearnRow[] | null = null;
   if (cached && Number(head.n) >= cached.count) {
-    fresh = all(c, `${LEARN_SQL} AND t.rowid > ? ORDER BY t.created_at, t.id`, PROFILE_ID, cached.lastRowid) as unknown as LearnRow[];
+    fresh = all(c, `${LEARN_SQL} AND t.rowid > ? ORDER BY t.created_at, t.id`, pid(c), cached.lastRowid) as unknown as LearnRow[];
     const inOrder = fresh.every((r) => r.created_at > cached.lastAt);
     if (cached.count + fresh.length !== Number(head.n) || !inOrder) fresh = null; // something changed in between: recompute
   }
@@ -267,10 +340,10 @@ export function learnerProfile(c: Ctx, until?: string): LearnerProfile {
     }
     return roundProfile(cached.profile);
   }
-  const rows = all(c, `${LEARN_SQL} ORDER BY t.created_at, t.id`, PROFILE_ID) as unknown as LearnRow[];
+  const rows = all(c, `${LEARN_SQL} ORDER BY t.created_at, t.id`, pid(c)) as unknown as LearnRow[];
   const profile = learnInto({}, rows.map(toEvent));
   const last = rows[rows.length - 1];
-  learnCache.set(c.db, { count: rows.length, lastRowid: Math.max(0, ...rows.map((r) => Number(r.rowid))), lastAt: last ? String(last.created_at) : '', profile });
+  cacheOf(c).set(pid(c), { count: rows.length, lastRowid: Math.max(0, ...rows.map((r) => Number(r.rowid))), lastAt: last ? String(last.created_at) : '', profile });
   return roundProfile(profile);
 }
 
@@ -283,7 +356,7 @@ export const HINT_ALARM = { last: 10, minAnswers: 5, rate: 0.3 } as const;
 
 /** Use of help (app hint, astuce after a mistake, or adult) in a skill's latest answers. */
 export function recentHelp(c: Ctx, skillId: string): { n: number; helped: number; rate: number } {
-  const rows = all(c, 'SELECT help FROM attempts WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?', PROFILE_ID, skillId, HINT_ALARM.last);
+  const rows = all(c, 'SELECT help FROM attempts WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?', pid(c), skillId, HINT_ALARM.last);
   const helped = rows.filter((r) => r.help !== 'none').length;
   return { n: rows.length, helped, rate: rows.length ? helped / rows.length : 0 };
 }
@@ -294,7 +367,7 @@ export function englishWordEvents(c: Ctx): WordEvent[] {
     c,
     `SELECT a.snapshot_json, t.result, t.help, t.created_at FROM attempts t JOIN assignments a ON a.id = t.assignment_id
      WHERE t.profile_id = ? AND t.skill_id = 'en.listen-words' ORDER BY t.created_at, t.rowid`,
-    PROFILE_ID,
+    pid(c),
   ).flatMap((r) => {
     const ex = json<ExerciseInstance | null>(String(r.snapshot_json), null);
     if (!ex || ex.expected.type !== 'word') return [];
@@ -310,7 +383,7 @@ export function englishWordEvents(c: Ctx): WordEvent[] {
 export function todayLevel(c: Ctx, skillId: string): number {
   const now = c.now();
   const since = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const rows = all(c, 'SELECT difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND skill_id = ? AND created_at >= ? ORDER BY created_at, rowid', PROFILE_ID, skillId, since);
+  const rows = all(c, 'SELECT difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND skill_id = ? AND created_at >= ? ORDER BY created_at, rowid', pid(c), skillId, since);
   const current = getMastery(c, skillId) ?? initialState(skillId);
   const before = rows.length ? json<MasteryState>(String(rows[0]?.mastery_before_json), current) : current;
   const start = Math.max(before.level, before.pendingAdvance?.level ?? 0);
@@ -356,7 +429,7 @@ function applyLearner(c: Ctx, decision: SelectionDecision, seed: number): { deci
 function plantFlower(c: Ctx, skillId: string, after: MasteryState, now: string) {
   if (after.lastLevelChange !== 'advanced') return;
   const title = skills.find((s) => s.id === skillId)?.titleFr ?? skillId;
-  run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', PROFILE_ID, `flower.${skillId}.${after.level}`, `une fleur : ${title}, niveau ${after.level}`, `level:${skillId}:${after.level}`, now);
+  run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', pid(c), `flower.${skillId}.${after.level}`, `une fleur : ${title}, niveau ${after.level}`, `level:${skillId}:${after.level}`, now);
 }
 
 /**
@@ -375,7 +448,7 @@ function celebrateConquest(c: Ctx, ex: ExerciseInstance, attemptId: string, prev
     if (!won.has(t)) continue;
     const label = TAG_LABELS[t] ?? t;
     // one flower per overcome tag (the screen celebrates the most specific one, which comes first)
-    run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', PROFILE_ID, `flower.tag.${ex.skillId}.${t}`, `un point fort gagné : ${label}`, `conquered:${attemptId}:${t}`, now);
+    run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', pid(c), `flower.tag.${ex.skillId}.${t}`, `un point fort gagné : ${label}`, `conquered:${attemptId}:${t}`, now);
   }
 }
 
@@ -392,13 +465,13 @@ function engineParams(c: Ctx): EngineParams {
 // ------------------------------------------------------------------ mastery
 
 export function getMastery(c: Ctx, skillId: string): MasteryState | undefined {
-  const r = one(c, 'SELECT state_json FROM mastery WHERE profile_id = ? AND skill_id = ?', PROFILE_ID, skillId);
+  const r = one(c, 'SELECT state_json FROM mastery WHERE profile_id = ? AND skill_id = ?', pid(c), skillId);
   return r ? json<MasteryState>(String(r.state_json), initialState(skillId)) : undefined;
 }
 
 function allMastery(c: Ctx): Record<string, MasteryState> {
   const out: Record<string, MasteryState> = {};
-  for (const r of all(c, 'SELECT skill_id, state_json FROM mastery WHERE profile_id = ?', PROFILE_ID)) {
+  for (const r of all(c, 'SELECT skill_id, state_json FROM mastery WHERE profile_id = ?', pid(c))) {
     out[String(r.skill_id)] = json<MasteryState>(String(r.state_json), initialState(String(r.skill_id)));
   }
   return out;
@@ -420,9 +493,9 @@ export function startSession(c: Ctx, body: { mode?: string; missionId?: string; 
   const subject = body.subject === 'french' || body.subject === 'mathematics' ? body.subject : null;
   const id = randomUUID();
   tx(c.db, () => {
-    run(c, 'INSERT INTO sessions (id, profile_id, mode, mission_id, subject, started_at) VALUES (?, ?, ?, ?, ?, ?)', id, PROFILE_ID, mode, missionId, subject, iso(c));
+    run(c, 'INSERT INTO sessions (id, profile_id, mode, mission_id, subject, started_at) VALUES (?, ?, ?, ?, ?, ?)', id, pid(c), mode, missionId, subject, iso(c));
     if (missionId) {
-      run(c, "INSERT OR IGNORE INTO mission_progress (profile_id, mission_id, status, started_at) VALUES (?, ?, 'active', ?)", PROFILE_ID, missionId, iso(c));
+      run(c, "INSERT OR IGNORE INTO mission_progress (profile_id, mission_id, status, started_at) VALUES (?, ?, 'active', ?)", pid(c), missionId, iso(c));
     }
   });
   return { id, mode, missionId, subject };
@@ -432,8 +505,8 @@ const OPEN_STATUSES: AssignmentStatus[] = ['presented', 'answered_on_paper', 'in
 
 export function missionState(c: Ctx, missionId: string) {
   const m = getMission(missionId);
-  const prog = one(c, 'SELECT status, started_at, completed_at FROM mission_progress WHERE profile_id = ? AND mission_id = ?', PROFILE_ID, missionId);
-  const steps = all(c, 'SELECT step_index, completed_at FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY step_index', PROFILE_ID, missionId);
+  const prog = one(c, 'SELECT status, started_at, completed_at FROM mission_progress WHERE profile_id = ? AND mission_id = ?', pid(c), missionId);
+  const steps = all(c, 'SELECT step_index, completed_at FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY step_index', pid(c), missionId);
   const done = new Set(steps.map((s) => Number(s.step_index)));
   const nextStep = m.steps.find((s) => !done.has(s.index))?.index ?? null;
   return {
@@ -446,7 +519,7 @@ export function missionState(c: Ctx, missionId: string) {
 }
 
 export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep?: number; subject?: string }) {
-  const session = one(c, 'SELECT * FROM sessions WHERE id = ? AND profile_id = ?', String(body.sessionId ?? ''), PROFILE_ID);
+  const session = one(c, 'SELECT * FROM sessions WHERE id = ? AND profile_id = ?', String(body.sessionId ?? ''), pid(c));
   if (!session) throw new HttpError(404, 'session-not-found', 'Séance introuvable.');
 
   let subject: Subject | 'any' = (body.subject === 'french' || body.subject === 'mathematics' ? body.subject : (session.subject as Subject | null)) ?? 'any';
@@ -466,7 +539,7 @@ export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep
     const open = one(
       c,
       `SELECT id FROM assignments WHERE profile_id = ? AND mission_id = ? AND mission_step = ? AND status IN (${OPEN_STATUSES.map(() => '?').join(',')}) ORDER BY created_at DESC LIMIT 1`,
-      PROFILE_ID,
+      pid(c),
       missionId,
       step,
       ...OPEN_STATUSES,
@@ -478,7 +551,7 @@ export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep
   const now = c.now();
   const settings = getSettings(c);
   const states = allMastery(c);
-  const lastRow = one(c, 'SELECT skill_id FROM assignments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 1', PROFILE_ID);
+  const lastRow = one(c, 'SELECT skill_id FROM assignments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 1', pid(c));
   // paper only: the English listening skills are played on screen (no paper activity, no reading)
   const candidates = skillsBySubject(subject).filter((s) => hasPaper(s.id));
 
@@ -492,7 +565,7 @@ export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep
 
   const learned = applyLearner(c, decision, seedFrom(id));
   decision = learned.decision;
-  const recentKeys = all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC LIMIT 6', PROFILE_ID, decision.skillId).map((r) => String(r.question_key));
+  const recentKeys = all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC LIMIT 6', pid(c), decision.skillId).map((r) => String(r.question_key));
   const ex = generateExercise(decision.skillId, decision.difficulty, seedFrom(id), recentKeys, learned.plan?.prefer);
 
   tx(c.db, () => {
@@ -503,7 +576,7 @@ export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'presented', ?, ?)`,
       id,
       String(session.id),
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -523,7 +596,7 @@ export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep
 }
 
 function loadAssignment(c: Ctx, id: string) {
-  const a = one(c, 'SELECT * FROM assignments WHERE id = ? AND profile_id = ?', id, PROFILE_ID);
+  const a = one(c, 'SELECT * FROM assignments WHERE id = ? AND profile_id = ?', id, pid(c));
   if (!a) throw new HttpError(404, 'assignment-not-found', 'Exercice introuvable.');
   return { row: a, ex: json<ExerciseInstance>(String(a.snapshot_json), null as unknown as ExerciseInstance) };
 }
@@ -597,7 +670,7 @@ export function cancelAssignment(c: Ctx, id: string) {
 }
 
 export function pendingAssignments(c: Ctx) {
-  return all(c, `SELECT id FROM assignments WHERE profile_id = ? AND status IN ('answered_on_paper','in_review','illegible','presented') AND input_mode = 'paper' ORDER BY created_at DESC LIMIT 20`, PROFILE_ID).map((r) =>
+  return all(c, `SELECT id FROM assignments WHERE profile_id = ? AND status IN ('answered_on_paper','in_review','illegible','presented') AND input_mode = 'paper' ORDER BY created_at DESC LIMIT 20`, pid(c)).map((r) =>
     getAssignment(c, String(r.id)),
   );
 }
@@ -729,7 +802,7 @@ export async function analyzeReview(c: Ctx, reviewId: string) {
   const candidates: SampleCandidate[] = all(
     c,
     'SELECT id, kind, transcription, quality, allow_external, skill_id, created_at FROM handwriting_samples WHERE profile_id = ? AND deleted_at IS NULL AND allow_external = 1',
-    PROFILE_ID,
+    pid(c),
   ).map((s) => ({
     id: String(s.id),
     kind: s.kind as SampleCandidate['kind'],
@@ -825,10 +898,12 @@ function outcomeView(c: Ctx, attempt: Row, ex: ExerciseInstance) {
     errorMessage: ex.commonErrors.find((e) => e.type === attempt.error_type)?.message ?? (attempt.error_type === 'accent' ? 'Presque! Regarde bien les accents.' : null),
     correctAnswerDisplay: evaluate(ex, String(attempt.confirmed_answer)).correctAnswerDisplay,
     explanation: ex.explanation,
+    // «Comment calculer»: the worked steps, after a mistake or a success with help (math only)
+    worked: attempt.result !== 'correct' || attempt.help !== 'none' ? workedFor(ex) : null,
     praise: praiseFor(ex, String(attempt.result), String(attempt.help)),
     // weak point overcome in this answer (big celebration)
     conquered: (() => {
-      const r = one(c, "SELECT source FROM rewards WHERE profile_id = ? AND source LIKE ? ORDER BY rowid LIMIT 1", PROFILE_ID, `conquered:${String(attempt.id)}:%`);
+      const r = one(c, "SELECT source FROM rewards WHERE profile_id = ? AND source LIKE ? ORDER BY rowid LIMIT 1", pid(c), `conquered:${String(attempt.id)}:%`);
       if (!r) return null;
       const tag = String(r.source).split(':').slice(2).join(':');
       return { tag, label: TAG_LABELS[tag] ?? tag };
@@ -847,14 +922,14 @@ function outcomeView(c: Ctx, attempt: Row, ex: ExerciseInstance) {
 
 /** Narrative rewards an attempt earned: the step's seed and, if it closed the mission, the garden in bloom. */
 function rewardsOfAttempt(c: Ctx, attemptId: string): Array<{ key: string; label: string }> {
-  const st = one(c, 'SELECT mission_id, step_index FROM mission_steps WHERE profile_id = ? AND attempt_id = ?', PROFILE_ID, attemptId);
+  const st = one(c, 'SELECT mission_id, step_index FROM mission_steps WHERE profile_id = ? AND attempt_id = ?', pid(c), attemptId);
   if (!st) return [];
   const m = getMission(String(st.mission_id));
   const out: Array<{ key: string; label: string }> = [];
   const step = m.steps[Number(st.step_index)];
   if (step) out.push(step.reward);
-  const last = one(c, 'SELECT attempt_id FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY completed_at DESC, rowid DESC LIMIT 1', PROFILE_ID, String(st.mission_id));
-  const done = one(c, "SELECT status FROM mission_progress WHERE profile_id = ? AND mission_id = ?", PROFILE_ID, String(st.mission_id));
+  const last = one(c, 'SELECT attempt_id FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY completed_at DESC, rowid DESC LIMIT 1', pid(c), String(st.mission_id));
+  const done = one(c, "SELECT status FROM mission_progress WHERE profile_id = ? AND mission_id = ?", pid(c), String(st.mission_id));
   if (done?.status === 'completed' && last?.attempt_id === attemptId) out.push(m.completionReward);
   return out;
 }
@@ -922,7 +997,7 @@ export function confirmReview(c: Ctx, reviewId: string, body: ConfirmBody) {
       attemptId,
       assignmentId,
       reviewId,
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -941,7 +1016,7 @@ export function confirmReview(c: Ctx, reviewId: string, body: ConfirmBody) {
     run(c, "UPDATE ai_reviews SET status = 'confirmed', final_text = ?, draft_text = ?, confirmed_at = ?, updated_at = ? WHERE id = ?", text, text, now, now, reviewId);
     setAssignmentStatus(c, assignmentId, 'confirmed');
     // 3. skill
-    run(c, 'INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', PROFILE_ID, ex.skillId, JSON.stringify(after), now);
+    run(c, 'INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', pid(c), ex.skillId, JSON.stringify(after), now);
     plantFlower(c, ex.skillId, after, now);
     celebrateConquest(c, ex, attemptId, prevProfile, now);
     // 4. mission: the seed sprouts with the RIGHT answer (research: no reward just for taking part);
@@ -949,19 +1024,19 @@ export function confirmReview(c: Ctx, reviewId: string, body: ConfirmBody) {
     if (aRow.mission_id && aRow.mission_step !== null && evalResult.result === 'correct') {
       const missionId = String(aRow.mission_id);
       const stepIndex = Number(aRow.mission_step);
-      const inserted = run(c, 'INSERT OR IGNORE INTO mission_steps (profile_id, mission_id, step_index, attempt_id, completed_at) VALUES (?, ?, ?, ?, ?)', PROFILE_ID, missionId, stepIndex, attemptId, now);
+      const inserted = run(c, 'INSERT OR IGNORE INTO mission_steps (profile_id, mission_id, step_index, attempt_id, completed_at) VALUES (?, ?, ?, ?, ?)', pid(c), missionId, stepIndex, attemptId, now);
       if (Number(inserted.changes) > 0) {
         const m = getMission(missionId);
         const step = m.steps[stepIndex];
         // 5. rewards (narrative, separate from performance)
         if (step) {
-          const r = run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', PROFILE_ID, step.reward.key, step.reward.label, `mission:${missionId}:${stepIndex}`, now);
+          const r = run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', pid(c), step.reward.key, step.reward.label, `mission:${missionId}:${stepIndex}`, now);
           if (Number(r.changes) > 0) newRewards.push(step.reward);
         }
-        const doneCount = Number((one(c, 'SELECT COUNT(*) AS n FROM mission_steps WHERE profile_id = ? AND mission_id = ?', PROFILE_ID, missionId)?.n as number) ?? 0);
+        const doneCount = Number((one(c, 'SELECT COUNT(*) AS n FROM mission_steps WHERE profile_id = ? AND mission_id = ?', pid(c), missionId)?.n as number) ?? 0);
         if (doneCount >= m.steps.length) {
-          run(c, "UPDATE mission_progress SET status = 'completed', completed_at = ? WHERE profile_id = ? AND mission_id = ? AND status = 'active'", now, PROFILE_ID, missionId);
-          const r = run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', PROFILE_ID, m.completionReward.key, m.completionReward.label, `mission:${missionId}:complete`, now);
+          run(c, "UPDATE mission_progress SET status = 'completed', completed_at = ? WHERE profile_id = ? AND mission_id = ? AND status = 'active'", now, pid(c), missionId);
+          const r = run(c, 'INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)', pid(c), m.completionReward.key, m.completionReward.label, `mission:${missionId}:complete`, now);
           if (Number(r.changes) > 0) newRewards.push(m.completionReward);
         }
       }
@@ -973,7 +1048,7 @@ export function confirmReview(c: Ctx, reviewId: string, body: ConfirmBody) {
         `INSERT INTO handwriting_samples (id, profile_id, attempt_id, review_id, photo_id, transcription, kind, skill_id, quality, allow_external, origin, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         randomUUID(),
-        PROFILE_ID,
+        pid(c),
         attemptId,
         reviewId,
         String(review.photo_id),
@@ -1022,17 +1097,17 @@ export function progress(c: Ctx) {
       };
     }),
     totals: {
-      attempts: Number(one(c, 'SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ?', PROFILE_ID)?.n ?? 0),
-      correct: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND result = 'correct'", PROFILE_ID)?.n ?? 0),
-      withHelp: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND help <> 'none'", PROFILE_ID)?.n ?? 0),
-      illegible: Number(one(c, "SELECT COUNT(*) AS n FROM ai_reviews r JOIN assignments a ON a.id = r.assignment_id WHERE a.profile_id = ? AND r.status = 'illegible'", PROFILE_ID)?.n ?? 0),
+      attempts: Number(one(c, 'SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ?', pid(c))?.n ?? 0),
+      correct: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND result = 'correct'", pid(c))?.n ?? 0),
+      withHelp: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND help <> 'none'", pid(c))?.n ?? 0),
+      illegible: Number(one(c, "SELECT COUNT(*) AS n FROM ai_reviews r JOIN assignments a ON a.id = r.assignment_id WHERE a.profile_id = ? AND r.status = 'illegible'", pid(c))?.n ?? 0),
     },
   };
 }
 
 export function gameProgress(c: Ctx) {
-  const row = one(c, 'SELECT state_json, updated_at FROM game_progress WHERE profile_id = ?', PROFILE_ID);
-  const rewards = all(c, 'SELECT reward_key, label, created_at FROM rewards WHERE profile_id = ? ORDER BY created_at, rowid', PROFILE_ID).map((r) => ({
+  const row = one(c, 'SELECT state_json, updated_at FROM game_progress WHERE profile_id = ?', pid(c));
+  const rewards = all(c, 'SELECT reward_key, label, created_at FROM rewards WHERE profile_id = ? ORDER BY created_at, rowid', pid(c)).map((r) => ({
     key: String(r.reward_key),
     label: String(r.label),
     at: String(r.created_at),
@@ -1054,7 +1129,7 @@ export function saveGameState(c: Ctx, body: unknown) {
     y: typeof b?.y === 'number' && Number.isFinite(b.y) ? Math.round(b.y) : null,
     scene: typeof b?.scene === 'string' ? b.scene.slice(0, 40) : 'garden',
   };
-  run(c, 'INSERT INTO game_progress (profile_id, state_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(profile_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', PROFILE_ID, JSON.stringify(state), iso(c));
+  run(c, 'INSERT INTO game_progress (profile_id, state_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(profile_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', pid(c), JSON.stringify(state), iso(c));
   return gameProgress(c);
 }
 
@@ -1066,7 +1141,7 @@ export function history(c: Ctx, limit = 100) {
             (SELECT COUNT(*) FROM ai_reviews r WHERE r.assignment_id = a.id AND r.status = 'illegible') AS illegible_count
      FROM assignments a LEFT JOIN attempts t ON t.assignment_id = a.id
      WHERE a.profile_id = ? ORDER BY a.created_at DESC LIMIT ?`,
-    PROFILE_ID,
+    pid(c),
     limit,
   );
   return rows.map((r) => {
@@ -1102,7 +1177,7 @@ export function history(c: Ctx, limit = 100) {
 }
 
 export function listSamples(c: Ctx) {
-  return all(c, 'SELECT * FROM handwriting_samples WHERE profile_id = ? AND deleted_at IS NULL ORDER BY created_at DESC', PROFILE_ID).map((s) => ({
+  return all(c, 'SELECT * FROM handwriting_samples WHERE profile_id = ? AND deleted_at IS NULL ORDER BY created_at DESC', pid(c)).map((s) => ({
     id: String(s.id),
     photoId: String(s.photo_id),
     transcription: String(s.transcription),
@@ -1116,7 +1191,7 @@ export function listSamples(c: Ctx) {
 }
 
 export function patchSample(c: Ctx, id: string, body: Record<string, unknown>) {
-  const s = one(c, 'SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL', id, PROFILE_ID);
+  const s = one(c, 'SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL', id, pid(c));
   if (!s) throw new HttpError(404, 'sample-not-found', 'Exemple d’écriture introuvable.');
   if (body.transcription !== undefined) {
     if (typeof body.transcription !== 'string' || !body.transcription.trim() || body.transcription.length > 200) throw new HttpError(400, 'invalid', 'Transcription invalide.');
@@ -1138,7 +1213,7 @@ export function patchSample(c: Ctx, id: string, body: Record<string, unknown>) {
  * The attempt history remains; the photo stays linked to the answered exercise.
  */
 export function deleteSample(c: Ctx, id: string) {
-  const s = one(c, 'SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL', id, PROFILE_ID);
+  const s = one(c, 'SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL', id, pid(c));
   if (!s) throw new HttpError(404, 'sample-not-found', 'Exemple d’écriture introuvable.');
   run(c, 'UPDATE handwriting_samples SET deleted_at = ?, allow_external = 0 WHERE id = ?', iso(c), id);
   return { deleted: true, keptInHistory: ['tentative', 'transcription confirmée', 'photo de l’exercice'] };
@@ -1208,14 +1283,17 @@ export function listGames(c: Ctx) {
     `SELECT a.exercise_id AS id, COUNT(*) AS rounds
      FROM attempts t JOIN assignments a ON a.id = t.assignment_id
      WHERE t.profile_id = ? AND t.input_mode = 'screen' GROUP BY a.exercise_id`,
-    PROFILE_ID,
+    pid(c),
   );
-  const flowerKeys = all(c, "SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.%'", PROFILE_ID).map((r) => String(r.reward_key));
+  const flowerKeys = all(c, "SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.%'", pid(c)).map((r) => String(r.reward_key));
   return games.map((g) => {
     const st = stats.find((x) => x.id === g.id);
-    const levels = g.skills.map((s) => getMastery(c, s)?.level ?? 1);
+    // the level she is playing at today (official level, or the level already proven, raised by today's staircase):
+    // it goes up by itself as she succeeds; the official level (confirmed another day) stays in the parents' area
+    const levels = g.skills.map((s) => todayLevel(c, s));
+    const official = g.skills.map((s) => getMastery(c, s)?.level ?? 1);
     const flowers = flowerKeys.filter((k) => g.skills.some((s) => k.startsWith(`flower.${s}.`) || k.startsWith(`flower.tag.${s}.`))).length;
-    return { id: g.id, title: g.title, description: g.description, skills: g.skills, roundsPerSession: g.roundsPerSession, roundsPlayed: Number(st?.rounds ?? 0), level: Math.max(...levels), flowers };
+    return { id: g.id, title: g.title, description: g.description, skills: g.skills, roundsPerSession: g.roundsPerSession, roundsPlayed: Number(st?.rounds ?? 0), level: Math.max(...levels), officialLevel: Math.max(...official), flowers };
   });
 }
 
@@ -1243,11 +1321,11 @@ export function startGameRound(c: Ctx, body: { gameId?: unknown; sessionId?: unk
     throw new HttpError(404, 'unknown-game', 'Jeu inconnu.');
   }
   // Resume: open round of the same game (avoids creating rounds in a row without playing).
-  const open = one(c, "SELECT id FROM assignments WHERE profile_id = ? AND exercise_id = ? AND input_mode = 'screen' AND status = 'presented' ORDER BY created_at DESC LIMIT 1", PROFILE_ID, game.id);
+  const open = one(c, "SELECT id FROM assignments WHERE profile_id = ? AND exercise_id = ? AND input_mode = 'screen' AND status = 'presented' ORDER BY created_at DESC LIMIT 1", pid(c), game.id);
   if (open) return roundView(c, String(open.id));
 
   let sessionId = typeof body.sessionId === 'string' ? body.sessionId : '';
-  if (!sessionId || !one(c, 'SELECT id FROM sessions WHERE id = ? AND profile_id = ?', sessionId, PROFILE_ID)) {
+  if (!sessionId || !one(c, 'SELECT id FROM sessions WHERE id = ? AND profile_id = ?', sessionId, pid(c))) {
     sessionId = startSession(c, { mode: 'practice', subject: game.subject }).id;
   }
   const id = randomUUID();
@@ -1255,7 +1333,7 @@ export function startGameRound(c: Ctx, body: { gameId?: unknown; sessionId?: unk
   const settings = getSettings(c);
   const states = allMastery(c);
   const candidates = skills.filter((s) => game.skills.includes(s.id));
-  const lastRow = one(c, 'SELECT skill_id FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 1', PROFILE_ID, game.id);
+  const lastRow = one(c, 'SELECT skill_id FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 1', pid(c), game.id);
   const choice = settings['parent.nextChoice'];
   let decision =
     choice && candidates.some((s) => s.id === choice.skillId)
@@ -1268,8 +1346,8 @@ export function startGameRound(c: Ctx, body: { gameId?: unknown; sessionId?: unk
   const dayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const recentKeys = (
     english
-      ? all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 3', PROFILE_ID, game.id, dayStartIso)
-      : all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8', PROFILE_ID, game.id)
+      ? all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 3', pid(c), game.id, dayStartIso)
+      : all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8', pid(c), game.id)
   ).map((r) => String(r.question_key));
   // autonomy (research): she herself asked for «un défi un peu plus difficile»
   if (body.challenge === true && decision.reasonCode !== 'parent-choice') {
@@ -1290,7 +1368,7 @@ export function startGameRound(c: Ctx, body: { gameId?: unknown; sessionId?: unk
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'presented', 'screen', ?, ?)`,
       id,
       sessionId,
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -1355,7 +1433,11 @@ export function answerGameRound(c: Ctx, id: string, body: { answer?: unknown }) 
         message:
           tries === 1
             ? (ev.errorMessage ?? `${ex.retryMessage ?? 'Pas tout à fait.'}${ex.hint ? ` Astuce : ${ex.hint}` : ''}`)
-            : `Astuce : ${ex.hint ?? 'Essaie encore une fois, doucement.'}`,
+            : // 2nd mistake in math: HOW to calculate (the plan and the first step, never the answer)
+              (() => {
+                const w = workedFor(ex);
+                return w ? `Voici comment faire : ${workedHint(w)}` : `Astuce : ${ex.hint ?? 'Essaie encore une fois, doucement.'}`;
+              })(),
         showCounting: tries >= 2,
         // sequence: which stones are right (without telling the value of the wrong ones), so she fixes only the others
         ...(exp.type === 'sequence' ? { slots: answer.split(',').map((v, i) => Number(v) === exp.values[i]) } : {}),
@@ -1379,7 +1461,7 @@ export function answerGameRound(c: Ctx, id: string, body: { answer?: unknown }) 
       attemptId,
       id,
       reviewId,
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -1394,7 +1476,7 @@ export function answerGameRound(c: Ctx, id: string, body: { answer?: unknown }) 
       now,
     );
     run(c, "UPDATE assignments SET status = 'confirmed', tries = ?, hint_used = ?, wrong_answers = COALESCE(?, wrong_answers), updated_at = ? WHERE id = ?", tries, tries > 1 ? 1 : 0, wrongs, now, id);
-    run(c, 'INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', PROFILE_ID, ex.skillId, JSON.stringify(after), now);
+    run(c, 'INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', pid(c), ex.skillId, JSON.stringify(after), now);
     plantFlower(c, ex.skillId, after, now);
     celebrateConquest(c, ex, attemptId, prevProfile, now);
   });

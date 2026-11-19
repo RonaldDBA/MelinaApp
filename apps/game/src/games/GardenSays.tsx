@@ -5,6 +5,7 @@ import { englishVoiceInfo, isMuted, sfx, speakEnglish, waitForEnglishVoice } fro
 import { art, icon, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, useRounds } from './shell';
+import { playerName } from '../player';
 
 /**
  * « La jardinière dit » — English commands (research report «English learning games for kids»: in Cycle One, children
@@ -157,7 +158,7 @@ function CommandRounds({ onExit }: { onExit: () => void }) {
           <p className="says-picks">{outcome.correctAnswerDisplay.split(',').map((id) => spec.pics[id]).join('  ➜  ')}</p>
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('basket')} title="Bravo, Melina!" text="Tu as fait tout ce que la jardinière a demandé, en anglais!" onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('basket')} title={`Bravo, ${playerName()}!`} text="Tu as fait tout ce que la jardinière a demandé, en anglais!" onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

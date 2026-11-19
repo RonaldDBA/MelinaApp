@@ -46,6 +46,11 @@ Code in `packages/adaptive-engine/src/index.ts`. These are **deterministic** rul
       back to the level under that error (or is cancelled right above the official level).
     - *On screen:* when a round is harder than the previous one, Lila starts with «Ça monte d’un cran!».
   - **English words on a ladder of days (18/11/2026, `words.ts`):** per word, 1 → 3 → 7 → 14 → 30 days, one step per day at most with a first-try success; a miss goes down ONE step (not to the start) and makes the word due now. «Known» = first-try successes on 2 different days. `retention()` measures, for each word she got right, the first answer 7 days or more later. Recomputed from the history; no new table.
+  - **The level she sees (18/11/2026, guardian: «I'm not seeing the levels go up»):** the cards on the home screen and a
+    «Niveau N» chip in each game show the level she is PLAYING at (`todayLevel`: the official level or the level already
+    proven, raised by today's staircase). It goes up by itself as she succeeds; «Un défi plus difficile?» is only an
+    extra. The official level, confirmed on another day (spacing: a success in the same session can be misleading),
+    stays in the parents' area with its «→ N ⏳» when a level-up is waiting.
   - **Guessing floor (18/11/2026, English listening):** for picture choices, the learner model uses p = c + (1 − c)·σ(…), with c = 1 / number of pictures. A correct tap counts as weaker evidence (it may be luck); an error weighs exactly as before. Only the `listen-pick` rounds use it for now.
   - **Going down:** 2 consecutive mistakes move down 1 level. Her limit is where the level oscillates.
   - **Help:** a correct answer with help (correct on the 2nd attempt) still resets the streak.

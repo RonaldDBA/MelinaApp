@@ -1,6 +1,57 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="1024" height="1024">
-  <!-- Placeholder for the remise (original app drawing). -->
-  <polygon points="25,72 100,32 175,72" fill="#a0522d"/>
-  <rect x="35" y="72" width="130" height="95" fill="#c98b4b" stroke="#8a5a2b" stroke-width="4"/>
-  <rect x="82" y="117" width="36" height="50" fill="#6b3f1f"/>
+  <!-- La remise: original app drawing (wooden garden shed, used until the parents approve a photo). -->
+  <defs>
+    <linearGradient id="wall" x1="0" x2="1">
+      <stop offset="0" stop-color="#e7ad6c"/>
+      <stop offset=".7" stop-color="#d79a58"/>
+      <stop offset="1" stop-color="#bf8143"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ef6a5b"/>
+      <stop offset="1" stop-color="#cf4a42"/>
+    </linearGradient>
+    <linearGradient id="door" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7d9fd8"/>
+      <stop offset="1" stop-color="#5b7fbf"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6f7ff"/>
+      <stop offset="1" stop-color="#9fd6f5"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="102" cy="191" rx="84" ry="9" fill="#1f4d24" opacity=".25"/>
+  <!-- walls -->
+  <rect x="36" y="84" width="128" height="104" rx="4" fill="url(#wall)" stroke="#9a6234" stroke-width="3"/>
+  <g stroke="#b97b40" stroke-width="1.6" opacity=".7">
+    <line x1="52" y1="88" x2="52" y2="186"/><line x1="68" y1="88" x2="68" y2="186"/><line x1="132" y1="88" x2="132" y2="186"/><line x1="148" y1="88" x2="148" y2="186"/>
+  </g>
+  <rect x="36" y="178" width="128" height="10" rx="3" fill="#a96d39"/>
+  <!-- roof -->
+  <path d="M18 92 100 28l82 64z" fill="#9b3a35"/>
+  <path d="M24 88 100 30l76 58z" fill="url(#roof)"/>
+  <g stroke="#b9403a" stroke-width="2" fill="none" opacity=".75">
+    <path d="M44 74h112"/><path d="M62 60h76"/><path d="M80 46h40"/>
+    <path d="M60 74v14M84 74v14M108 74v14M132 74v14M74 60v14M98 60v14M122 60v14M92 46v14M110 46v14"/>
+  </g>
+  <path d="M16 93 100 26l84 67" fill="none" stroke="#fff4e0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- round gable window -->
+  <circle cx="100" cy="66" r="11" fill="url(#glass)" stroke="#fff4e0" stroke-width="4"/>
+  <path d="M100 56v20M90 66h20" stroke="#fff4e0" stroke-width="2"/>
+  <!-- door -->
+  <rect x="78" y="114" width="44" height="74" rx="7" fill="url(#door)" stroke="#3f5f9c" stroke-width="3"/>
+  <path d="M84 124h32M84 178h32M86 176l28-50" stroke="#46679f" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="114" cy="152" r="3.6" fill="#ffd25a" stroke="#c99a20" stroke-width="1.2"/>
+  <!-- windows with flower boxes -->
+  <g>
+    <rect x="44" y="112" width="26" height="24" rx="3" fill="url(#glass)" stroke="#fff4e0" stroke-width="4"/>
+    <path d="M57 112v24M44 124h26" stroke="#fff4e0" stroke-width="2"/>
+    <rect x="41" y="138" width="32" height="8" rx="2" fill="#8e5a2c"/>
+    <g><circle cx="47" cy="136" r="3.4" fill="#ff7eb3"/><circle cx="55" cy="134" r="3.4" fill="#ffd34d"/><circle cx="63" cy="136" r="3.4" fill="#ffffff"/><circle cx="69" cy="134" r="3" fill="#ff7eb3"/></g>
+    <rect x="130" y="112" width="26" height="24" rx="3" fill="url(#glass)" stroke="#fff4e0" stroke-width="4"/>
+    <path d="M143 112v24M130 124h26" stroke="#fff4e0" stroke-width="2"/>
+    <rect x="127" y="138" width="32" height="8" rx="2" fill="#8e5a2c"/>
+    <g><circle cx="133" cy="136" r="3.4" fill="#ffd34d"/><circle cx="141" cy="134" r="3.4" fill="#ff7eb3"/><circle cx="149" cy="136" r="3.4" fill="#b9a4ff"/><circle cx="155" cy="134" r="3" fill="#ffd34d"/></g>
+  </g>
+  <!-- stone step -->
+  <rect x="72" y="185" width="56" height="9" rx="4.5" fill="#cfc8bb" stroke="#a79f92" stroke-width="1.5"/>
 </svg>

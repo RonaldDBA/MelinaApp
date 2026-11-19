@@ -9,6 +9,15 @@ Everything stays inside `C:\MelinaApp\data\`: the local profile (only the first 
 - **Local storage is not encrypted.** Anyone with access to the Windows account can read `data\`. Protect the account with a password.
 - The app does not ask for or keep the full name, school or date of birth.
 
+## Players (since 18/11/2026)
+
+- «Qui joue?» comes before the home screen. Each player (up to 8) has their own history, levels, flowers, garden,
+  reports and model; a friend starts from zero and never sees or changes Melina's data.
+- A player is a first name and an animal (no photo, no age, no school). Creating one goes through the parents' gate.
+- The settings that belong to a child are per player: the parents' next choice, the school week and the **consent to
+  read handwriting with the AI** (given for Melina only; another player starts without it).
+- The name is shown on screen only. It is never spoken by the voice and never sent outside the computer.
+
 ## What can leave the computer
 
 Only with AI reading turned on, which requires accepting the notice in *IA et données*, and only when the parents click **Lire avec l’IA**:

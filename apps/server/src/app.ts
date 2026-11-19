@@ -57,11 +57,21 @@ export async function buildApp(c: Ctx): Promise<FastifyInstance> {
     return reply.code(500).send({ error: { code: 'internal', message: 'Erreur interne. Les données n’ont pas été modifiées.' } });
   });
 
+  /**
+   * Context of a request: the player comes in the «x-melina-profile» header (profile picker). Without it, Melina's
+   * original profile (older clients, tests). An unknown player is refused: data is never written to the wrong child.
+   */
+  const cx = (req: FastifyRequest): Ctx => {
+    const h = req.headers['x-melina-profile'];
+    const profileId = typeof h === 'string' && h ? h : svc.PROFILE_ID;
+    if (profileId !== svc.PROFILE_ID && !svc.profileExists(c, profileId)) throw new HttpError(400, 'unknown-profile', 'Joueur inconnu.');
+    return { ...c, profileId };
+  };
   const id = (req: FastifyRequest) => String((req.params as { id?: string }).id ?? '');
   const body = (req: FastifyRequest) => (req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>) : {});
 
-  app.get('/api/health', async () => {
-    const s = svc.getSettings(c);
+  app.get('/api/health', async (req) => {
+    const s = svc.getSettings(cx(req));
     return {
       ok: true,
       app: 'melina',
@@ -71,62 +81,67 @@ export async function buildApp(c: Ctx): Promise<FastifyInstance> {
     };
   });
 
-  app.get('/api/settings', async () => svc.publicSettings(c));
-  app.patch('/api/settings', async (req) => svc.patchSettings(c, body(req)));
+  // ---- players: each one has their own history (picker before the home screen)
+  app.get('/api/profiles', async () => svc.listProfiles(c));
+  app.post('/api/profiles', async (req) => svc.createProfile(c, body(req)));
+  app.patch('/api/profiles/:id', async (req) => svc.updateProfile(c, id(req), body(req)));
 
-  app.post('/api/sessions', async (req) => svc.startSession(c, body(req)));
+  app.get('/api/settings', async (req) => svc.publicSettings(cx(req)));
+  app.patch('/api/settings', async (req) => svc.patchSettings(cx(req), body(req)));
+
+  app.post('/api/sessions', async (req) => svc.startSession(cx(req), body(req)));
   app.get('/api/sessions/:id', async (req) => {
-    const s = c.db.prepare('SELECT id, mode, mission_id, subject, started_at FROM sessions WHERE id = ?').get(id(req));
+    const s = c.db.prepare('SELECT id, mode, mission_id, subject, started_at FROM sessions WHERE id = ? AND profile_id = ?').get(id(req), svc.pid(cx(req)));
     if (!s) throw new HttpError(404, 'session-not-found', 'Séance introuvable.');
     return s;
   });
 
-  app.post('/api/assignments', async (req) => svc.createAssignment(c, body(req)));
-  app.get('/api/assignments/pending', async () => svc.pendingAssignments(c));
-  app.get('/api/assignments/:id', async (req) => svc.getAssignment(c, id(req)));
-  app.post('/api/assignments/:id/hint', async (req) => svc.markHint(c, id(req)));
-  app.post('/api/assignments/:id/done', async (req) => svc.markDone(c, id(req)));
-  app.post('/api/assignments/:id/cancel', async (req) => svc.cancelAssignment(c, id(req)));
-  app.post('/api/assignments/:id/manual', async (req) => svc.createManualReview(c, id(req)));
+  app.post('/api/assignments', async (req) => svc.createAssignment(cx(req), body(req)));
+  app.get('/api/assignments/pending', async (req) => svc.pendingAssignments(cx(req)));
+  app.get('/api/assignments/:id', async (req) => svc.getAssignment(cx(req), id(req)));
+  app.post('/api/assignments/:id/hint', async (req) => svc.markHint(cx(req), id(req)));
+  app.post('/api/assignments/:id/done', async (req) => svc.markDone(cx(req), id(req)));
+  app.post('/api/assignments/:id/cancel', async (req) => svc.cancelAssignment(cx(req), id(req)));
+  app.post('/api/assignments/:id/manual', async (req) => svc.createManualReview(cx(req), id(req)));
   app.post('/api/assignments/:id/photo', async (req) => {
     const file = await req.file();
     if (!file) throw new HttpError(400, 'no-file', 'Aucune photo envoyée.');
     const buf = await file.toBuffer(); // the name and path sent by the browser are ignored
-    return svc.savePhoto(c, id(req), buf);
+    return svc.savePhoto(cx(req), id(req), buf);
   });
 
-  app.post('/api/reviews/:id/analyze', async (req) => svc.analyzeReview(c, id(req)));
-  app.patch('/api/reviews/:id/transcription', async (req) => svc.updateTranscription(c, id(req), body(req).text));
-  app.post('/api/reviews/:id/confirm', async (req) => svc.confirmReview(c, id(req), body(req)));
+  app.post('/api/reviews/:id/analyze', async (req) => svc.analyzeReview(cx(req), id(req)));
+  app.patch('/api/reviews/:id/transcription', async (req) => svc.updateTranscription(cx(req), id(req), body(req).text));
+  app.post('/api/reviews/:id/confirm', async (req) => svc.confirmReview(cx(req), id(req), body(req)));
 
   app.get('/api/photos/:id', async (req, reply) => {
-    const p = svc.readPhoto(c, id(req));
+    const p = svc.readPhoto(cx(req), id(req));
     reply.header('cache-control', 'no-store').header('x-content-type-options', 'nosniff').type(p.mime);
     return reply.send(p.data);
   });
 
-  app.get('/api/progress', async () => svc.progress(c));
-  app.get('/api/history', async () => svc.history(c));
+  app.get('/api/progress', async (req) => svc.progress(cx(req)));
+  app.get('/api/history', async (req) => svc.history(cx(req)));
   // progress report: ?kind=week|month&offset=0 (current), -1 (previous)…
   app.get('/api/report', async (req) => {
     const q = req.query as { kind?: string; offset?: string };
     const kind = q.kind === 'month' ? 'month' : 'week';
     const offset = Math.max(-52, Math.min(0, Number.parseInt(q.offset ?? '0', 10) || 0));
-    return buildReport(c, kind, offset);
+    return buildReport(cx(req), kind, offset);
   });
   app.get('/api/skills', async () => svc.skillCatalog());
-  app.get('/api/missions', async () => missions.map((m) => ({ ...m, state: svc.missionState(c, m.id) })));
-  app.get('/api/game-progress', async () => svc.gameProgress(c));
-  app.put('/api/game-progress', async (req) => svc.saveGameState(c, req.body));
+  app.get('/api/missions', async (req) => missions.map((m) => ({ ...m, state: svc.missionState(cx(req), m.id) })));
+  app.get('/api/game-progress', async (req) => svc.gameProgress(cx(req)));
+  app.put('/api/game-progress', async (req) => svc.saveGameState(cx(req), req.body));
 
-  app.get('/api/games', async () => svc.listGames(c));
-  app.post('/api/game-rounds', async (req) => svc.startGameRound(c, body(req)));
-  app.post('/api/game-rounds/:id/answer', async (req) => svc.answerGameRound(c, id(req), body(req)));
+  app.get('/api/games', async (req) => svc.listGames(cx(req)));
+  app.post('/api/game-rounds', async (req) => svc.startGameRound(cx(req), body(req)));
+  app.post('/api/game-rounds/:id/answer', async (req) => svc.answerGameRound(cx(req), id(req), body(req)));
 
-  app.get('/api/handwriting-samples', async () => svc.listSamples(c));
-  app.patch('/api/handwriting-samples/:id', async (req) => svc.patchSample(c, id(req), body(req)));
-  app.delete('/api/handwriting-samples/:id', async (req) => svc.deleteSample(c, id(req)));
-  app.get('/api/reading-stats', async () => svc.readingStats(c));
+  app.get('/api/handwriting-samples', async (req) => svc.listSamples(cx(req)));
+  app.patch('/api/handwriting-samples/:id', async (req) => svc.patchSample(cx(req), id(req), body(req)));
+  app.delete('/api/handwriting-samples/:id', async (req) => svc.deleteSample(cx(req), id(req)));
+  app.get('/api/reading-stats', async (req) => svc.readingStats(cx(req)));
 
   // ---- art: catalog (read by the game) and studio (parents' area)
   const upload = async (req: FastifyRequest): Promise<{ file: Buffer | null; fields: Record<string, unknown> }> => {

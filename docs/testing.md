@@ -3,6 +3,71 @@
 Date: 17/11/2026. First in the development environment (Linux, Node 22.23, headless Chrome via Playwright);
 then **on the family's Windows** (Windows 11, section [Validation on Windows](#validation-on-windows-17112026-stage-1)).
 
+## Players, the level she sees, «Comment calculer» (18/11/2026)
+
+**Tested (seen):**
+- **Players** (`server.test.ts`):
+  - Melina's original profile is listed first.
+  - A friend is created; invalid names, unknown animals and a duplicate name are refused.
+  - The friend starts from zero: no answers, level 1, no parents' choice.
+  - His rounds go to his history only. He cannot answer Melina's round (404), and the reports are per player.
+  - An unknown player is refused (400).
+- **Levels:** the home cards show the play level (`todayLevel`); the HUD shows «Niveau N» for each round.
+- **«Comment calculer»** (`worked.test.ts`, 6 tests): examples (8 + 5, 52 − 7, 34 + 28, 245 + 130, sequences).
+  - Every math game and paper exercise at every level has an explanation. Every «a ± b = c» in it is true, and it ends
+    on the answer.
+  - The hint after the 2nd mistake never gives the final answer.
+  - Server: the 2nd mistake gets «Voici comment faire…», the end of the round has the steps, and a first-try success has
+    none.
+- **E2E (headless, muted), 175/175:**
+  - «Qui joue?» at start. A new player is created through the parents' gate; «Le jardin de Léo» has every game at level 1
+    and no flowers.
+  - His train round is his own, at level 1, and Melina's answers did not change. The parents' area shows «Léo».
+  - Back to Melina.
+  - After the 2nd mistake (Saute-grenouille, Le train des nombres) Lila explains how to calculate, without the answer.
+    The worked steps fit in the panel.
+- **Repository:** all text files normalized to LF (`.gitattributes`: LF, CRLF only for `.bat`).
+
+**Not tested:** a friend's real use, and a touch screen.
+
+## Le jardin de Lila: no more false «Bravo» pop-up, new look, click to walk (18/11/2026)
+
+**Bug (seen by the guardian, with a screenshot):** entering the garden, or clicking on it, opened «Bravo pour ton travail !
+Appelle un parent pour envoyer ta réponse» about «Combien de cubes y a-t-il en tout?», though she had not played.
+**Root cause:** every start of the Phaser scene (`ready`) and every closing of the parents' area called `resumePending()`,
+which re-opened the newest sheet in `answered_on_paper`/`in_review`/`illegible` as a pop-up. In the family's data the step-1
+sheet of the mission had been in `answered_on_paper` for two days (she had pressed «J'ai terminé sur papier»; no parent had
+confirmed it), so the pop-up came back on every visit and the «Bravo» praised work nobody had checked.
+**Fix:** `ready` and closing the parents' area only refresh the map. Open sheets are loaded with the mission
+(`refresh()`), and `game/waiting.ts` places each waiting sheet on its station (mission step → its point; practice →
+remise for maths, puits for French). The station shows a calm chip «✏️ Ta feuille attend un parent»; the card opens only
+when she goes to that station, with no «Bravo» («Appelle un parent : il va regarder ta réponse avec toi.»), and the parents
+resolve it from «Espace parents» as before. Meanwhile Lila explains it, and the other stations offer a small challenge
+instead of «Pas encore!».
+
+**Tested (seen):**
+- **E2E, reproduced first:** with the old code, the new check failed exactly like the screenshot («1 overlay», the
+  «Bravo pour ton travail» card on entering). With the fix:
+  - seeded the family's state: step-1 sheet in `answered_on_paper`, `done_at` NULL, created two days earlier;
+  - entering the garden and clicking on empty grass opens no message (0 overlay);
+  - the click makes the child walk to the clicked spot (asked 330, 470 → saved 327, 466);
+  - the canvas reports the waiting station (`data-waiting='shed'`);
+  - Lila says the sheet waits for a parent; the puits offers «Oui!» / «Non merci» for a challenge;
+  - the remise opens «Ta feuille attend un parent» with «Appelle un parent», without «Bravo»; «Espace parents» from that
+    card continues the usual flow (photo, transcription, confirmation, result).
+  - The rest of the garden flow still passes with walking clicks (Lila, the three steps, mission complete, restart).
+  - Runs on port 3021: 103 checks passed, 3 times in a row; each run then stopped later, in the frog-jump mistakes step of
+    the new player section («element is not stable» on a lily pad), which does not touch the garden.
+- **Unit** (`apps/game/src/game/waiting.test.ts`, 3 tests): the family's stale sheet maps to the remise and leaves the
+  other stations free; `presented`/`confirmed`/`cancelled` do not wait; practice sheets go to their subject's station, the
+  mission sheet first, without repeats. Whole suite: 20 files, 236 tests passed. `pnpm typecheck` and `pnpm build` clean.
+- **Looked at the screenshots** `02-world`, `04b-garden-sheet-waiting`, `04d-garden-sheet-waiting-card`,
+  `12-garden-in-bloom` (Edge headless, 1280×800).
+
+**Not tested:** the approved-photo layout (`PHOTO`) with the new chips and positions (no garden photo is approved in the
+test); a touch screen (only mouse clicks); the frame rate on the family's PC (the scene is light: one backdrop image,
+a few sprites and tweens).
+
 ## English, stage 2: «La jardinière dit», words on a ladder of days, English in the report (18/11/2026)
 
 **Tested (seen):**

@@ -1,0 +1,17 @@
+# Line endings: LF in the repository and in the working copy; Windows batch files keep CRLF (cmd.exe needs it).
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.webm binary
+*.bundle binary

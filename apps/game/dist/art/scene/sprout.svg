@@ -1,5 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1024" height="1024">
-  <!-- Placeholder for the pousse (original app drawing). -->
-  <rect x="10" y="8" width="3" height="14" fill="#3f9b4b"/>
-  <ellipse cx="7" cy="8" rx="5" ry="3" fill="#3f9b4b"/><ellipse cx="16" cy="6" rx="5" ry="3" fill="#3f9b4b"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024">
+  <!-- La pousse: original app drawing (a seedling on a little mound of soil). -->
+  <defs>
+    <linearGradient id="lf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9be36f"/>
+      <stop offset="1" stop-color="#3f9b4b"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="50" cy="88" rx="26" ry="8" fill="#6b4528"/>
+  <ellipse cx="46" cy="85" rx="12" ry="3" fill="#8c623e"/>
+  <path d="M50 86c0-18 0-30 2-44" stroke="#3f9b4b" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M51 46C40 28 22 26 10 32c6 14 24 22 41 14z" fill="url(#lf)" stroke="#2f7f3a" stroke-width="2.5"/>
+  <path d="M51 44C58 22 76 14 92 18c-4 18-22 30-41 26z" fill="url(#lf)" stroke="#2f7f3a" stroke-width="2.5"/>
+  <path d="M48 44C38 36 28 33 18 33M54 42c8-10 18-17 30-20" stroke="#d6f6b8" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>
 </svg>

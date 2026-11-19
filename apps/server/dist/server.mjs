@@ -10497,7 +10497,7 @@ var require_pino = __commonJS({
       transportUsesMultistreamSym
     } = symbols;
     var { epochTime, nullTime } = time;
-    var { pid } = process;
+    var { pid: pid2 } = process;
     var hostname = os.hostname();
     var defaultErrorSerializer = stdSerializers.err;
     var defaultOptions = {
@@ -10508,7 +10508,7 @@ var require_pino = __commonJS({
       errorKey: "err",
       nestedKey: null,
       enabled: true,
-      base: { pid, hostname },
+      base: { pid: pid2, hostname },
       serializers: Object.assign(/* @__PURE__ */ Object.create(null), {
         err: defaultErrorSerializer
       }),
@@ -53972,6 +53972,182 @@ function strategyPraise(ex) {
   }
 }
 
+// packages/curriculum/src/worked.ts
+var minus = "\u2212";
+function addSubWorked(a, b, plus) {
+  const r = plus ? a + b : a - b;
+  const op = plus ? "+" : minus;
+  const parts = [Math.floor(b / 1e3) * 1e3, Math.floor(b % 1e3 / 100) * 100, Math.floor(b % 100 / 10) * 10, b % 10].filter((p) => p > 0);
+  const steps = [];
+  let cur = a;
+  for (const p of parts) {
+    const next = plus ? cur + p : cur - p;
+    const u = cur % 10;
+    const crosses2 = p < 10 && (plus ? u + p > 10 : u > 0 && u < p);
+    if (crosses2) {
+      const toTen = plus ? 10 - u : u;
+      const ten = plus ? cur + toTen : cur - toTen;
+      steps.push(`${cur} ${op} ${toTen} = ${ten} (on ${plus ? "compl\xE8te" : "recule jusqu\u2019\xE0"} la dizaine).`);
+      steps.push(`Il reste ${p - toTen} : ${ten} ${op} ${p - toTen} = ${next}.`);
+    } else steps.push(`${cur} ${op} ${p} = ${next}.`);
+    cur = next;
+  }
+  const units = parts.length === 1 && b < 10;
+  const plan = units ? plus ? `On part de ${a} et on avance de ${b}.` : `On part de ${a} et on recule de ${b}.` : `On d\xE9coupe ${b} : ${parts.join(" + ")}. On saute un morceau \xE0 la fois${plus ? "" : ", en reculant"}.`;
+  return { plan, steps, answer: `Donc ${a} ${op} ${b} = ${r}.`, hintStep: true };
+}
+function sequenceWorked(terms, missing) {
+  const known = terms.map((t, i) => [i, t]).filter((x) => x[1] !== null);
+  let step = null;
+  for (let k = 1; k < known.length; k++) {
+    const [i, v] = known[k];
+    const [j, w] = known[k - 1];
+    if (i - j === 1) {
+      step = v - w;
+      break;
+    }
+  }
+  if (step === null) return null;
+  const pairs = known.slice(0, 2).map(([, v]) => v);
+  const rule = step > 0 ? `on ajoute ${step}` : `on enl\xE8ve ${-step}`;
+  const full = [...terms];
+  const steps = [];
+  let m = 0;
+  for (let i = 0; i < full.length; i++) {
+    if (full[i] !== null) continue;
+    const value = missing[m++];
+    if (value === void 0) break;
+    if (i > 0 && full[i - 1] !== null) steps.push(`Apr\xE8s ${full[i - 1]} : ${full[i - 1]} ${step > 0 ? "+" : minus} ${Math.abs(step)} = ${value}.`);
+    else {
+      const after = full.slice(i + 1).find((t) => t !== null);
+      steps.push(`Avant ${after} : ${after} ${step > 0 ? minus : "+"} ${Math.abs(step)} = ${value}.`);
+    }
+    full[i] = value;
+  }
+  return {
+    plan: `Regarde l\u2019\xE9cart entre deux nombres voisins${pairs.length === 2 ? ` : ${pairs[0]} \u2192 ${pairs[1]}` : ""}. \xC0 chaque fois, ${rule}.`,
+    steps,
+    answer: `Les nombres qui manquent : ${missing.join(", ")}.`
+  };
+}
+function cratesWorked(g, expected, statement) {
+  const total = g.packed * 10 + g.loose;
+  const full = Math.floor(total / 10);
+  const rest = total % 10;
+  const tens = Array.from({ length: Math.min(full, 6) }, (_, i) => (i + 1) * 10).join(", ") + (full > 6 ? "\u2026" : "");
+  const f = g.fruitLabel;
+  if (/manque/.test(statement))
+    return {
+      plan: `Une caisse pleine a 10 ${f}. Regarde la derni\xE8re caisse.`,
+      steps: [`Elle a ${rest} ${f}.`, `De ${rest} jusqu\u2019\xE0 10 : ${rest} + ${10 - rest} = 10.`],
+      answer: `Il manque ${expected} ${f}.`
+    };
+  if (g.question === "crates")
+    return {
+      plan: `On range par 10 : chaque caisse prend 10 ${f}.`,
+      steps: [`${total} ${f}, c\u2019est ${full} paquet${full > 1 ? "s" : ""} de 10${rest ? ` et ${rest} de plus` : ""}.`, ...rest ? [`Les ${rest} qui restent ont besoin d\u2019une caisse eux aussi : ${full} + 1 = ${full + 1}.`] : []],
+      answer: `Il faut ${expected} caisse${expected > 1 ? "s" : ""}.`
+    };
+  return {
+    plan: `Compte les caisses pleines par bonds de 10, puis ajoute les ${f} de la derni\xE8re caisse.`,
+    steps: [`${full} caisse${full > 1 ? "s" : ""} pleine${full > 1 ? "s" : ""} : ${tens} \u2192 ${full * 10}.`, ...rest ? [`Plus ${rest} : ${full * 10} + ${rest} = ${total}.`] : []],
+    answer: `Il y a ${expected} ${f} : ${full} dizaine${full > 1 ? "s" : ""} et ${rest} unit\xE9${rest > 1 ? "s" : ""}.`
+  };
+}
+function pathWorked(g, values) {
+  const cells = g.cells.map((c) => c.value);
+  const steps = [];
+  let m = 0;
+  for (let i = 0; i < cells.length; i++) {
+    if (cells[i] !== null) continue;
+    const v = values[m++];
+    const prev = cells[i - 1];
+    if (prev !== null && prev !== void 0) {
+      const d = v - prev;
+      const why = Math.abs(d) === 10 ? " (une ligne plus bas ou plus haut : 10 de plus ou de moins)" : (d > 0 ? v % 10 === 0 : prev % 10 === 0) ? " (la dizaine change)" : "";
+      steps.push(`Apr\xE8s ${prev} vient ${v}${why}.`);
+    } else steps.push(`Avant ${cells.slice(i + 1).find((x) => x !== null)} vient ${v}.`);
+    cells[i] = v;
+  }
+  const back = (values[1] ?? 0) < (values[0] ?? 0);
+  return {
+    plan: g.layout === "grid" ? "Sur la grille : vers la droite +1, vers la gauche \u22121, vers le bas +10, vers le haut \u221210." : `On compte de 1 en 1${back ? ", \xE0 reculons" : ""}. Attention au changement de dizaine (39 \u2192 40).`,
+    steps,
+    answer: `Les pierres : ${values.join(", ")}.`
+  };
+}
+function faceText(f) {
+  switch (f.kind) {
+    case "dots":
+      return `${f.n} point${f.n > 1 ? "s" : ""}`;
+    case "digit":
+      return String(f.n);
+    case "expr":
+      return f.text;
+    default:
+      return `${f.tens} barre${f.tens > 1 ? "s" : ""} de 10 et ${f.units} cube${f.units > 1 ? "s" : ""}`;
+  }
+}
+function faceValue2(f) {
+  if (f.kind === "dots" || f.kind === "digit") return f.n;
+  if (f.kind === "tens") return f.tens * 10 + f.units;
+  const tokens = f.text.match(/\d+|[+−-]/g) ?? [];
+  let v = Number(tokens[0]);
+  for (let i = 1; i + 1 < tokens.length; i += 2) v = tokens[i] === "+" ? v + Number(tokens[i + 1]) : v - Number(tokens[i + 1]);
+  return v;
+}
+function dominoWorked(g) {
+  const open = g.table.open;
+  const v = faceValue2(open);
+  const how = open.kind === "dots" ? `Compte les points un par un : ${Array.from({ length: Math.min(v, 10) }, (_, i) => i + 1).join(", ")}.` : open.kind === "tens" ? `${open.tens} barre${open.tens > 1 ? "s" : ""} de 10 = ${open.tens * 10}, et ${open.units} cube${open.units > 1 ? "s" : ""} : ${open.tens * 10} + ${open.units} = ${v}.` : open.kind === "expr" ? `Calcule : ${open.text} = ${v}.` : `Le nombre est ${v}.`;
+  return {
+    plan: `Trouve d\u2019abord quel nombre montre le bout du domino : ${faceText(open)}.`,
+    steps: [how, `Cherche la pi\xE8ce qui montre aussi ${v}, mais d\u2019une autre fa\xE7on.`],
+    answer: `Le bon domino montre ${v}.`
+  };
+}
+function workedFor(ex) {
+  const g = ex.game;
+  const exp = ex.expected;
+  if (g?.game === "frog-jump") {
+    const f = g;
+    return addSubWorked(f.start, f.jump, f.op === "+");
+  }
+  if (g?.game === "number-train" && exp.type === "number") return sequenceWorked(g.terms, [exp.value]);
+  if (g?.game === "apple-crates" && exp.type === "number") return cratesWorked(g, exp.value, ex.statement);
+  if (g?.game === "number-path" && exp.type === "sequence") return pathWorked(g, exp.values);
+  if (g?.game === "dominoes") return dominoWorked(g);
+  if (g) return null;
+  if (ex.skillId === "math.add-sub") {
+    const m = /(\d+)\s*([+−-])\s*(\d+)/.exec(ex.statement);
+    if (m) return addSubWorked(Number(m[1]), Number(m[3]), m[2] === "+");
+    const n = ex.statement.match(/\d+/g);
+    if (n && n.length >= 2) {
+      const plus = !/plante|reste|donne|mange|perd/.test(ex.statement);
+      const w = addSubWorked(Number(n[0]), Number(n[1]), plus);
+      return { ...w, plan: `${plus ? "Elle en a plus qu\u2019avant : c\u2019est une addition." : "Elle en a moins qu\u2019avant : c\u2019est une soustraction."} ${w.plan}` };
+    }
+  }
+  if (ex.skillId === "math.sequences" && exp.type === "sequence") {
+    const shown = (ex.statement.split(":")[1] ?? "").split(",").map((s) => s.trim());
+    const terms = shown.map((s) => /^\d+$/.test(s) ? Number(s) : null);
+    return sequenceWorked(terms, exp.values);
+  }
+  if (ex.visual?.kind === "tens-units" && exp.type === "number") {
+    const v = ex.visual;
+    const h = v.hundreds ?? 0;
+    return {
+      plan: "Compte d\u2019abord les grands paquets, puis les petits.",
+      steps: [...h ? [`${h} centaine${h > 1 ? "s" : ""} = ${h * 100}.`] : [], `${v.tens} dizaine${v.tens > 1 ? "s" : ""} = ${v.tens * 10}.`, `${v.units} unit\xE9${v.units > 1 ? "s" : ""} = ${v.units}.`],
+      answer: `${h ? `${h * 100} + ` : ""}${v.tens * 10} + ${v.units} = ${exp.value}.`
+    };
+  }
+  return null;
+}
+function workedHint(w) {
+  return w.hintStep && w.steps.length > 1 ? `${w.plan} ${w.steps[0]}` : w.plan;
+}
+
 // packages/curriculum/src/index.ts
 function toPublic(i) {
   return {
@@ -56022,6 +56198,7 @@ var HttpError = class extends Error {
   code;
 };
 var PROFILE_ID = "local-profile";
+var pid = (c) => c.profileId ?? PROFILE_ID;
 var iso = (c) => c.now().toISOString();
 var json = (s, fallback) => {
   if (!s) return fallback;
@@ -56074,6 +56251,44 @@ function bootstrap(c) {
   });
   recoverFiles(c);
 }
+var AVATARS = ["\u{1F994}", "\u{1F98A}", "\u{1F43C}", "\u{1F438}", "\u{1F981}", "\u{1F430}", "\u{1F422}", "\u{1F984}", "\u{1F427}", "\u{1F419}", "\u{1F98B}", "\u{1F41D}"];
+var profileExists = (c, id) => Boolean(one(c, "SELECT id FROM profiles WHERE id = ?", id));
+function profileView(r) {
+  const prefs = json(String(r.prefs_json ?? "{}"), {});
+  return { id: String(r.id), name: String(r.display_name), avatar: prefs.avatar ?? (r.id === PROFILE_ID ? "\u{1F994}" : "\u{1F98A}"), createdAt: String(r.created_at) };
+}
+function listProfiles(c) {
+  return all(c, "SELECT id, display_name, prefs_json, created_at FROM profiles ORDER BY created_at, id").map(profileView);
+}
+var cleanName = (v) => {
+  const name = typeof v === "string" ? v.normalize("NFC").replace(/\s+/g, " ").trim() : "";
+  if (!/^[\p{L}][\p{L}' -]{0,19}$/u.test(name)) throw new HttpError(400, "invalid-name", "\xC9cris un pr\xE9nom de 1 \xE0 20 lettres.");
+  return name;
+};
+var cleanAvatar = (v) => {
+  if (typeof v !== "string" || !AVATARS.includes(v)) throw new HttpError(400, "invalid-avatar", "Choisis un des animaux.");
+  return v;
+};
+function createProfile(c, body) {
+  const name = cleanName(body.name);
+  const avatar = cleanAvatar(body.avatar ?? "\u{1F98A}");
+  const n = Number(one(c, "SELECT COUNT(*) AS n FROM profiles").n);
+  if (n >= 8) throw new HttpError(409, "too-many-profiles", "Maximum 8 joueurs.");
+  if (listProfiles(c).some((p) => p.name.toLocaleLowerCase("fr-CA") === name.toLocaleLowerCase("fr-CA"))) throw new HttpError(409, "name-taken", "Ce pr\xE9nom existe d\xE9j\xE0.");
+  const id = `p-${randomUUID()}`;
+  run(c, "INSERT INTO profiles (id, display_name, grade, prefs_json, created_at) VALUES (?, ?, 2, ?, ?)", id, name, JSON.stringify({ avatar }), iso(c));
+  return profileView(one(c, "SELECT id, display_name, prefs_json, created_at FROM profiles WHERE id = ?", id));
+}
+function updateProfile(c, id, body) {
+  const row = one(c, "SELECT id, display_name, prefs_json, created_at FROM profiles WHERE id = ?", id);
+  if (!row) throw new HttpError(404, "unknown-profile", "Joueur inconnu.");
+  const prefs = json(String(row.prefs_json ?? "{}"), {});
+  if (body.avatar !== void 0) prefs.avatar = cleanAvatar(body.avatar);
+  const name = body.name !== void 0 ? cleanName(body.name) : String(row.display_name);
+  if (name !== row.display_name && listProfiles(c).some((p) => p.id !== id && p.name.toLocaleLowerCase("fr-CA") === name.toLocaleLowerCase("fr-CA"))) throw new HttpError(409, "name-taken", "Ce pr\xE9nom existe d\xE9j\xE0.");
+  run(c, "UPDATE profiles SET display_name = ?, prefs_json = ? WHERE id = ?", name, JSON.stringify(prefs), id);
+  return profileView(one(c, "SELECT id, display_name, prefs_json, created_at FROM profiles WHERE id = ?", id));
+}
 function recoverFiles(c) {
   const dir = photosDir(c);
   let tmpRemoved = 0;
@@ -56103,14 +56318,20 @@ function safeList(dir) {
     return [];
   }
 }
+var PLAYER_KEYS = ["parent.nextChoice", "french.schoolWeek", "ai.enabled", "ai.consentAt"];
+var storedKey = (c, key) => PLAYER_KEYS.includes(key) && pid(c) !== PROFILE_ID ? `${key}#${pid(c)}` : key;
 function getSettings(c) {
   const rows = all(c, "SELECT key, value_json FROM settings");
   const out = { ...defaultSettings };
-  for (const r of rows) out[String(r.key)] = json(String(r.value_json), null);
+  for (const r of rows) {
+    const [key, owner] = String(r.key).split("#");
+    const mine = PLAYER_KEYS.includes(key) ? (owner ?? PROFILE_ID) === pid(c) : owner === void 0;
+    if (mine) out[key] = json(String(r.value_json), null);
+  }
   return out;
 }
 function setSetting(c, key, value) {
-  run(c, "INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at", key, JSON.stringify(value), iso(c));
+  run(c, "INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at", storedKey(c, key), JSON.stringify(value), iso(c));
 }
 function patchSettings(c, body) {
   const allowed = ["ai.enabled", "ai.maxSamples", "engine.reviewIntervalsDays", "parent.nextChoice", "french.schoolWeek", "art.enabled", "art.dailyLimit", "art.monthlyLimit"];
@@ -56183,16 +56404,21 @@ var toEvent = (r) => {
 var LEARN_SQL = `SELECT t.rowid AS rowid, t.skill_id, t.difficulty, t.result, t.help, t.created_at, a.snapshot_json
   FROM attempts t JOIN assignments a ON a.id = t.assignment_id WHERE t.profile_id = ?`;
 var learnCache = /* @__PURE__ */ new WeakMap();
+var cacheOf = (c) => {
+  let m = learnCache.get(c.db);
+  if (!m) learnCache.set(c.db, m = /* @__PURE__ */ new Map());
+  return m;
+};
 function learnerProfile(c, until) {
-  const head = one(c, "SELECT COUNT(*) AS n, MAX(created_at) AS at FROM attempts WHERE profile_id = ?", PROFILE_ID);
+  const head = one(c, "SELECT COUNT(*) AS n, MAX(created_at) AS at FROM attempts WHERE profile_id = ?", pid(c));
   if (until !== void 0 && head.at !== null && until < head.at) {
-    const rows2 = all(c, `${LEARN_SQL} AND t.created_at <= ? ORDER BY t.created_at, t.id`, PROFILE_ID, until);
+    const rows2 = all(c, `${LEARN_SQL} AND t.created_at <= ? ORDER BY t.created_at, t.id`, pid(c), until);
     return learnProfile(rows2.map(toEvent));
   }
-  const cached = learnCache.get(c.db);
+  const cached = cacheOf(c).get(pid(c));
   let fresh = null;
   if (cached && Number(head.n) >= cached.count) {
-    fresh = all(c, `${LEARN_SQL} AND t.rowid > ? ORDER BY t.created_at, t.id`, PROFILE_ID, cached.lastRowid);
+    fresh = all(c, `${LEARN_SQL} AND t.rowid > ? ORDER BY t.created_at, t.id`, pid(c), cached.lastRowid);
     const inOrder = fresh.every((r) => r.created_at > cached.lastAt);
     if (cached.count + fresh.length !== Number(head.n) || !inOrder) fresh = null;
   }
@@ -56206,15 +56432,15 @@ function learnerProfile(c, until) {
     }
     return roundProfile(cached.profile);
   }
-  const rows = all(c, `${LEARN_SQL} ORDER BY t.created_at, t.id`, PROFILE_ID);
+  const rows = all(c, `${LEARN_SQL} ORDER BY t.created_at, t.id`, pid(c));
   const profile = learnInto({}, rows.map(toEvent));
   const last = rows[rows.length - 1];
-  learnCache.set(c.db, { count: rows.length, lastRowid: Math.max(0, ...rows.map((r) => Number(r.rowid))), lastAt: last ? String(last.created_at) : "", profile });
+  cacheOf(c).set(pid(c), { count: rows.length, lastRowid: Math.max(0, ...rows.map((r) => Number(r.rowid))), lastAt: last ? String(last.created_at) : "", profile });
   return roundProfile(profile);
 }
 var HINT_ALARM = { last: 10, minAnswers: 5, rate: 0.3 };
 function recentHelp(c, skillId) {
-  const rows = all(c, "SELECT help FROM attempts WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?", PROFILE_ID, skillId, HINT_ALARM.last);
+  const rows = all(c, "SELECT help FROM attempts WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?", pid(c), skillId, HINT_ALARM.last);
   const helped = rows.filter((r) => r.help !== "none").length;
   return { n: rows.length, helped, rate: rows.length ? helped / rows.length : 0 };
 }
@@ -56223,7 +56449,7 @@ function englishWordEvents(c) {
     c,
     `SELECT a.snapshot_json, t.result, t.help, t.created_at FROM attempts t JOIN assignments a ON a.id = t.assignment_id
      WHERE t.profile_id = ? AND t.skill_id = 'en.listen-words' ORDER BY t.created_at, t.rowid`,
-    PROFILE_ID
+    pid(c)
   ).flatMap((r) => {
     const ex = json(String(r.snapshot_json), null);
     if (!ex || ex.expected.type !== "word") return [];
@@ -56233,7 +56459,7 @@ function englishWordEvents(c) {
 function todayLevel(c, skillId) {
   const now = c.now();
   const since = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const rows = all(c, "SELECT difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND skill_id = ? AND created_at >= ? ORDER BY created_at, rowid", PROFILE_ID, skillId, since);
+  const rows = all(c, "SELECT difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND skill_id = ? AND created_at >= ? ORDER BY created_at, rowid", pid(c), skillId, since);
   const current = getMastery(c, skillId) ?? initialState(skillId);
   const before = rows.length ? json(String(rows[0]?.mastery_before_json), current) : current;
   const start = Math.max(before.level, before.pendingAdvance?.level ?? 0);
@@ -56270,7 +56496,7 @@ function applyLearner(c, decision, seed) {
 function plantFlower(c, skillId, after, now) {
   if (after.lastLevelChange !== "advanced") return;
   const title = skills.find((s) => s.id === skillId)?.titleFr ?? skillId;
-  run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", PROFILE_ID, `flower.${skillId}.${after.level}`, `une fleur : ${title}, niveau ${after.level}`, `level:${skillId}:${after.level}`, now);
+  run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", pid(c), `flower.${skillId}.${after.level}`, `une fleur : ${title}, niveau ${after.level}`, `level:${skillId}:${after.level}`, now);
 }
 function celebrateConquest(c, ex, attemptId, prev, now) {
   const nowProfile = learnerProfile(c);
@@ -56281,7 +56507,7 @@ function celebrateConquest(c, ex, attemptId, prev, now) {
   for (const t of [...tagsOf(ex)].reverse()) {
     if (!won.has(t)) continue;
     const label = TAG_LABELS[t] ?? t;
-    run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", PROFILE_ID, `flower.tag.${ex.skillId}.${t}`, `un point fort gagn\xE9 : ${label}`, `conquered:${attemptId}:${t}`, now);
+    run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", pid(c), `flower.tag.${ex.skillId}.${t}`, `un point fort gagn\xE9 : ${label}`, `conquered:${attemptId}:${t}`, now);
   }
 }
 function skillMax(skillId) {
@@ -56292,12 +56518,12 @@ function engineParams(c) {
   return { ...defaultParams, reviewIntervalsDays: getSettings(c)["engine.reviewIntervalsDays"] };
 }
 function getMastery(c, skillId) {
-  const r = one(c, "SELECT state_json FROM mastery WHERE profile_id = ? AND skill_id = ?", PROFILE_ID, skillId);
+  const r = one(c, "SELECT state_json FROM mastery WHERE profile_id = ? AND skill_id = ?", pid(c), skillId);
   return r ? json(String(r.state_json), initialState(skillId)) : void 0;
 }
 function allMastery(c) {
   const out = {};
-  for (const r of all(c, "SELECT skill_id, state_json FROM mastery WHERE profile_id = ?", PROFILE_ID)) {
+  for (const r of all(c, "SELECT skill_id, state_json FROM mastery WHERE profile_id = ?", pid(c))) {
     out[String(r.skill_id)] = json(String(r.state_json), initialState(String(r.skill_id)));
   }
   return out;
@@ -56316,9 +56542,9 @@ function startSession(c, body) {
   const subject = body.subject === "french" || body.subject === "mathematics" ? body.subject : null;
   const id = randomUUID();
   tx(c.db, () => {
-    run(c, "INSERT INTO sessions (id, profile_id, mode, mission_id, subject, started_at) VALUES (?, ?, ?, ?, ?, ?)", id, PROFILE_ID, mode, missionId, subject, iso(c));
+    run(c, "INSERT INTO sessions (id, profile_id, mode, mission_id, subject, started_at) VALUES (?, ?, ?, ?, ?, ?)", id, pid(c), mode, missionId, subject, iso(c));
     if (missionId) {
-      run(c, "INSERT OR IGNORE INTO mission_progress (profile_id, mission_id, status, started_at) VALUES (?, ?, 'active', ?)", PROFILE_ID, missionId, iso(c));
+      run(c, "INSERT OR IGNORE INTO mission_progress (profile_id, mission_id, status, started_at) VALUES (?, ?, 'active', ?)", pid(c), missionId, iso(c));
     }
   });
   return { id, mode, missionId, subject };
@@ -56326,8 +56552,8 @@ function startSession(c, body) {
 var OPEN_STATUSES = ["presented", "answered_on_paper", "in_review", "illegible"];
 function missionState(c, missionId) {
   const m = getMission(missionId);
-  const prog = one(c, "SELECT status, started_at, completed_at FROM mission_progress WHERE profile_id = ? AND mission_id = ?", PROFILE_ID, missionId);
-  const steps = all(c, "SELECT step_index, completed_at FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY step_index", PROFILE_ID, missionId);
+  const prog = one(c, "SELECT status, started_at, completed_at FROM mission_progress WHERE profile_id = ? AND mission_id = ?", pid(c), missionId);
+  const steps = all(c, "SELECT step_index, completed_at FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY step_index", pid(c), missionId);
   const done = new Set(steps.map((s) => Number(s.step_index)));
   const nextStep = m.steps.find((s) => !done.has(s.index))?.index ?? null;
   return {
@@ -56339,7 +56565,7 @@ function missionState(c, missionId) {
   };
 }
 function createAssignment(c, body) {
-  const session = one(c, "SELECT * FROM sessions WHERE id = ? AND profile_id = ?", String(body.sessionId ?? ""), PROFILE_ID);
+  const session = one(c, "SELECT * FROM sessions WHERE id = ? AND profile_id = ?", String(body.sessionId ?? ""), pid(c));
   if (!session) throw new HttpError(404, "session-not-found", "S\xE9ance introuvable.");
   let subject = (body.subject === "french" || body.subject === "mathematics" ? body.subject : session.subject) ?? "any";
   let missionId = null;
@@ -56356,7 +56582,7 @@ function createAssignment(c, body) {
     const open = one(
       c,
       `SELECT id FROM assignments WHERE profile_id = ? AND mission_id = ? AND mission_step = ? AND status IN (${OPEN_STATUSES.map(() => "?").join(",")}) ORDER BY created_at DESC LIMIT 1`,
-      PROFILE_ID,
+      pid(c),
       missionId,
       step,
       ...OPEN_STATUSES
@@ -56367,7 +56593,7 @@ function createAssignment(c, body) {
   const now = c.now();
   const settings = getSettings(c);
   const states = allMastery(c);
-  const lastRow = one(c, "SELECT skill_id FROM assignments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 1", PROFILE_ID);
+  const lastRow = one(c, "SELECT skill_id FROM assignments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 1", pid(c));
   const candidates = skillsBySubject(subject).filter((s) => hasPaper(s.id));
   let decision;
   const choice = settings["parent.nextChoice"];
@@ -56378,7 +56604,7 @@ function createAssignment(c, body) {
   }
   const learned = applyLearner(c, decision, seedFrom(id));
   decision = learned.decision;
-  const recentKeys = all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC LIMIT 6", PROFILE_ID, decision.skillId).map((r) => String(r.question_key));
+  const recentKeys = all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC LIMIT 6", pid(c), decision.skillId).map((r) => String(r.question_key));
   const ex = generateExercise(decision.skillId, decision.difficulty, seedFrom(id), recentKeys, learned.plan?.prefer);
   tx(c.db, () => {
     run(
@@ -56388,7 +56614,7 @@ function createAssignment(c, body) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'presented', ?, ?)`,
       id,
       String(session.id),
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -56407,7 +56633,7 @@ function createAssignment(c, body) {
   return getAssignment(c, id);
 }
 function loadAssignment(c, id) {
-  const a = one(c, "SELECT * FROM assignments WHERE id = ? AND profile_id = ?", id, PROFILE_ID);
+  const a = one(c, "SELECT * FROM assignments WHERE id = ? AND profile_id = ?", id, pid(c));
   if (!a) throw new HttpError(404, "assignment-not-found", "Exercice introuvable.");
   return { row: a, ex: json(String(a.snapshot_json), null) };
 }
@@ -56460,7 +56686,7 @@ function cancelAssignment(c, id) {
   return getAssignment(c, id);
 }
 function pendingAssignments(c) {
-  return all(c, `SELECT id FROM assignments WHERE profile_id = ? AND status IN ('answered_on_paper','in_review','illegible','presented') AND input_mode = 'paper' ORDER BY created_at DESC LIMIT 20`, PROFILE_ID).map(
+  return all(c, `SELECT id FROM assignments WHERE profile_id = ? AND status IN ('answered_on_paper','in_review','illegible','presented') AND input_mode = 'paper' ORDER BY created_at DESC LIMIT 20`, pid(c)).map(
     (r) => getAssignment(c, String(r.id))
   );
 }
@@ -56576,7 +56802,7 @@ async function analyzeReview(c, reviewId) {
   const candidates = all(
     c,
     "SELECT id, kind, transcription, quality, allow_external, skill_id, created_at FROM handwriting_samples WHERE profile_id = ? AND deleted_at IS NULL AND allow_external = 1",
-    PROFILE_ID
+    pid(c)
   ).map((s) => ({
     id: String(s.id),
     kind: s.kind,
@@ -56652,10 +56878,12 @@ function outcomeView(c, attempt, ex) {
     errorMessage: ex.commonErrors.find((e) => e.type === attempt.error_type)?.message ?? (attempt.error_type === "accent" ? "Presque! Regarde bien les accents." : null),
     correctAnswerDisplay: evaluate(ex, String(attempt.confirmed_answer)).correctAnswerDisplay,
     explanation: ex.explanation,
+    // «Comment calculer»: the worked steps, after a mistake or a success with help (math only)
+    worked: attempt.result !== "correct" || attempt.help !== "none" ? workedFor(ex) : null,
     praise: praiseFor(ex, String(attempt.result), String(attempt.help)),
     // weak point overcome in this answer (big celebration)
     conquered: (() => {
-      const r = one(c, "SELECT source FROM rewards WHERE profile_id = ? AND source LIKE ? ORDER BY rowid LIMIT 1", PROFILE_ID, `conquered:${String(attempt.id)}:%`);
+      const r = one(c, "SELECT source FROM rewards WHERE profile_id = ? AND source LIKE ? ORDER BY rowid LIMIT 1", pid(c), `conquered:${String(attempt.id)}:%`);
       if (!r) return null;
       const tag = String(r.source).split(":").slice(2).join(":");
       return { tag, label: TAG_LABELS[tag] ?? tag };
@@ -56672,14 +56900,14 @@ function outcomeView(c, attempt, ex) {
   };
 }
 function rewardsOfAttempt(c, attemptId) {
-  const st = one(c, "SELECT mission_id, step_index FROM mission_steps WHERE profile_id = ? AND attempt_id = ?", PROFILE_ID, attemptId);
+  const st = one(c, "SELECT mission_id, step_index FROM mission_steps WHERE profile_id = ? AND attempt_id = ?", pid(c), attemptId);
   if (!st) return [];
   const m = getMission(String(st.mission_id));
   const out = [];
   const step = m.steps[Number(st.step_index)];
   if (step) out.push(step.reward);
-  const last = one(c, "SELECT attempt_id FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY completed_at DESC, rowid DESC LIMIT 1", PROFILE_ID, String(st.mission_id));
-  const done = one(c, "SELECT status FROM mission_progress WHERE profile_id = ? AND mission_id = ?", PROFILE_ID, String(st.mission_id));
+  const last = one(c, "SELECT attempt_id FROM mission_steps WHERE profile_id = ? AND mission_id = ? ORDER BY completed_at DESC, rowid DESC LIMIT 1", pid(c), String(st.mission_id));
+  const done = one(c, "SELECT status FROM mission_progress WHERE profile_id = ? AND mission_id = ?", pid(c), String(st.mission_id));
   if (done?.status === "completed" && last?.attempt_id === attemptId) out.push(m.completionReward);
   return out;
 }
@@ -56733,7 +56961,7 @@ function confirmReview(c, reviewId, body) {
       attemptId,
       assignmentId,
       reviewId,
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -56750,24 +56978,24 @@ function confirmReview(c, reviewId, body) {
     );
     run(c, "UPDATE ai_reviews SET status = 'confirmed', final_text = ?, draft_text = ?, confirmed_at = ?, updated_at = ? WHERE id = ?", text, text, now, now, reviewId);
     setAssignmentStatus(c, assignmentId, "confirmed");
-    run(c, "INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", PROFILE_ID, ex.skillId, JSON.stringify(after), now);
+    run(c, "INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", pid(c), ex.skillId, JSON.stringify(after), now);
     plantFlower(c, ex.skillId, after, now);
     celebrateConquest(c, ex, attemptId, prevProfile, now);
     if (aRow.mission_id && aRow.mission_step !== null && evalResult.result === "correct") {
       const missionId = String(aRow.mission_id);
       const stepIndex = Number(aRow.mission_step);
-      const inserted = run(c, "INSERT OR IGNORE INTO mission_steps (profile_id, mission_id, step_index, attempt_id, completed_at) VALUES (?, ?, ?, ?, ?)", PROFILE_ID, missionId, stepIndex, attemptId, now);
+      const inserted = run(c, "INSERT OR IGNORE INTO mission_steps (profile_id, mission_id, step_index, attempt_id, completed_at) VALUES (?, ?, ?, ?, ?)", pid(c), missionId, stepIndex, attemptId, now);
       if (Number(inserted.changes) > 0) {
         const m = getMission(missionId);
         const step = m.steps[stepIndex];
         if (step) {
-          const r = run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", PROFILE_ID, step.reward.key, step.reward.label, `mission:${missionId}:${stepIndex}`, now);
+          const r = run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", pid(c), step.reward.key, step.reward.label, `mission:${missionId}:${stepIndex}`, now);
           if (Number(r.changes) > 0) newRewards.push(step.reward);
         }
-        const doneCount = Number(one(c, "SELECT COUNT(*) AS n FROM mission_steps WHERE profile_id = ? AND mission_id = ?", PROFILE_ID, missionId)?.n ?? 0);
+        const doneCount = Number(one(c, "SELECT COUNT(*) AS n FROM mission_steps WHERE profile_id = ? AND mission_id = ?", pid(c), missionId)?.n ?? 0);
         if (doneCount >= m.steps.length) {
-          run(c, "UPDATE mission_progress SET status = 'completed', completed_at = ? WHERE profile_id = ? AND mission_id = ? AND status = 'active'", now, PROFILE_ID, missionId);
-          const r = run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", PROFILE_ID, m.completionReward.key, m.completionReward.label, `mission:${missionId}:complete`, now);
+          run(c, "UPDATE mission_progress SET status = 'completed', completed_at = ? WHERE profile_id = ? AND mission_id = ? AND status = 'active'", now, pid(c), missionId);
+          const r = run(c, "INSERT OR IGNORE INTO rewards (profile_id, reward_key, label, source, created_at) VALUES (?, ?, ?, ?, ?)", pid(c), m.completionReward.key, m.completionReward.label, `mission:${missionId}:complete`, now);
           if (Number(r.changes) > 0) newRewards.push(m.completionReward);
         }
       }
@@ -56778,7 +57006,7 @@ function confirmReview(c, reviewId, body) {
         `INSERT INTO handwriting_samples (id, profile_id, attempt_id, review_id, photo_id, transcription, kind, skill_id, quality, allow_external, origin, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         randomUUID(),
-        PROFILE_ID,
+        pid(c),
         attemptId,
         reviewId,
         String(review.photo_id),
@@ -56821,16 +57049,16 @@ function progress(c) {
       };
     }),
     totals: {
-      attempts: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ?", PROFILE_ID)?.n ?? 0),
-      correct: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND result = 'correct'", PROFILE_ID)?.n ?? 0),
-      withHelp: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND help <> 'none'", PROFILE_ID)?.n ?? 0),
-      illegible: Number(one(c, "SELECT COUNT(*) AS n FROM ai_reviews r JOIN assignments a ON a.id = r.assignment_id WHERE a.profile_id = ? AND r.status = 'illegible'", PROFILE_ID)?.n ?? 0)
+      attempts: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ?", pid(c))?.n ?? 0),
+      correct: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND result = 'correct'", pid(c))?.n ?? 0),
+      withHelp: Number(one(c, "SELECT COUNT(*) AS n FROM attempts WHERE profile_id = ? AND help <> 'none'", pid(c))?.n ?? 0),
+      illegible: Number(one(c, "SELECT COUNT(*) AS n FROM ai_reviews r JOIN assignments a ON a.id = r.assignment_id WHERE a.profile_id = ? AND r.status = 'illegible'", pid(c))?.n ?? 0)
     }
   };
 }
 function gameProgress(c) {
-  const row = one(c, "SELECT state_json, updated_at FROM game_progress WHERE profile_id = ?", PROFILE_ID);
-  const rewards = all(c, "SELECT reward_key, label, created_at FROM rewards WHERE profile_id = ? ORDER BY created_at, rowid", PROFILE_ID).map((r) => ({
+  const row = one(c, "SELECT state_json, updated_at FROM game_progress WHERE profile_id = ?", pid(c));
+  const rewards = all(c, "SELECT reward_key, label, created_at FROM rewards WHERE profile_id = ? ORDER BY created_at, rowid", pid(c)).map((r) => ({
     key: String(r.reward_key),
     label: String(r.label),
     at: String(r.created_at)
@@ -56851,7 +57079,7 @@ function saveGameState(c, body) {
     y: typeof b?.y === "number" && Number.isFinite(b.y) ? Math.round(b.y) : null,
     scene: typeof b?.scene === "string" ? b.scene.slice(0, 40) : "garden"
   };
-  run(c, "INSERT INTO game_progress (profile_id, state_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(profile_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", PROFILE_ID, JSON.stringify(state), iso(c));
+  run(c, "INSERT INTO game_progress (profile_id, state_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(profile_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", pid(c), JSON.stringify(state), iso(c));
   return gameProgress(c);
 }
 function history(c, limit = 100) {
@@ -56862,7 +57090,7 @@ function history(c, limit = 100) {
             (SELECT COUNT(*) FROM ai_reviews r WHERE r.assignment_id = a.id AND r.status = 'illegible') AS illegible_count
      FROM assignments a LEFT JOIN attempts t ON t.assignment_id = a.id
      WHERE a.profile_id = ? ORDER BY a.created_at DESC LIMIT ?`,
-    PROFILE_ID,
+    pid(c),
     limit
   );
   return rows.map((r) => {
@@ -56897,7 +57125,7 @@ function history(c, limit = 100) {
   });
 }
 function listSamples(c) {
-  return all(c, "SELECT * FROM handwriting_samples WHERE profile_id = ? AND deleted_at IS NULL ORDER BY created_at DESC", PROFILE_ID).map((s) => ({
+  return all(c, "SELECT * FROM handwriting_samples WHERE profile_id = ? AND deleted_at IS NULL ORDER BY created_at DESC", pid(c)).map((s) => ({
     id: String(s.id),
     photoId: String(s.photo_id),
     transcription: String(s.transcription),
@@ -56910,7 +57138,7 @@ function listSamples(c) {
   }));
 }
 function patchSample(c, id, body) {
-  const s = one(c, "SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL", id, PROFILE_ID);
+  const s = one(c, "SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL", id, pid(c));
   if (!s) throw new HttpError(404, "sample-not-found", "Exemple d\u2019\xE9criture introuvable.");
   if (body.transcription !== void 0) {
     if (typeof body.transcription !== "string" || !body.transcription.trim() || body.transcription.length > 200) throw new HttpError(400, "invalid", "Transcription invalide.");
@@ -56927,7 +57155,7 @@ function patchSample(c, id, body) {
   return listSamples(c).find((x) => x.id === id);
 }
 function deleteSample(c, id) {
-  const s = one(c, "SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL", id, PROFILE_ID);
+  const s = one(c, "SELECT id FROM handwriting_samples WHERE id = ? AND profile_id = ? AND deleted_at IS NULL", id, pid(c));
   if (!s) throw new HttpError(404, "sample-not-found", "Exemple d\u2019\xE9criture introuvable.");
   run(c, "UPDATE handwriting_samples SET deleted_at = ?, allow_external = 0 WHERE id = ?", iso(c), id);
   return { deleted: true, keptInHistory: ["tentative", "transcription confirm\xE9e", "photo de l\u2019exercice"] };
@@ -56979,14 +57207,15 @@ function listGames(c) {
     `SELECT a.exercise_id AS id, COUNT(*) AS rounds
      FROM attempts t JOIN assignments a ON a.id = t.assignment_id
      WHERE t.profile_id = ? AND t.input_mode = 'screen' GROUP BY a.exercise_id`,
-    PROFILE_ID
+    pid(c)
   );
-  const flowerKeys = all(c, "SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.%'", PROFILE_ID).map((r) => String(r.reward_key));
+  const flowerKeys = all(c, "SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.%'", pid(c)).map((r) => String(r.reward_key));
   return games.map((g) => {
     const st = stats.find((x) => x.id === g.id);
-    const levels = g.skills.map((s) => getMastery(c, s)?.level ?? 1);
+    const levels = g.skills.map((s) => todayLevel(c, s));
+    const official = g.skills.map((s) => getMastery(c, s)?.level ?? 1);
     const flowers = flowerKeys.filter((k) => g.skills.some((s) => k.startsWith(`flower.${s}.`) || k.startsWith(`flower.tag.${s}.`))).length;
-    return { id: g.id, title: g.title, description: g.description, skills: g.skills, roundsPerSession: g.roundsPerSession, roundsPlayed: Number(st?.rounds ?? 0), level: Math.max(...levels), flowers };
+    return { id: g.id, title: g.title, description: g.description, skills: g.skills, roundsPerSession: g.roundsPerSession, roundsPlayed: Number(st?.rounds ?? 0), level: Math.max(...levels), officialLevel: Math.max(...official), flowers };
   });
 }
 function roundView(c, id) {
@@ -57010,10 +57239,10 @@ function startGameRound(c, body) {
   } catch {
     throw new HttpError(404, "unknown-game", "Jeu inconnu.");
   }
-  const open = one(c, "SELECT id FROM assignments WHERE profile_id = ? AND exercise_id = ? AND input_mode = 'screen' AND status = 'presented' ORDER BY created_at DESC LIMIT 1", PROFILE_ID, game.id);
+  const open = one(c, "SELECT id FROM assignments WHERE profile_id = ? AND exercise_id = ? AND input_mode = 'screen' AND status = 'presented' ORDER BY created_at DESC LIMIT 1", pid(c), game.id);
   if (open) return roundView(c, String(open.id));
   let sessionId = typeof body.sessionId === "string" ? body.sessionId : "";
-  if (!sessionId || !one(c, "SELECT id FROM sessions WHERE id = ? AND profile_id = ?", sessionId, PROFILE_ID)) {
+  if (!sessionId || !one(c, "SELECT id FROM sessions WHERE id = ? AND profile_id = ?", sessionId, pid(c))) {
     sessionId = startSession(c, { mode: "practice", subject: game.subject }).id;
   }
   const id = randomUUID();
@@ -57021,12 +57250,12 @@ function startGameRound(c, body) {
   const settings = getSettings(c);
   const states = allMastery(c);
   const candidates = skills.filter((s) => game.skills.includes(s.id));
-  const lastRow = one(c, "SELECT skill_id FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 1", PROFILE_ID, game.id);
+  const lastRow = one(c, "SELECT skill_id FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 1", pid(c), game.id);
   const choice = settings["parent.nextChoice"];
   let decision = choice && candidates.some((s) => s.id === choice.skillId) ? parentChoice(choice.skillId, states[choice.skillId], choice.difficulty) : selectNext({ skills: candidates, states, allStates: states, now, lastSkillId: lastRow?.skill_id ?? null, params: engineParams(c) });
   const english = game.subject === "english";
   const dayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const recentKeys = (english ? all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 3", PROFILE_ID, game.id, dayStartIso) : all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8", PROFILE_ID, game.id)).map((r) => String(r.question_key));
+  const recentKeys = (english ? all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 3", pid(c), game.id, dayStartIso) : all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8", pid(c), game.id)).map((r) => String(r.question_key));
   if (body.challenge === true && decision.reasonCode !== "parent-choice") {
     const base2 = Math.max(decision.difficulty, todayLevel(c, decision.skillId));
     decision = { ...decision, difficulty: Math.min(skillMax(decision.skillId), base2 + 1), reasonCode: "child-choice", reason: `Choix de l\u2019enfant : un d\xE9fi un peu plus difficile (niveau ${Math.min(skillMax(decision.skillId), base2 + 1)}).` };
@@ -57043,7 +57272,7 @@ function startGameRound(c, body) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'presented', 'screen', ?, ?)`,
       id,
       sessionId,
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -57090,7 +57319,13 @@ function answerGameRound(c, id, body) {
       // 1st mistake: message for the error type (if recognized); 2nd mistake: the exercise's hint.
       feedback: {
         // feedback that EXPLAINS (research: far more effective than just "right/wrong"): the recognized error, otherwise the strategy
-        message: tries === 1 ? ev.errorMessage ?? `${ex.retryMessage ?? "Pas tout \xE0 fait."}${ex.hint ? ` Astuce : ${ex.hint}` : ""}` : `Astuce : ${ex.hint ?? "Essaie encore une fois, doucement."}`,
+        message: tries === 1 ? ev.errorMessage ?? `${ex.retryMessage ?? "Pas tout \xE0 fait."}${ex.hint ? ` Astuce : ${ex.hint}` : ""}` : (
+          // 2nd mistake in math: HOW to calculate (the plan and the first step, never the answer)
+          (() => {
+            const w = workedFor(ex);
+            return w ? `Voici comment faire : ${workedHint(w)}` : `Astuce : ${ex.hint ?? "Essaie encore une fois, doucement."}`;
+          })()
+        ),
         showCounting: tries >= 2,
         // sequence: which stones are right (without telling the value of the wrong ones), so she fixes only the others
         ...exp.type === "sequence" ? { slots: answer.split(",").map((v, i) => Number(v) === exp.values[i]) } : {}
@@ -57113,7 +57348,7 @@ function answerGameRound(c, id, body) {
       attemptId,
       id,
       reviewId,
-      PROFILE_ID,
+      pid(c),
       ex.skillId,
       ex.exerciseId,
       ex.exerciseVersion,
@@ -57128,7 +57363,7 @@ function answerGameRound(c, id, body) {
       now
     );
     run(c, "UPDATE assignments SET status = 'confirmed', tries = ?, hint_used = ?, wrong_answers = COALESCE(?, wrong_answers), updated_at = ? WHERE id = ?", tries, tries > 1 ? 1 : 0, wrongs, now, id);
-    run(c, "INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", PROFILE_ID, ex.skillId, JSON.stringify(after), now);
+    run(c, "INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", pid(c), ex.skillId, JSON.stringify(after), now);
     plantFlower(c, ex.skillId, after, now);
     celebrateConquest(c, ex, attemptId, prevProfile, now);
   });
@@ -57638,7 +57873,7 @@ function rowsBetween(c, start, end) {
     `SELECT t.created_at, t.skill_id, t.difficulty, t.result, t.help, t.input_mode, t.mastery_before_json, t.mastery_after_json, a.snapshot_json, a.exercise_id
        FROM attempts t JOIN assignments a ON a.id = t.assignment_id
        WHERE t.profile_id = ? AND t.created_at >= ? AND t.created_at < ? ORDER BY t.created_at`
-  ).all(PROFILE_ID, start.toISOString(), end.toISOString());
+  ).all(pid(c), start.toISOString(), end.toISOString());
 }
 var firstTry = (r) => r.result === "correct" && r.help === "none";
 var pct2 = (a, b) => b ? Math.round(100 * a / b) : null;
@@ -57680,7 +57915,7 @@ function tagStats(rows) {
 }
 var skillTitle = (id) => skills.find((s) => s.id === id)?.title ?? id;
 function delayedReviews(c, start, end) {
-  const hist = c.db.prepare("SELECT created_at, skill_id, difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND created_at < ? ORDER BY created_at, id").all(PROFILE_ID, end.toISOString());
+  const hist = c.db.prepare("SELECT created_at, skill_id, difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND created_at < ? ORDER BY created_at, id").all(pid(c), end.toISOString());
   const lastDay = {};
   const out = {};
   for (const r of hist) {
@@ -57727,7 +57962,7 @@ function englishSection(c, until) {
     c,
     `SELECT a.exercise_id, a.snapshot_json, a.wrong_answers, t.result, t.help, t.difficulty FROM attempts t JOIN assignments a ON a.id = t.assignment_id
      WHERE t.profile_id = ? AND t.skill_id IN ('en.listen-words', 'en.commands') AND t.created_at < ? ORDER BY t.created_at`,
-    PROFILE_ID,
+    pid(c),
     until.toISOString()
   );
   if (!events.length && !rounds.length) return null;
@@ -57828,7 +58063,7 @@ function buildReport(c, kind, offset) {
   const tagNow = tagStats(rows);
   const tagPrev = tagStats(prevRows);
   const conqueredNow = new Set(
-    c.db.prepare("SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.tag.%' AND created_at >= ? AND created_at < ?").all(PROFILE_ID, cur.start.toISOString(), cur.end.toISOString()).map((r) => {
+    c.db.prepare("SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.tag.%' AND created_at >= ? AND created_at < ?").all(pid(c), cur.start.toISOString(), cur.end.toISOString()).map((r) => {
       const rest = r.reward_key.slice("flower.tag.".length);
       const dot = rest.lastIndexOf(".");
       return tk(rest.slice(0, dot), rest.slice(dot + 1));
@@ -57959,10 +58194,16 @@ async function buildApp(c) {
     console.error("[erreur interne]", e.code ?? "", (e.message ?? "").slice(0, 200));
     return reply.code(500).send({ error: { code: "internal", message: "Erreur interne. Les donn\xE9es n\u2019ont pas \xE9t\xE9 modifi\xE9es." } });
   });
+  const cx = (req) => {
+    const h = req.headers["x-melina-profile"];
+    const profileId = typeof h === "string" && h ? h : PROFILE_ID;
+    if (profileId !== PROFILE_ID && !profileExists(c, profileId)) throw new HttpError(400, "unknown-profile", "Joueur inconnu.");
+    return { ...c, profileId };
+  };
   const id = (req) => String(req.params.id ?? "");
   const body = (req) => req.body && typeof req.body === "object" ? req.body : {};
-  app.get("/api/health", async () => {
-    const s = getSettings(c);
+  app.get("/api/health", async (req) => {
+    const s = getSettings(cx(req));
     return {
       ok: true,
       app: "melina",
@@ -57971,54 +58212,57 @@ async function buildApp(c) {
       ai: { keyConfigured: Boolean(c.cfg.apiKey), enabled: s["ai.enabled"], consent: Boolean(s["ai.consentAt"]), model: c.cfg.model }
     };
   });
-  app.get("/api/settings", async () => publicSettings(c));
-  app.patch("/api/settings", async (req) => patchSettings(c, body(req)));
-  app.post("/api/sessions", async (req) => startSession(c, body(req)));
+  app.get("/api/profiles", async () => listProfiles(c));
+  app.post("/api/profiles", async (req) => createProfile(c, body(req)));
+  app.patch("/api/profiles/:id", async (req) => updateProfile(c, id(req), body(req)));
+  app.get("/api/settings", async (req) => publicSettings(cx(req)));
+  app.patch("/api/settings", async (req) => patchSettings(cx(req), body(req)));
+  app.post("/api/sessions", async (req) => startSession(cx(req), body(req)));
   app.get("/api/sessions/:id", async (req) => {
-    const s = c.db.prepare("SELECT id, mode, mission_id, subject, started_at FROM sessions WHERE id = ?").get(id(req));
+    const s = c.db.prepare("SELECT id, mode, mission_id, subject, started_at FROM sessions WHERE id = ? AND profile_id = ?").get(id(req), pid(cx(req)));
     if (!s) throw new HttpError(404, "session-not-found", "S\xE9ance introuvable.");
     return s;
   });
-  app.post("/api/assignments", async (req) => createAssignment(c, body(req)));
-  app.get("/api/assignments/pending", async () => pendingAssignments(c));
-  app.get("/api/assignments/:id", async (req) => getAssignment(c, id(req)));
-  app.post("/api/assignments/:id/hint", async (req) => markHint(c, id(req)));
-  app.post("/api/assignments/:id/done", async (req) => markDone(c, id(req)));
-  app.post("/api/assignments/:id/cancel", async (req) => cancelAssignment(c, id(req)));
-  app.post("/api/assignments/:id/manual", async (req) => createManualReview(c, id(req)));
+  app.post("/api/assignments", async (req) => createAssignment(cx(req), body(req)));
+  app.get("/api/assignments/pending", async (req) => pendingAssignments(cx(req)));
+  app.get("/api/assignments/:id", async (req) => getAssignment(cx(req), id(req)));
+  app.post("/api/assignments/:id/hint", async (req) => markHint(cx(req), id(req)));
+  app.post("/api/assignments/:id/done", async (req) => markDone(cx(req), id(req)));
+  app.post("/api/assignments/:id/cancel", async (req) => cancelAssignment(cx(req), id(req)));
+  app.post("/api/assignments/:id/manual", async (req) => createManualReview(cx(req), id(req)));
   app.post("/api/assignments/:id/photo", async (req) => {
     const file = await req.file();
     if (!file) throw new HttpError(400, "no-file", "Aucune photo envoy\xE9e.");
     const buf = await file.toBuffer();
-    return savePhoto(c, id(req), buf);
+    return savePhoto(cx(req), id(req), buf);
   });
-  app.post("/api/reviews/:id/analyze", async (req) => analyzeReview(c, id(req)));
-  app.patch("/api/reviews/:id/transcription", async (req) => updateTranscription(c, id(req), body(req).text));
-  app.post("/api/reviews/:id/confirm", async (req) => confirmReview(c, id(req), body(req)));
+  app.post("/api/reviews/:id/analyze", async (req) => analyzeReview(cx(req), id(req)));
+  app.patch("/api/reviews/:id/transcription", async (req) => updateTranscription(cx(req), id(req), body(req).text));
+  app.post("/api/reviews/:id/confirm", async (req) => confirmReview(cx(req), id(req), body(req)));
   app.get("/api/photos/:id", async (req, reply) => {
-    const p = readPhoto(c, id(req));
+    const p = readPhoto(cx(req), id(req));
     reply.header("cache-control", "no-store").header("x-content-type-options", "nosniff").type(p.mime);
     return reply.send(p.data);
   });
-  app.get("/api/progress", async () => progress(c));
-  app.get("/api/history", async () => history(c));
+  app.get("/api/progress", async (req) => progress(cx(req)));
+  app.get("/api/history", async (req) => history(cx(req)));
   app.get("/api/report", async (req) => {
     const q = req.query;
     const kind = q.kind === "month" ? "month" : "week";
     const offset = Math.max(-52, Math.min(0, Number.parseInt(q.offset ?? "0", 10) || 0));
-    return buildReport(c, kind, offset);
+    return buildReport(cx(req), kind, offset);
   });
   app.get("/api/skills", async () => skillCatalog());
-  app.get("/api/missions", async () => missions.map((m) => ({ ...m, state: missionState(c, m.id) })));
-  app.get("/api/game-progress", async () => gameProgress(c));
-  app.put("/api/game-progress", async (req) => saveGameState(c, req.body));
-  app.get("/api/games", async () => listGames(c));
-  app.post("/api/game-rounds", async (req) => startGameRound(c, body(req)));
-  app.post("/api/game-rounds/:id/answer", async (req) => answerGameRound(c, id(req), body(req)));
-  app.get("/api/handwriting-samples", async () => listSamples(c));
-  app.patch("/api/handwriting-samples/:id", async (req) => patchSample(c, id(req), body(req)));
-  app.delete("/api/handwriting-samples/:id", async (req) => deleteSample(c, id(req)));
-  app.get("/api/reading-stats", async () => readingStats(c));
+  app.get("/api/missions", async (req) => missions.map((m) => ({ ...m, state: missionState(cx(req), m.id) })));
+  app.get("/api/game-progress", async (req) => gameProgress(cx(req)));
+  app.put("/api/game-progress", async (req) => saveGameState(cx(req), req.body));
+  app.get("/api/games", async (req) => listGames(cx(req)));
+  app.post("/api/game-rounds", async (req) => startGameRound(cx(req), body(req)));
+  app.post("/api/game-rounds/:id/answer", async (req) => answerGameRound(cx(req), id(req), body(req)));
+  app.get("/api/handwriting-samples", async (req) => listSamples(cx(req)));
+  app.patch("/api/handwriting-samples/:id", async (req) => patchSample(cx(req), id(req), body(req)));
+  app.delete("/api/handwriting-samples/:id", async (req) => deleteSample(cx(req), id(req)));
+  app.get("/api/reading-stats", async (req) => readingStats(cx(req)));
   const upload = async (req) => {
     if (!req.isMultipart()) return { file: null, fields: body(req) };
     const f = await req.file();
@@ -58187,9 +58431,9 @@ function acquireLock(dataDir) {
       return true;
     } catch (e) {
       if (e.code !== "EEXIST") throw e;
-      let pid = 0;
+      let pid2 = 0;
       try {
-        pid = Number(readFileSync3(file, "utf8"));
+        pid2 = Number(readFileSync3(file, "utf8"));
       } catch {
       }
       let age = Infinity;
@@ -58198,9 +58442,9 @@ function acquireLock(dataDir) {
       } catch {
       }
       let alive = false;
-      if (age < 6e4 && pid > 0 && pid !== process.pid) {
+      if (age < 6e4 && pid2 > 0 && pid2 !== process.pid) {
         try {
-          process.kill(pid, 0);
+          process.kill(pid2, 0);
           alive = true;
         } catch (err) {
           alive = err.code === "EPERM";

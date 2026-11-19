@@ -5,6 +5,7 @@ import { sfx, speak } from '../audio';
 import { art, artGrid, icon, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, NumberQuestion, ResultPanel, focusedControl, useLater, useRounds } from './shell';
+import { playerName } from '../player';
 
 const ROUNDS = 3;
 const END = 'Merci! Grâce à toi, Lila peut préparer une tarte aux pommes!';
@@ -234,7 +235,7 @@ export function AppleCrates({ onExit }: { onExit: () => void }) {
 
       {phase === 'question' && <NumberQuestion rect={zones.panel} rounds={rounds} onRetry={(r) => r.feedback?.showCounting && setCounting(true)} />}
       {status === 'result' && <ResultPanel rect={zones.panel} rounds={rounds} endMessage={END} />}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('pie')} title="Merci, Melina!" text="Lila prépare une tarte aux pommes pour te remercier." onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={icon('pie')} title={`Merci, ${playerName()}!`} text="Lila prépare une tarte aux pommes pour te remercier." onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${roundId}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
 
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : phase === 'question' ? 'thinking' : 'idle'} hidden={status === 'end'} />

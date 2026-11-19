@@ -1,7 +1,7 @@
 import { almostTags, dueWords, isKnown, retention, strongTags, weakTags, wordSchedule, type LearnerProfile } from '@melina/adaptive-engine';
 import { englishWord, evaluate, games, skills, soundAlikes, tagsOf, TAG_LABELS } from '@melina/curriculum';
 import type { ExerciseInstance, MasteryState } from '@melina/shared';
-import { all, englishWordEvents, learnerProfile, localDay, PROFILE_ID, type Ctx } from './service';
+import { all, englishWordEvents, learnerProfile, localDay, pid, type Ctx } from './service';
 
 /**
  * Progress report for the parents (week or month), compared with the previous period.
@@ -62,7 +62,7 @@ function rowsBetween(c: Ctx, start: Date, end: Date): Row[] {
        FROM attempts t JOIN assignments a ON a.id = t.assignment_id
        WHERE t.profile_id = ? AND t.created_at >= ? AND t.created_at < ? ORDER BY t.created_at`,
     )
-    .all(PROFILE_ID, start.toISOString(), end.toISOString()) as unknown as Row[];
+    .all(pid(c), start.toISOString(), end.toISOString()) as unknown as Row[];
 }
 
 const firstTry = (r: Row) => r.result === 'correct' && r.help === 'none';
@@ -120,7 +120,7 @@ const skillTitle = (id: string) => skills.find((s) => s.id === id)?.title ?? id;
 function delayedReviews(c: Ctx, start: Date, end: Date): Record<string, { n: number; ok: number }> {
   const hist = c.db
     .prepare('SELECT created_at, skill_id, difficulty, result, help, mastery_before_json FROM attempts WHERE profile_id = ? AND created_at < ? ORDER BY created_at, id')
-    .all(PROFILE_ID, end.toISOString()) as unknown as Row[];
+    .all(pid(c), end.toISOString()) as unknown as Row[];
   const lastDay: Record<string, string> = {};
   const out: Record<string, { n: number; ok: number }> = {};
   for (const r of hist) {
@@ -185,7 +185,7 @@ export function englishSection(c: Ctx, until: Date) {
     c,
     `SELECT a.exercise_id, a.snapshot_json, a.wrong_answers, t.result, t.help, t.difficulty FROM attempts t JOIN assignments a ON a.id = t.assignment_id
      WHERE t.profile_id = ? AND t.skill_id IN ('en.listen-words', 'en.commands') AND t.created_at < ? ORDER BY t.created_at`,
-    PROFILE_ID,
+    pid(c),
     until.toISOString(),
   );
   if (!events.length && !rounds.length) return null;
@@ -310,7 +310,7 @@ export function buildReport(c: Ctx, kind: ReportKind, offset: number) {
   const conqueredNow = new Set(
     (c.db
       .prepare("SELECT reward_key FROM rewards WHERE profile_id = ? AND reward_key LIKE 'flower.tag.%' AND created_at >= ? AND created_at < ?")
-      .all(PROFILE_ID, cur.start.toISOString(), cur.end.toISOString()) as Array<{ reward_key: string }>).map((r) => {
+      .all(pid(c), cur.start.toISOString(), cur.end.toISOString()) as Array<{ reward_key: string }>).map((r) => {
       const rest = r.reward_key.slice('flower.tag.'.length);
       const dot = rest.lastIndexOf('.');
       return tk(rest.slice(0, dot), rest.slice(dot + 1));

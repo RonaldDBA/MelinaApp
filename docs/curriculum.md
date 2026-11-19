@@ -66,6 +66,20 @@ expectations. So the first English game is **listening only**: nothing is writte
   the minimal pairs (today: the browser's English voice); «Paires de sons», sentences, stories; reading and spelling behind
   a parents' switch.
 
+## «Comment calculer» after a math mistake (18/11/2026)
+
+`packages/curriculum/src/worked.ts` builds a worked explanation for the math exercises, with the 2e année strategies:
+- jumps on the number line by hundreds, tens, then units, completing the ten when the units cross it (8 + 5 → 8 + 2 = 10,
+  then 10 + 3);
+- the gap between neighbours for sequences;
+- counting full crates by tens for place value;
+- «after 39 comes 40» on the number path;
+- what number each domino end shows;
+- for word problems, first whether it is an addition or a subtraction.
+
+After the 2nd mistake, Lila says the plan (and, for calculations, the first step) — never the final answer. After the
+round (a mistake or a success with help), the result panel shows «🧮 Comment calculer» with all the steps.
+
 ## On-screen mini-games
 
 | Game | Skills | Levels |

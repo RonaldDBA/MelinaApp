@@ -3,6 +3,7 @@ import scene from '../../../../content/scenes/word-fishing.json';
 import { approvedArt, art, icon, useArtCatalog } from '../stage/art';
 import { Stage, at } from '../stage/Stage';
 import { Confetti, EndPanel, ErrorPanel, GameHud, Guide, ResultPanel, useChoices, useRounds } from './shell';
+import { playerName } from '../player';
 
 const END = 'Quelle belle pêche! Tu connais bien tes pluriels.';
 const zones = scene.zones as Record<'pond' | 'prompt' | 'panel' | 'endPanel', Rect>;
@@ -44,7 +45,7 @@ export function WordFishing({ onExit }: { onExit: () => void }) {
           <p className="big-answer">{round?.exercise.statement.replace('…', outcome.correctAnswerDisplay)}</p>
         </ResultPanel>
       )}
-      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('pond.fish')} title="Bravo, Melina!" text="Ton panier est rempli de mots bien écrits." onExit={onExit} />}
+      {status === 'end' && <EndPanel rect={zones.endPanel} rounds={rounds} image={art('pond.fish')} title={`Bravo, ${playerName()}!`} text="Ton panier est rempli de mots bien écrits." onExit={onExit} />}
       {(status === 'result' && outcome?.result === 'correct') || status === 'end' ? <Confetti key={`${round?.id}-${status}`} big={rounds.milestone !== null} small={status === 'result' && rounds.milestone === null} /> : null}
       <Guide message={rounds.message} mood={status === 'end' || (status === 'result' && outcome?.result === 'correct') ? 'happy' : 'thinking'} hidden={status === 'end'} />
     </Stage>

@@ -301,7 +301,7 @@ function SpecDetail({ spec, studio, onChange, onBack }: { spec: ArtSpecView; stu
         <div className="overlay">
           <div className="card card-wide" data-testid="art-confirm">
             <h3>{pendingClip.title}</h3>
-            <p className="muted">Regardez le clip au complet. Il est utilisé tel quel, toujours sans son et en boucle, quand Melina donne une bonne réponse.</p>
+            <p className="muted">Regardez le clip au complet. Il est utilisé tel quel, toujours sans son et en boucle, quand l’enfant donne une bonne réponse.</p>
             <div className="art-current checker">
               <video src={pendingClip.url} autoPlay loop muted playsInline controls={false} />
             </div>

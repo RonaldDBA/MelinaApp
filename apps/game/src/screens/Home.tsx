@@ -4,6 +4,7 @@ import { api, type GameInfo } from '../api';
 import { sfx, voiceInfo } from '../audio';
 import { art, icon, useArtCatalog } from '../stage/art';
 import { Stage } from '../stage/Stage';
+import { currentPlayer, playerName, setPlayer } from '../player';
 
 const t = i18n.child;
 
@@ -69,7 +70,7 @@ export function Home({
       <header className="home-title">
         <img src={art('lila.idle')} alt="" draggable={false} />
         <div>
-          <h1>Le jardin de Melina</h1>
+          <h1>Le jardin de {playerName()}</h1>
           <p>Choisis ton jeu!</p>
         </div>
       </header>
@@ -82,7 +83,7 @@ export function Home({
           </button>
         </p>
       )}
-      <section className={`cards ${gameCards.length > 5 ? 'many' : ''} ${gameCards.length > 8 ? 'lots' : ''}`} aria-label="Jeux">
+      <section className={`cards ${gameCards.length > 5 ? 'many' : ''} ${gameCards.length > 8 ? 'lots' : ''} ${gameCards.length > 10 ? 'extra' : ''}`} aria-label="Jeux">
         {gameCards.map((g, i) => {
           const info = games.find((x) => x.id === g.id);
           return info ? (
@@ -134,6 +135,9 @@ export function Home({
       <footer className="home-foot">
         <button className="pill" onClick={onParents}>
           <img src={icon('gear')} alt="" /> {t.parentsArea}
+        </button>
+        <button className="pill player-switch" data-testid="switch-player" onClick={() => setPlayer(null)} title="Changer de joueur">
+          <span aria-hidden="true">{currentPlayer()?.avatar ?? '🦔'}</span> Changer de joueur
         </button>
         <span className="status">
           {health && !loadFailed ? `● ${t.statusOk}` : `○ ${t.statusConnecting}`} · {t.statusAi} : {health?.ai.enabled && health.ai.keyConfigured ? t.statusAiOn : t.statusAiOff} · {t.statusVoice} :{' '}

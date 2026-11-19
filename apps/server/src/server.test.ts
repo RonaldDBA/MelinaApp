@@ -428,6 +428,54 @@ describe('backup', () => {
   });
 });
 
+describe('players: each one has their own history', () => {
+  it('a friend starts from zero, plays without touching Melina’s history, and has his own settings', async () => {
+    const app = await makeApp();
+    const list = (await app.inject({ method: 'GET', url: '/api/profiles', headers: H })).json();
+    expect(list).toEqual([expect.objectContaining({ id: 'local-profile', name: 'Melina', avatar: '🦔' })]);
+    // Melina plays one train round
+    const m = (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.number-train' } })).json();
+    await app.inject({ method: 'POST', url: `/api/game-rounds/${m.id}/answer`, headers: H, payload: { answer: expectedOf(m.id) } });
+    await app.inject({ method: 'PATCH', url: '/api/settings', headers: H, payload: { 'parent.nextChoice': { skillId: 'math.add-sub', difficulty: 3 } } });
+    // a friend is created: invalid names and avatars are refused, the same name twice too
+    expect((await app.inject({ method: 'POST', url: '/api/profiles', headers: H, payload: { name: '', avatar: '🦊' } })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'POST', url: '/api/profiles', headers: H, payload: { name: 'Léo', avatar: '💣' } })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'POST', url: '/api/profiles', headers: H, payload: { name: 'melina', avatar: '🦊' } })).statusCode).toBe(409);
+    const friend = (await app.inject({ method: 'POST', url: '/api/profiles', headers: H, payload: { name: 'Léo', avatar: '🦊' } })).json();
+    expect(friend).toMatchObject({ name: 'Léo', avatar: '🦊' });
+    const F = { ...H, 'x-melina-profile': friend.id };
+    // nothing inherited: no answers, level 1, no parents' choice, no consent
+    const fp = (await app.inject({ method: 'GET', url: '/api/progress', headers: F })).json();
+    expect(fp.totals.attempts ?? 0).toBe(0);
+    expect((await app.inject({ method: 'GET', url: '/api/settings', headers: F })).json()['parent.nextChoice']).toBeNull();
+    const fg = (await app.inject({ method: 'GET', url: '/api/games', headers: F })).json();
+    expect(fg.every((g: { roundsPlayed: number; level: number }) => g.roundsPlayed === 0 && g.level === 1)).toBe(true);
+    // the friend plays: only his history grows
+    const f1 = (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: F, payload: { gameId: 'game.frog-jump' } })).json();
+    expect(f1.exercise.difficulty).toBe(1); // Melina's choice (add-sub level 3) does not apply to him
+    await app.inject({ method: 'POST', url: `/api/game-rounds/${f1.id}/answer`, headers: F, payload: { answer: expectedOf(f1.id) } });
+    // another player cannot answer Melina's round (and the other way round)
+    const m2 = (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.frog-jump' } })).json();
+    expect((await app.inject({ method: 'POST', url: `/api/game-rounds/${m2.id}/answer`, headers: F, payload: { answer: expectedOf(m2.id) } })).statusCode).toBe(404);
+    const rows = ctx.db.prepare('SELECT profile_id, COUNT(*) AS n FROM attempts GROUP BY profile_id ORDER BY profile_id').all();
+    expect(rows).toEqual([
+      { profile_id: 'local-profile', n: 1 },
+      { profile_id: friend.id, n: 1 },
+    ]);
+    const melinaGames = (await app.inject({ method: 'GET', url: '/api/games', headers: H })).json();
+    expect(melinaGames.find((g: { id: string }) => g.id === 'game.frog-jump').roundsPlayed).toBe(0);
+    expect(melinaGames.find((g: { id: string }) => g.id === 'game.number-train').roundsPlayed).toBe(1);
+    // reports and the model are per player
+    const fr = (await app.inject({ method: 'GET', url: '/api/report?kind=week&offset=0', headers: F })).json();
+    expect(fr.totals.answers).toBe(1);
+    expect(fr.skills.map((x: { skillId: string }) => x.skillId)).toEqual(['math.add-sub']);
+    // an unknown player is refused
+    expect((await app.inject({ method: 'GET', url: '/api/games', headers: { ...H, 'x-melina-profile': 'p-nobody' } })).statusCode).toBe(400);
+    // rename / change the animal
+    expect((await app.inject({ method: 'PATCH', url: `/api/profiles/${friend.id}`, headers: H, payload: { avatar: '🐼' } })).json().avatar).toBe('🐼');
+  });
+});
+
 describe('on-screen mini-games', () => {
   const start = async (app: App) => (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.apple-crates' } })).json();
   const answer = async (app: App, id: string, a: string) => app.inject({ method: 'POST', url: `/api/game-rounds/${id}/answer`, headers: H, payload: { answer: a } });
@@ -553,6 +601,26 @@ describe('on-screen mini-games', () => {
     expect(e.confusions.length).toBeGreaterThanOrEqual(1);
     expect(e.confusions[0].label).toMatch(/anglais/);
     expect(e.canDo[0]).toMatch(/Reconnaît/);
+  });
+
+  it('math mistakes: after the 2nd one, HOW to calculate (without the answer); at the end, the worked steps', async () => {
+    const app = await makeApp();
+    await app.inject({ method: 'PATCH', url: '/api/settings', headers: H, payload: { 'parent.nextChoice': { skillId: 'math.add-sub', difficulty: 3 } } });
+    const r = (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.frog-jump' } })).json();
+    const ok = expectedOf(r.id);
+    const wrong = r.exercise.game.options.filter((o: string) => o !== ok);
+    await answer(app, r.id, wrong[0]);
+    const second = (await answer(app, r.id, wrong[1])).json();
+    expect(second.feedback.message).toMatch(/^Voici comment faire : /);
+    expect(second.feedback.message).not.toMatch(new RegExp(String.raw`=\s*${ok}(?!\d)`));
+    const last = (await answer(app, r.id, wrong[2] ?? wrong[0])).json();
+    const w = last.round.outcome.worked;
+    expect(w.answer).toContain(`= ${ok}`);
+    expect(w.steps.length).toBeGreaterThanOrEqual(1);
+    // right on the first try: no explanation needed
+    await app.inject({ method: 'PATCH', url: '/api/settings', headers: H, payload: { 'parent.nextChoice': { skillId: 'math.add-sub', difficulty: 3 } } });
+    const r2 = (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.frog-jump' } })).json();
+    expect((await answer(app, r2.id, expectedOf(r2.id))).json().round.outcome.worked).toBeNull();
   });
 
   it('round: does not expose the answer, resumes the open round and evaluates on the server', async () => {

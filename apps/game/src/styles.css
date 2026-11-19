@@ -326,3 +326,5 @@ code { background: #eef3ea; padding: 0 4px; border-radius: 4px; }
 .parent-area fieldset { border: none; border-radius: 20px; background: #fff; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.06); padding: 14px 18px; }
 .parent-area fieldset legend { font-family: 'Fredoka', sans-serif; font-weight: 700; background: #fff1b8; border-radius: 999px; padding: 4px 14px; }
 .parent-area details { border: none !important; border-radius: 18px; background: #fff; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05); }
+
+.parent-player { background: #f1fff6; border: 2px solid #bfe9cf; border-radius: 999px; padding: 4px 14px; font-weight: 700; }

@@ -3,6 +3,7 @@ import { i18n, type MissionDefinition, type Subject } from '@melina/shared';
 import { api, type Assignment, type ConfirmResponse, type GameProgress, type Outcome } from './api';
 import { GameBridge, type PointId } from './game/bridge';
 import { PhaserGame } from './game/PhaserGame';
+import { waitingAt, waitingPoints } from './game/waiting';
 import { Dialog, ExerciseCard, FeedbackCard, WaitingCard, type DialogAction } from './screens/ChildOverlays';
 import { ParentArea } from './screens/ParentArea';
 import { Home } from './screens/Home';
@@ -31,17 +32,20 @@ export function App() {
   const [parent, setParent] = useState<{ assignmentId?: string } | null>(null);
   const [mission, setMission] = useState<MissionInfo | null>(null);
   const [progress, setProgress] = useState<GameProgress | null>(null);
+  // paper sheets still open (a waiting sheet is shown on its station, never as a pop-up on entering)
+  const [pending, setPending] = useState<Assignment[]>([]);
   const [health, setHealth] = useState<{ ok: boolean; ai: { keyConfigured: boolean; enabled: boolean } } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const sessions = useRef<{ mission?: string; practice: Partial<Record<Subject | 'any', string>> }>({ practice: {} });
   const bridge = useMemo(() => new GameBridge(), []);
 
   const refresh = useCallback(async () => {
-    const [ms, gp] = await Promise.all([api.missions(), api.gameProgress()]);
+    const [ms, gp, pd] = await Promise.all([api.missions(), api.gameProgress(), api.pending().catch(() => null)]);
     const m = (ms as MissionInfo[]).find((x) => x.id === MISSION_ID) ?? null;
     setMission(m);
     setProgress(gp);
-    return { m, gp };
+    if (pd) setPending(pd);
+    return { m, gp, pd: pd ?? [] };
   }, []);
 
   // server down at startup: the error screen has «Réessayer» (before, it stayed stuck until the page was reloaded)
@@ -62,6 +66,7 @@ export function App() {
   useEffect(() => {
     if (!mission || !progress) return;
     const st = mission.state;
+    const waiting = waitingPoints(pending, mission.steps);
     let objective: PointId | null = null;
     let text = '';
     if (st.status === 'not-started') {
@@ -70,7 +75,7 @@ export function App() {
     } else if (st.status === 'active' && st.nextStep !== null) {
       const step = mission.steps[st.nextStep];
       objective = (step?.pointId as PointId) ?? null;
-      text = `⭐ Graine ${st.nextStep + 1}/3 : ${step?.title ?? ''}`;
+      text = objective && waiting.includes(objective) ? '✏️ Ta feuille attend un parent. Tu peux jouer ailleurs!' : `⭐ Graine ${st.nextStep + 1}/3 : ${step?.title ?? ''}`;
     } else {
       text = '🌻 Le potager a fleuri! Remise = maths, puits = français.';
     }
@@ -79,8 +84,9 @@ export function App() {
       objective,
       objectiveText: text,
       start: progress.state.x != null && progress.state.y != null ? { x: progress.state.x, y: progress.state.y } : undefined,
+      waiting,
     });
-  }, [mission, progress, bridge]);
+  }, [mission, progress, pending, bridge]);
 
   // Pause the controls while a dialog is open
   useEffect(() => {
@@ -135,22 +141,13 @@ export function App() {
     [showAssignment, fail],
   );
 
-  const resumePending = useCallback(async () => {
-    try {
-      const pending = await api.pending();
-      const waiting = pending.find((a) => a.status !== 'presented');
-      if (waiting) showAssignment(waiting);
-    } catch {
-      /* nothing pending */
-    }
-  }, [showAssignment]);
-
   const onInteract = useCallback(
     async (id: PointId) => {
       // server down: a gentle message (before, pressing Space near Lila did nothing)
       let m: MissionInfo | null;
+      let pd: Assignment[];
       try {
-        m = (await refresh()).m;
+        ({ m, pd } = await refresh());
       } catch (e) {
         fail(e);
         return;
@@ -158,6 +155,14 @@ export function App() {
       if (!m) return;
       const st = m.state;
       const close = () => setOverlay(null);
+      // a sheet waiting for a parent at this station: a calm card, only when she comes here
+      const sheet = id === 'lila' ? null : waitingAt(pd, m.steps, id);
+      if (sheet) {
+        setOverlay({ kind: 'waiting', assignment: sheet, illegible: sheet.status === 'illegible' });
+        return;
+      }
+      const nextPoint = st.nextStep !== null ? (m.steps[st.nextStep]?.pointId as PointId | undefined) : undefined;
+      const nextWaits = nextPoint !== undefined && waitingAt(pd, m.steps, nextPoint) !== null;
       if (id === 'lila') {
         if (st.status === 'not-started') {
           setOverlay({
@@ -185,7 +190,8 @@ export function App() {
           setOverlay({ kind: 'dialog', title: 'Lila', text: m.outro, actions: [{ label: t.close, primary: true, onClick: close }] });
         } else {
           const next = st.nextStep !== null ? m.steps[st.nextStep] : null;
-          setOverlay({ kind: 'dialog', title: 'Lila', text: next ? `Tu y es presque! La prochaine graine est à : ${next.title}.` : 'Merci!', actions: [{ label: 'D’accord', primary: true, onClick: close }] });
+          const text = nextWaits ? 'Ta feuille attend un parent. En attendant, tu peux faire un petit défi à la remise ou au puits!' : next ? `Tu y es presque! La prochaine graine est à : ${next.title}.` : 'Merci!';
+          setOverlay({ kind: 'dialog', title: 'Lila', text, actions: [{ label: 'D’accord', primary: true, onClick: close }] });
         }
         return;
       }
@@ -200,6 +206,9 @@ export function App() {
         setOverlay({ kind: 'dialog', title: step?.title ?? '', text: 'Tu as déjà trouvé la graine ici! Bravo!', actions: [{ label: t.close, primary: true, onClick: close }, { label: 'Pratiquer ici', onClick: () => startPractice(pointSubject[id]) }] });
       } else if (st.nextStep === stepIndex && step) {
         setOverlay({ kind: 'dialog', title: step.title, text: step.intro, actions: [{ label: 'Commencer', primary: true, onClick: () => startStep(stepIndex) }, { label: 'Plus tard', onClick: close }] });
+      } else if (nextWaits && pointSubject[id]) {
+        // the story waits for a parent: she can still play here meanwhile
+        setOverlay({ kind: 'dialog', title: step?.title ?? '', text: 'Ta feuille attend un parent. En attendant, veux-tu faire un petit défi ici?', actions: [practiceAction('Oui!'), { label: 'Non merci', onClick: close }] });
       } else {
         const next = st.nextStep !== null ? m.steps[st.nextStep] : null;
         setOverlay({ kind: 'dialog', title: step?.title ?? '', text: `Pas encore! Va d’abord à : ${next?.title ?? ''}. Suis l’étoile!`, actions: [{ label: 'D’accord', primary: true, onClick: close }] });
@@ -212,10 +221,11 @@ export function App() {
     const offs = [
       bridge.onGame('interact', (id) => void onInteract(id)),
       bridge.onGame('position', (pos) => void api.saveGameState(pos).catch(() => undefined)),
-      bridge.onGame('ready', () => void resumePending()),
+      // entering the garden only refreshes the map (before, it re-opened a waiting sheet as a pop-up)
+      bridge.onGame('ready', () => void refresh().catch(() => undefined)),
     ];
     return () => offs.forEach((o) => o());
-  }, [bridge, onInteract, resumePending]);
+  }, [bridge, onInteract, refresh]);
 
   const onConfirmed = useCallback(
     async (r: ConfirmResponse) => {
@@ -231,8 +241,7 @@ export function App() {
   const closeParent = useCallback(async () => {
     setParent(null);
     await refresh().catch(() => undefined);
-    if (view === 'world') await resumePending();
-  }, [refresh, resumePending, view]);
+  }, [refresh]);
 
   const nextAfterFeedback = (o: Extract<Overlay, { kind: 'feedback' }>) => {
     const a = o.assignment;
@@ -310,7 +319,10 @@ export function App() {
         <ExerciseCard
           assignment={overlay.assignment}
           onClose={() => setOverlay(null)}
-          onDone={(a) => setOverlay({ kind: 'waiting', assignment: a })}
+          onDone={(a) => {
+            setOverlay({ kind: 'waiting', assignment: a });
+            void refresh().catch(() => undefined); // the station shows the waiting sheet after the card closes
+          }}
           onStopped={() => {
             setOverlay(null);
             void refresh().catch(() => undefined); // the mission stays on the same step
@@ -318,7 +330,13 @@ export function App() {
         />
       )}
       {overlay?.kind === 'waiting' && (
-        <WaitingCard assignment={overlay.assignment} illegibleNote={overlay.illegible} onClose={() => setOverlay(null)} onParents={() => setParent({ assignmentId: overlay.assignment.id })} />
+        <WaitingCard
+          assignment={overlay.assignment}
+          illegibleNote={overlay.illegible}
+          onClose={() => setOverlay(null)}
+          onParents={() => setParent({ assignmentId: overlay.assignment.id })}
+          onMore={overlay.assignment.missionId ? undefined : () => void startPractice(overlay.assignment.exercise.subject)}
+        />
       )}
       {overlay?.kind === 'feedback' &&
         (() => {
