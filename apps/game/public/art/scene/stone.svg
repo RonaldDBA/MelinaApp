@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Placeholder for the path stone: the game draws the stones in code (CSS); this file only illustrates the card in the art studio. -->
+  <defs>
+    <radialGradient id="s" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#f4f1ea"/>
+      <stop offset=".6" stop-color="#cfc8bb"/>
+      <stop offset="1" stop-color="#a59d8f"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="512" cy="560" rx="440" ry="400" fill="#8a8274"/>
+  <ellipse cx="512" cy="520" rx="440" ry="400" fill="url(#s)"/>
+</svg>

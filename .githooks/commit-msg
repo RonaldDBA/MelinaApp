@@ -1,0 +1,6 @@
+#!/bin/sh
+# Commit messages are English-only.
+ROOT="$(git rev-parse --show-toplevel)"
+PY="$ROOT/.venv/Scripts/python.exe"
+[ -x "$PY" ] || PY=python
+exec "$PY" -I "$ROOT/scripts/check-language.py" --message "$1"

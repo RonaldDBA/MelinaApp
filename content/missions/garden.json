@@ -1,0 +1,35 @@
+{
+  "id": "garden-seeds",
+  "version": 1,
+  "title": "Les graines de Lila",
+  "npc": "Lila la hérissonne",
+  "intro": "Oh non! Le vent a dispersé mes graines dans le jardin. Peux-tu m'aider à en retrouver trois pour préparer le potager?",
+  "outro": "Merci, Melina! Grâce à toi, le potager est prêt. Regarde les fleurs!",
+  "steps": [
+    {
+      "index": 0,
+      "pointId": "shed",
+      "subject": "mathematics",
+      "title": "La remise",
+      "intro": "Une graine est cachée près de la remise. Pour l'attraper, résous ce défi de nombres!",
+      "reward": { "key": "seed.sunflower", "label": "une graine de tournesol" }
+    },
+    {
+      "index": 1,
+      "pointId": "well",
+      "subject": "french",
+      "title": "Le puits",
+      "intro": "Une graine est tombée près du puits. Un petit défi de lecture ou d'écriture va t'aider!",
+      "reward": { "key": "seed.carrot", "label": "une graine de carotte" }
+    },
+    {
+      "index": 2,
+      "pointId": "bed",
+      "subject": "any",
+      "title": "Le potager",
+      "intro": "Dernière graine! Elle est au bord du potager. Un dernier défi et on plante tout!",
+      "reward": { "key": "seed.tomato", "label": "une graine de tomate" }
+    }
+  ],
+  "completionReward": { "key": "garden.bloom", "label": "Le potager fleurit!" }
+}

@@ -1,0 +1,839 @@
+{
+  "version": 1,
+  "note": "Textes originaux écrits pour l'application (niveau 2e année). Aucun texte n'est copié d'un manuel ou d'un livre.",
+  "texts": [
+    {
+      "id": "cabane",
+      "level": 1,
+      "title": "À la cabane à sucre",
+      "paragraphs": [
+        "Samedi, Zoé va à la cabane à sucre avec son grand-papa Léo.",
+        "Il fait froid, mais le soleil brille.",
+        "Grand-papa verse le sirop chaud sur la neige.",
+        "Zoé roule la tire sur un bâton. Elle est contente!"
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Avec qui Zoé va-t-elle à la cabane à sucre?",
+          "variants": [
+            [
+              "leo"
+            ],
+            [
+              "grand papa"
+            ],
+            [
+              "grand pere"
+            ]
+          ],
+          "display": "Avec son grand-papa Léo."
+        },
+        {
+          "id": "q2",
+          "q": "Quel jour Zoé va-t-elle à la cabane à sucre?",
+          "variants": [
+            [
+              "samedi"
+            ]
+          ],
+          "display": "Samedi."
+        },
+        {
+          "id": "q3",
+          "q": "Sur quoi grand-papa verse-t-il le sirop?",
+          "variants": [
+            [
+              "neige"
+            ]
+          ],
+          "display": "Sur la neige."
+        },
+        {
+          "id": "q4",
+          "q": "Comment se sent Zoé à la fin?",
+          "variants": [
+            [
+              "content"
+            ],
+            [
+              "heureuse"
+            ],
+            [
+              "joyeuse"
+            ]
+          ],
+          "display": "Elle est contente."
+        }
+      ]
+    },
+    {
+      "id": "castor",
+      "level": 1,
+      "title": "Le castor du lac",
+      "paragraphs": [
+        "Près du lac, il y a un castor qui s'appelle Bruno.",
+        "Bruno coupe des branches avec ses grandes dents.",
+        "Il construit une maison de bois et de boue.",
+        "Le soir, il nage avec sa famille."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Comment s'appelle le castor?",
+          "variants": [
+            [
+              "bruno"
+            ]
+          ],
+          "display": "Bruno."
+        },
+        {
+          "id": "q2",
+          "q": "Avec quoi Bruno coupe-t-il les branches?",
+          "variants": [
+            [
+              "dent"
+            ]
+          ],
+          "display": "Avec ses grandes dents."
+        },
+        {
+          "id": "q3",
+          "q": "Où vit le castor?",
+          "variants": [
+            [
+              "lac"
+            ],
+            [
+              "maison"
+            ]
+          ],
+          "display": "Près du lac, dans une maison de bois et de boue."
+        },
+        {
+          "id": "q4",
+          "q": "Que fait Bruno le soir?",
+          "variants": [
+            [
+              "nage"
+            ]
+          ],
+          "display": "Il nage avec sa famille."
+        }
+      ]
+    },
+    {
+      "id": "bibliotheque",
+      "level": 2,
+      "title": "Une visite à la bibliothèque",
+      "paragraphs": [
+        "Mardi, la classe de madame Rose visite la bibliothèque du quartier.",
+        "Noah choisit un livre sur les dinosaures.",
+        "Léa préfère une histoire de pirates.",
+        "La bibliothécaire leur prête les livres pour deux semaines."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Quel jour la classe visite-t-elle la bibliothèque?",
+          "variants": [
+            [
+              "mardi"
+            ]
+          ],
+          "display": "Mardi."
+        },
+        {
+          "id": "q2",
+          "q": "Quel livre Noah choisit-il?",
+          "variants": [
+            [
+              "dinosaure"
+            ]
+          ],
+          "display": "Un livre sur les dinosaures."
+        },
+        {
+          "id": "q3",
+          "q": "Qui préfère une histoire de pirates?",
+          "variants": [
+            [
+              "lea"
+            ]
+          ],
+          "display": "Léa."
+        },
+        {
+          "id": "q4",
+          "q": "Pour combien de temps les livres sont-ils prêtés?",
+          "variants": [
+            [
+              "deux semaine"
+            ],
+            [
+              "2 semaine"
+            ]
+          ],
+          "display": "Pour deux semaines."
+        }
+      ]
+    },
+    {
+      "id": "potager",
+      "level": 2,
+      "title": "Le potager de Lila",
+      "paragraphs": [
+        "Lila la hérissonne a un petit potager derrière sa maison.",
+        "Au printemps, elle plante des carottes et des tomates.",
+        "Chaque matin, elle arrose les plantes avec un arrosoir bleu.",
+        "En août, elle partage ses légumes avec ses voisins."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Où se trouve le potager de Lila?",
+          "variants": [
+            [
+              "derriere"
+            ],
+            [
+              "maison"
+            ]
+          ],
+          "display": "Derrière sa maison."
+        },
+        {
+          "id": "q2",
+          "q": "Qu'est-ce que Lila plante au printemps?",
+          "variants": [
+            [
+              "carotte"
+            ],
+            [
+              "tomate"
+            ]
+          ],
+          "display": "Des carottes et des tomates."
+        },
+        {
+          "id": "q3",
+          "q": "De quelle couleur est l'arrosoir?",
+          "variants": [
+            [
+              "bleu"
+            ]
+          ],
+          "display": "Bleu."
+        },
+        {
+          "id": "q4",
+          "q": "Avec qui Lila partage-t-elle ses légumes?",
+          "variants": [
+            [
+              "voisin"
+            ]
+          ],
+          "display": "Avec ses voisins."
+        }
+      ]
+    },
+    {
+      "id": "patinoire",
+      "level": 3,
+      "title": "La patinoire du parc",
+      "paragraphs": [
+        "En janvier, la ville installe une patinoire au parc.",
+        "Félix met ses patins, son casque et ses mitaines.",
+        "Au début, il tombe souvent, mais il se relève chaque fois.",
+        "Après une heure, il réussit à faire le tour de la patinoire sans tomber.",
+        "Son amie Maya applaudit très fort."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "En quel mois la ville installe-t-elle la patinoire?",
+          "variants": [
+            [
+              "janvier"
+            ]
+          ],
+          "display": "En janvier."
+        },
+        {
+          "id": "q2",
+          "q": "Nomme une chose que Félix met avant de patiner.",
+          "variants": [
+            [
+              "patin"
+            ],
+            [
+              "casque"
+            ],
+            [
+              "mitaine"
+            ]
+          ],
+          "display": "Ses patins, son casque ou ses mitaines."
+        },
+        {
+          "id": "q3",
+          "q": "Que fait Félix quand il tombe?",
+          "variants": [
+            [
+              "releve"
+            ],
+            [
+              "relever"
+            ],
+            [
+              "recommence"
+            ]
+          ],
+          "display": "Il se relève."
+        },
+        {
+          "id": "q4",
+          "q": "Qui applaudit Félix?",
+          "variants": [
+            [
+              "maya"
+            ]
+          ],
+          "display": "Son amie Maya."
+        }
+      ]
+    },
+    {
+      "id": "marche",
+      "level": 3,
+      "title": "Au marché du samedi",
+      "paragraphs": [
+        "Le samedi, Amir accompagne sa maman au marché.",
+        "Ils achètent des pommes rouges, du pain et du fromage.",
+        "Un musicien joue du violon près de la fontaine.",
+        "Amir donne une pièce de deux dollars au musicien, qui lui fait un grand sourire."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Avec qui Amir va-t-il au marché?",
+          "variants": [
+            [
+              "maman"
+            ],
+            [
+              "mere"
+            ]
+          ],
+          "display": "Avec sa maman."
+        },
+        {
+          "id": "q2",
+          "q": "Nomme une chose qu'ils achètent.",
+          "variants": [
+            [
+              "pomme"
+            ],
+            [
+              "pain"
+            ],
+            [
+              "fromage"
+            ]
+          ],
+          "display": "Des pommes, du pain ou du fromage."
+        },
+        {
+          "id": "q3",
+          "q": "De quel instrument joue le musicien?",
+          "variants": [
+            [
+              "violon"
+            ]
+          ],
+          "display": "Du violon."
+        },
+        {
+          "id": "q4",
+          "q": "Combien d'argent Amir donne-t-il au musicien?",
+          "variants": [
+            [
+              "deux dollar"
+            ],
+            [
+              "2 dollar"
+            ],
+            [
+              "2$"
+            ],
+            [
+              "2 $"
+            ],
+            [
+              "deux"
+            ]
+          ],
+          "display": "Deux dollars (2 $)."
+        }
+      ]
+    },
+    {
+      "id": "tempete",
+      "level": 4,
+      "title": "La tempête de neige",
+      "paragraphs": [
+        "Lundi matin, une grosse tempête de neige tombe sur le village.",
+        "L'école est fermée, alors Jade reste à la maison avec son petit frère Théo.",
+        "Ils mettent leurs habits de neige et sortent dans la cour.",
+        "Jade roule une grosse boule pour faire le corps du bonhomme.",
+        "Théo trouve deux cailloux noirs pour les yeux et une carotte pour le nez.",
+        "Comme il a froid aux mains, Théo rentre boire un chocolat chaud.",
+        "Jade termine le bonhomme toute seule et lui donne le foulard rouge de papa."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Pourquoi l'école est-elle fermée?",
+          "variants": [
+            [
+              "tempete"
+            ],
+            [
+              "neige"
+            ]
+          ],
+          "display": "À cause de la tempête de neige."
+        },
+        {
+          "id": "q2",
+          "q": "Qu'est-ce que Théo utilise pour les yeux du bonhomme?",
+          "variants": [
+            [
+              "caillou"
+            ]
+          ],
+          "display": "Deux cailloux noirs."
+        },
+        {
+          "id": "q3",
+          "q": "Pourquoi Théo rentre-t-il dans la maison?",
+          "variants": [
+            [
+              "froid"
+            ]
+          ],
+          "display": "Il a froid aux mains."
+        },
+        {
+          "id": "q4",
+          "q": "Que donne Jade au bonhomme à la fin?",
+          "variants": [
+            [
+              "foulard"
+            ]
+          ],
+          "display": "Le foulard rouge de papa."
+        }
+      ]
+    },
+    {
+      "id": "chaton",
+      "level": 4,
+      "title": "Le chaton perdu",
+      "paragraphs": [
+        "Mercredi, en revenant du parc, Malik entend un petit miaulement sous une haie.",
+        "Il trouve un chaton gris qui tremble.",
+        "Le chaton porte un collier bleu avec un numéro de téléphone.",
+        "Malik et son papa appellent ce numéro.",
+        "Une dame répond : c'est madame Aubin, qui habite au bout de la rue.",
+        "Elle cherche son chaton Pistache depuis deux jours!",
+        "Pour remercier Malik, elle lui offre des biscuits aux pépites de chocolat."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Où Malik trouve-t-il le chaton?",
+          "variants": [
+            [
+              "haie"
+            ]
+          ],
+          "display": "Sous une haie."
+        },
+        {
+          "id": "q2",
+          "q": "Comment s'appelle le chaton?",
+          "variants": [
+            [
+              "pistache"
+            ]
+          ],
+          "display": "Pistache."
+        },
+        {
+          "id": "q3",
+          "q": "Comment Malik et son papa trouvent-ils la propriétaire du chaton?",
+          "variants": [
+            [
+              "numero"
+            ],
+            [
+              "telephone"
+            ],
+            [
+              "collier"
+            ],
+            [
+              "appel"
+            ]
+          ],
+          "display": "Ils appellent le numéro écrit sur le collier."
+        },
+        {
+          "id": "q4",
+          "q": "Depuis combien de temps madame Aubin cherche-t-elle son chaton?",
+          "variants": [
+            [
+              "deux jour"
+            ],
+            [
+              "2 jour"
+            ]
+          ],
+          "display": "Depuis deux jours."
+        }
+      ]
+    },
+    {
+      "id": "canots",
+      "level": 5,
+      "title": "La course de canots",
+      "paragraphs": [
+        "Cet été, au camp du lac Vert, les enfants organisent une course de canots.",
+        "Rosalie fait équipe avec Hugo, un garçon qu'elle ne connaît pas encore.",
+        "Au départ, leur canot tourne en rond, parce qu'ils ne rament pas du même côté.",
+        "Hugo propose de compter à voix haute : « Un, deux! Un, deux! »",
+        "Petit à petit, le canot avance tout droit et dépasse deux autres équipes.",
+        "Ils arrivent deuxièmes, juste derrière l'équipe des moniteurs.",
+        "Le soir, autour du feu, Rosalie et Hugo chantent ensemble.",
+        "Rosalie pense qu'elle a trouvé un nouvel ami."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Où se passe l'histoire?",
+          "variants": [
+            [
+              "camp"
+            ],
+            [
+              "lac"
+            ]
+          ],
+          "display": "Au camp du lac Vert."
+        },
+        {
+          "id": "q2",
+          "q": "Au début, pourquoi le canot tourne-t-il en rond?",
+          "variants": [
+            [
+              "cote"
+            ]
+          ],
+          "display": "Ils ne rament pas du même côté."
+        },
+        {
+          "id": "q3",
+          "q": "Quelle idée Hugo a-t-il pour régler le problème?",
+          "variants": [
+            [
+              "compt"
+            ],
+            [
+              "un deux"
+            ]
+          ],
+          "display": "Compter à voix haute : « Un, deux! »"
+        },
+        {
+          "id": "q4",
+          "q": "À quelle place arrivent Rosalie et Hugo?",
+          "variants": [
+            [
+              "deuxieme"
+            ],
+            [
+              "2e"
+            ],
+            [
+              "seconde"
+            ]
+          ],
+          "display": "Deuxièmes."
+        },
+        {
+          "id": "q5",
+          "q": "À la fin de l'histoire, que pense Rosalie?",
+          "variants": [
+            [
+              "ami"
+            ]
+          ],
+          "display": "Qu'elle a trouvé un nouvel ami."
+        }
+      ]
+    },
+    {
+      "id": "spectacle",
+      "level": 5,
+      "title": "Le spectacle de l'école",
+      "paragraphs": [
+        "Dans trois semaines, l'école présente un spectacle pour les parents.",
+        "La classe de Sami doit jouer une pièce sur les saisons.",
+        "Sami a le rôle de l'automne : il doit dire trois phrases et lancer des feuilles.",
+        "Chaque soir, il répète devant sa grande sœur Inès.",
+        "Le jour du spectacle, Sami a très peur et ses mains tremblent.",
+        "Il cherche ses parents dans la salle et voit Inès qui lui fait un clin d'œil.",
+        "Alors, il prend une grande respiration et dit ses phrases sans se tromper.",
+        "À la fin, toute la salle applaudit les quatre saisons."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Quel rôle Sami joue-t-il dans la pièce?",
+          "variants": [
+            [
+              "automne"
+            ]
+          ],
+          "display": "Le rôle de l'automne."
+        },
+        {
+          "id": "q2",
+          "q": "Devant qui Sami répète-t-il chaque soir?",
+          "variants": [
+            [
+              "ines"
+            ],
+            [
+              "soeur"
+            ],
+            [
+              "sœur"
+            ]
+          ],
+          "display": "Devant sa grande sœur Inès."
+        },
+        {
+          "id": "q3",
+          "q": "Le jour du spectacle, comment Sami se sent-il avant de parler?",
+          "variants": [
+            [
+              "peur"
+            ],
+            [
+              "stress"
+            ],
+            [
+              "nerveu"
+            ]
+          ],
+          "display": "Il a très peur."
+        },
+        {
+          "id": "q4",
+          "q": "Qu'est-ce qui aide Sami à se calmer?",
+          "variants": [
+            [
+              "clin"
+            ],
+            [
+              "respiration"
+            ]
+          ],
+          "display": "Le clin d'œil d'Inès et une grande respiration."
+        },
+        {
+          "id": "q5",
+          "q": "Que fait la salle à la fin?",
+          "variants": [
+            [
+              "applaud"
+            ]
+          ],
+          "display": "Elle applaudit."
+        }
+      ]
+    },
+    {
+      "id": "lunch",
+      "level": 6,
+      "title": "La boîte à lunch oubliée",
+      "paragraphs": [
+        "Ce matin, Léon a laissé sa boîte à lunch sur le comptoir de la cuisine.",
+        "À midi, il ouvre son sac et devient tout rouge.",
+        "Son ventre gargouille pendant que ses amis mangent.",
+        "Sa camarade Inaya coupe son sandwich en deux et lui en tend la moitié.",
+        "Léon sourit et dit : « Demain, c'est moi qui apporte des biscuits pour toi! »",
+        "Le lendemain, il vérifie deux fois son sac avant de partir."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Pourquoi Léon devient-il tout rouge en ouvrant son sac?",
+          "variants": [
+            [
+              "oubli"
+            ],
+            [
+              "lunch"
+            ],
+            [
+              "pas de",
+              "repas"
+            ],
+            [
+              "pas de",
+              "nourriture"
+            ],
+            [
+              "pas de",
+              "diner"
+            ],
+            [
+              "pas de",
+              "manger"
+            ],
+            [
+              "rien",
+              "manger"
+            ],
+            [
+              "comptoir"
+            ]
+          ],
+          "display": "Il voit qu'il a oublié sa boîte à lunch."
+        },
+        {
+          "id": "q2",
+          "q": "Pourquoi le ventre de Léon gargouille-t-il?",
+          "variants": [
+            [
+              "faim"
+            ]
+          ],
+          "display": "Il a faim : il n'a rien à manger."
+        },
+        {
+          "id": "q3",
+          "q": "Quel genre d'amie est Inaya? Comment le sais-tu?",
+          "variants": [
+            [
+              "gentil"
+            ],
+            [
+              "genereu"
+            ],
+            [
+              "partag"
+            ]
+          ],
+          "display": "Une amie généreuse : elle partage son sandwich."
+        },
+        {
+          "id": "q4",
+          "q": "Pourquoi Léon vérifie-t-il deux fois son sac le lendemain?",
+          "variants": [
+            [
+              "oublier"
+            ],
+            [
+              "encore"
+            ]
+          ],
+          "display": "Pour ne pas oublier sa boîte à lunch encore une fois."
+        }
+      ]
+    },
+    {
+      "id": "secheresse",
+      "level": 6,
+      "title": "Le jardin de grand-maman",
+      "paragraphs": [
+        "Chaque samedi, Maëlle aide sa grand-maman au jardin.",
+        "Aujourd'hui, les feuilles des tomates sont sèches et jaunes.",
+        "Grand-maman regarde le ciel tout bleu et soupire : « Il n'a pas plu depuis deux semaines. »",
+        "Maëlle remplit l'arrosoir au baril, puis encore et encore.",
+        "Le soir, ses bras sont fatigués, mais les plants sont redressés.",
+        "Grand-maman lui donne la première tomate rouge de l'été."
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "q": "Pourquoi les feuilles des tomates sont-elles sèches?",
+          "variants": [
+            [
+              "pas plu"
+            ],
+            [
+              "pluie"
+            ],
+            [
+              "soif"
+            ],
+            [
+              "manque"
+            ]
+          ],
+          "display": "Il n'a pas plu depuis deux semaines."
+        },
+        {
+          "id": "q2",
+          "q": "Pourquoi les bras de Maëlle sont-ils fatigués le soir?",
+          "variants": [
+            [
+              "arros"
+            ],
+            [
+              "port"
+            ],
+            [
+              "rempli"
+            ],
+            [
+              "lourd"
+            ]
+          ],
+          "display": "Elle a porté beaucoup d'arrosoirs pleins d'eau."
+        },
+        {
+          "id": "q3",
+          "q": "Pourquoi grand-maman lui donne-t-elle la première tomate?",
+          "variants": [
+            [
+              "merci"
+            ],
+            [
+              "remerci"
+            ],
+            [
+              "aid"
+            ]
+          ],
+          "display": "Pour la remercier de son aide."
+        },
+        {
+          "id": "q4",
+          "q": "En quelle saison se passe probablement l'histoire?",
+          "variants": [
+            [
+              "ete"
+            ]
+          ],
+          "display": "En été."
+        }
+      ]
+    }
+  ]
+}

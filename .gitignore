@@ -1,0 +1,31 @@
+node_modules/
+.venv/
+apps/game/dist/assets/*.map
+tests/e2e/output/
+*.log
+
+# Keys: never commit
+.env
+ClaudeAPIKey.txt
+
+# Melina's real progress (database, photos, backups, approved art)
+data/
+copias-seguranca/
+
+# Portable Node.js
+runtime/
+
+# Melina's school tests loose in the root (PDFs and images): never commit
+/*.pdf
+/*.jpg
+/*.jpeg
+/*.png
+/*.webp
+/*.heic
+/*.gif
+/*.bmp
+/*.tif
+/*.tiff
+
+# Python cache (tests)
+__pycache__/

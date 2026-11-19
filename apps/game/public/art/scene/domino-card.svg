@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Card icon for « Les dominos des nombres » (original app drawing): 6 dots meet « 6 ». -->
+  <g transform="rotate(-12 128 128)">
+    <rect x="18" y="86" width="220" height="104" rx="18" fill="#cfc6b4"/>
+    <rect x="18" y="80" width="220" height="104" rx="18" fill="#fffaf0" stroke="#e2d8c4" stroke-width="3"/>
+    <line x1="128" y1="92" x2="128" y2="172" stroke="#9a8f7a" stroke-width="5" stroke-linecap="round"/>
+    <g fill="#1f2d47">
+      <circle cx="48" cy="104" r="9"/><circle cx="98" cy="104" r="9"/>
+      <circle cx="48" cy="132" r="9"/><circle cx="98" cy="132" r="9"/>
+      <circle cx="48" cy="160" r="9"/><circle cx="98" cy="160" r="9"/>
+    </g>
+    <text x="183" y="156" text-anchor="middle" font-family="Fredoka, Arial, sans-serif" font-weight="700" font-size="76" fill="#2b6ea6">6</text>
+  </g>
+</svg>

@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "source": "« Les mots à savoir écrire », aide-mémoire 2e année de l'école de Melina (pages 8 à 10), transcrit par la famille le 17/11/2026. Usage privé à la maison seulement.",
+  "note": "Un mot par case du livre. « a / b » = les formes du même mot (toutes vont dans le jeu). Une entrée { text, forms } dit exactement quelles formes vont dans le jeu (conjugaisons). Les mots avec espace, trait d'union, apostrophe ou œ, et ceux de moins de 3 lettres, restent dans la liste mais pas dans la grille.",
+  "emoji": {
+    "café": "☕", "école": "🏫", "fée": "🧚", "nez": "👃", "chèvre": "🐐", "fenêtre": "🪟", "fête": "🎉", "forêt": "🌲",
+    "cornet": "🍦", "reine": "👑", "loup": "🐺", "biberon": "🍼", "chanson": "🎵", "monstre": "👾", "montagne": "⛰️",
+    "panda": "🐼", "chambre": "🛏️", "fantôme": "👻", "vent": "🌬️", "banane": "🍌", "cerise": "🍒", "tomate": "🍅",
+    "salade": "🥗", "patate": "🥔", "auto": "🚗", "chameau": "🐫", "moto": "🏍️", "tableau": "🖼️", "traîneau": "🛷",
+    "lutin": "🧝", "main": "✋", "yeux": "👀", "girafe": "🦒", "guitare": "🎸", "légume": "🥦", "orange": "🍊",
+    "poire": "🍐", "bois": "🪵", "carotte": "🥕", "citron": "🍋", "coq": "🐓", "cube": "🧊", "cactus": "🌵",
+    "oiseau": "🐦", "rose": "🌹", "trésor": "💎", "musique": "🎶", "perroquet": "🦜", "brebis": "🐑", "souris": "🐭",
+    "arbre": "🌳", "hiver": "❄️", "jardin": "🏡", "canard": "🦆", "prince": "🤴", "princesse": "👸", "porc": "🐖",
+    "printemps": "🌷", "homme": "👨", "femme": "👩", "tasse": "🍵", "fruit": "🍎", "chemin": "🛤️", "zéro": "0️⃣"
+  },
+  "themes": [
+    {
+      "theme": 1,
+      "weeks": [
+        ["ici", "là", "mais", "ni", "non", "oui", "par", "si", "sur", "y"],
+        ["café", "côté", "école", "été", "fée", "idée", "poupée", "fâché / fâchée", "à côté de", "déjà"],
+        ["nez", "boucher", "manger", "marier", "monter", "penser", "rester", "souper", "trouver", "chez"],
+        ["chèvre", "élève", "fenêtre", "fête", "forêt", "frère", "guêpe", "prière", "tête", "même"],
+        ["seize", "treize", "cornet", "furet", "paire", "peine", "plaisir", "reine", "semaine", "aimer"]
+      ]
+    },
+    {
+      "theme": 2,
+      "weeks": [
+        ["grand-maman", "grand-mère", "grand-papa", "grand-père", "leçon", "me / m'", "peut-être", "que / qu'", "se / s'", "te / t'"],
+        ["douze", "tout / tous / toute / toutes", "bout", "loup", "ouvrir", "partout", "sous", "souvent", "surtout"],
+        ["onze", "biberon", "bombe", "chanson", "monstre", "montagne", "potion", "suçon", "trombone", "tomber"],
+        ["an", "campagne", "chambre", "dimanche", "fantôme", "panda", "blanc / blanche", "pendant", "sans", "tant"],
+        ["jument", "moment", "parent", "temps", "vendredi", "vent", "embêté / embêtée", "en", "ensuite", "vraiment"]
+      ]
+    },
+    {
+      "theme": 3,
+      "weeks": [
+        ["banane", "cerise", "lecture", "nature", "patate", "salade", "tomate", "autre", "malade", "vite"],
+        ["au / aux", "zéro", "auto", "automne", "chameau", "moto", "peau", "sofa", "tableau", "traîneau"],
+        ["vingt", "chemin", "lutin", "main", "plein / pleine", "vilain / vilaine", "enfin", "loin", "maintenant", "moins"],
+        ["leur / leurs", "chanteur", "cheveu", "cœur", "peur", "sœur", "vœu", "yeux", "deuxième (2e)", "mieux", "peu"],
+        [
+          { "text": "verbe aller", "forms": ["aller"] },
+          { "text": "je vais", "forms": ["vais"] },
+          { "text": "tu vas", "forms": ["vas"] },
+          { "text": "il / elle va", "forms": [] },
+          { "text": "nous allons", "forms": ["allons"] },
+          { "text": "vous allez", "forms": ["allez"] },
+          { "text": "ils / elles vont", "forms": ["vont"] }
+        ]
+      ]
+    },
+    {
+      "theme": 4,
+      "weeks": [
+        ["nos / notre", "vos / votre", "bruit", "fruit", "suivre", "avec", "depuis", "donc", "encore", "puis"],
+        ["figure", "garçon", "girafe", "guitare", "image", "légume", "large", "long / longue", "orange", "sage"],
+        ["soixante", "bois", "poire", "voix", "savoir", "moi", "parfois", "toi", "voici", "voilà"],
+        [
+          { "text": "verbe faire", "forms": ["faire"] },
+          { "text": "je fais", "forms": ["fais"] },
+          { "text": "tu fais", "forms": ["fais"] },
+          { "text": "il / elle fait", "forms": ["fait"] },
+          { "text": "nous faisons", "forms": ["faisons"] },
+          { "text": "vous faites", "forms": ["faites"] },
+          { "text": "ils / elles font", "forms": ["font"] }
+        ]
+      ]
+    },
+    {
+      "theme": 5,
+      "weeks": [
+        ["ce / cette / cet / ces", "cent", "carotte", "citron", "coq", "cube", "celui / ceux / celle / celles", "comme", "comment"],
+        ["bisou", "cactus", "cousin / cousine", "fils", "oiseau", "rose", "tasse", "trésor", "virus", "amuser"],
+        ["certains / certaines", "fort / forte", "froid / froide", "grand / grande", "haut / haute", "laid / laide", "marin / marine", "seul / seule", "surprenant / surprenante", "vrai / vraie"],
+        ["chaque", "cinquante", "quarante", "quatorze", "quelque / quelques", "quinze", "musique", "perroquet", "parce que / parce qu'", "quand"]
+      ]
+    },
+    {
+      "theme": 6,
+      "weeks": [
+        ["brebis", "souris", "avant", "beaucoup", "devant", "jamais", "pas", "près", "très", "vers"],
+        ["patte", "appeler", "arrêter", "arriver", "attendre", "mettre", "passer", "tellement", "aussi", "derrière"],
+        ["arbre", "hiver", "jardin", "dernier / dernière", "important / importante", "sortir", "venir", "alors", "lorsque / lorsqu'", "tard"],
+        [
+          { "text": "verbe dire", "forms": ["dire"] },
+          { "text": "je dis", "forms": ["dis"] },
+          { "text": "tu dis", "forms": ["dis"] },
+          { "text": "il / elle dit", "forms": ["dit"] },
+          { "text": "nous disons", "forms": ["disons"] },
+          { "text": "vous dites", "forms": ["dites"] },
+          { "text": "ils / elles disent", "forms": ["disent"] }
+        ]
+      ]
+    },
+    {
+      "theme": 7,
+      "weeks": [
+        ["bourdon", "cour", "journée", "nourrir", "aujourd'hui", "autour", "pour", "pourquoi", "toujours", "tourner"],
+        ["madame (Mme) / mesdames", "mal / maux", "monsieur (M.) / messieurs", "bas / basse", "faux / fausse", "favori / favorite", "joyeux / joyeuse", "neuf / neuve", "nouveau / nouvelle", "vieux / vieille"],
+        ["canard", "cane", "femme", "homme", "oncle", "prince", "princesse", "porc", "tante", "truie"],
+        ["trente", "printemps", "drôle", "propre", "entendre", "prendre", "répondre", "après", "entre", "trop"]
+      ]
+    }
+  ]
+}

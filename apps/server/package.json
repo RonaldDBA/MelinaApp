@@ -1,0 +1,22 @@
+{
+  "name": "@melina/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning --import tsx src/main.ts",
+    "dev": "node --disable-warning=ExperimentalWarning --import tsx --watch src/main.ts"
+  },
+  "dependencies": {
+    "@fastify/multipart": "^10.1.9",
+    "@fastify/static": "^10.1.11",
+    "@melina/adaptive-engine": "workspace:*",
+    "@melina/ai": "workspace:*",
+    "@melina/art": "workspace:*",
+    "@melina/curriculum": "workspace:*",
+    "@melina/handwriting": "workspace:*",
+    "@melina/shared": "workspace:*",
+    "fastify": "^5.12.8",
+    "tsx": "^4.23.15"
+  }
+}

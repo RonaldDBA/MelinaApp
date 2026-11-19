@@ -1,0 +1,32 @@
+{
+  "name": "melina-app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Private educational app for Melina (2e année, Québec): 2D adventure, French and math, answers on paper.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "pnpm --filter @melina/game build && node scripts/bundle-server.mjs",
+    "start": "node --disable-warning=ExperimentalWarning apps/server/dist/server.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "python3 tests/e2e/run_e2e.py",
+    "bundle": "node scripts/bundle-server.mjs",
+    "start:src": "pnpm --filter @melina/server start"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "~5.9.3",
+    "vitest": "^5.1.0",
+    "esbuild": "^0.28.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

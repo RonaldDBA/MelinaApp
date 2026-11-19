@@ -1,0 +1,16 @@
+Paquets d'art prêts à l'emploi
+==============================
+
+1. Téléchargez le paquet et décompressez-le (ou créez un dossier avec les images que vous avez générées).
+2. Placez le dossier du paquet ici (un dossier par paquet), avec son fichier de licence.
+   Exemple : assets\packs-inbox\kenney_ui-pack\License.txt
+3. Dans le jeu : Espace parents > Art du jeu > Chercher des paquets.
+
+Le jeu lit les images PNG, WebP et JPEG. Les images apparaissent dans chaque fiche d'art,
+pour que vous choisissiez où les utiliser. Rien n'entre dans le jeu sans votre approbation.
+
+Clip de victoire (Lila qui danse)
+---------------------------------
+Le jeu lit aussi les vidéos MP4 et WebM (jusqu'à 40 Mo) pour la fiche « Lila qui danse (clip de victoire) ».
+De 2 à 6 secondes, en boucle. Le son ne joue jamais : le jeu les lit toujours en sourdine.
+Exemple : assets\packs-inbox\lila-clips\lila-dance.mp4

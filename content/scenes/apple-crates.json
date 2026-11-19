@@ -1,0 +1,21 @@
+{
+  "id": "apple-crates",
+  "stage": { "width": 1920, "height": 1080 },
+  "background": "orchard.bg",
+  "props": {
+    "blanket": { "art": "orchard.blanket", "x": 70, "y": 330, "w": 860, "h": 500 }
+  },
+  "zones": {
+    "pile": { "x": 125, "y": 372, "w": 750, "h": 416 },
+    "crates": { "x": 1000, "y": 330, "w": 860, "h": 500 },
+    "panel": { "x": 70, "y": 150, "w": 860, "h": 690 },
+    "endPanel": { "x": 460, "y": 170, "w": 1000, "h": 680 }
+  },
+  "crate": {
+    "art": "orchard.crate",
+    "aspect": 1.7778,
+    "gapX": 40,
+    "gapY": 46,
+    "grid": { "cols": 5, "rows": 2, "inset": [0.14, 0.075, 0.2, 0.075] }
+  }
+}

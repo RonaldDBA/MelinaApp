@@ -1,0 +1,11 @@
+{
+  "id": "number-train",
+  "stage": { "width": 1920, "height": 1080 },
+  "background": "orchard.bg",
+  "zones": {
+    "train": { "x": 120, "y": 170, "w": 1680, "h": 230 },
+    "panel": { "x": 420, "y": 420, "w": 1080, "h": 420 },
+    "endPanel": { "x": 460, "y": 170, "w": 1000, "h": 680 }
+  },
+  "train": { "locoW": 230, "wagonW": 224, "wagonH": 150, "gap": 16 }
+}

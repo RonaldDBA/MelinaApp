@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Placeholder for the lily pad: the game draws the lily pad in code (CSS); this file only illustrates the card in the art studio. -->
+  <defs>
+    <radialGradient id="p" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#8fe06a"/>
+      <stop offset=".7" stop-color="#3fae48"/>
+    </radialGradient>
+  </defs>
+  <circle cx="512" cy="530" r="440" fill="#2b7f37"/>
+  <circle cx="512" cy="500" r="440" fill="url(#p)"/>
+  <polygon points="952,450 952,560 600,505" fill="#3aa0e2"/>
+</svg>

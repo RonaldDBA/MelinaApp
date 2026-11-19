@@ -1,0 +1,7 @@
+#!/bin/sh
+# Guards before every commit: no secrets, no Portuguese (the repository is English-only). Never bypass with --no-verify.
+ROOT="$(git rev-parse --show-toplevel)"
+PY="$ROOT/.venv/Scripts/python.exe"
+[ -x "$PY" ] || PY=python
+"$PY" -I "$ROOT/scripts/check-secrets.py" --staged || exit 1
+exec "$PY" -I "$ROOT/scripts/check-language.py" --staged

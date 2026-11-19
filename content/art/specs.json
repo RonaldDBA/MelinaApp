@@ -1,0 +1,149 @@
+{
+  "style": {
+    "name": "Verger de Lila — photographie",
+    "summary": "Photographie réaliste, comme une photo de nature ou de produit prise par un bon photographe : douce lumière naturelle du matin venant d’en haut à droite, mise au point nette sur le sujet, couleurs naturelles et fidèles, textures réelles (peau, pelage, bois, tissu, eau), légère profondeur de champ. Aucune illustration, aucun dessin, aucune peinture, aucune 3D stylisée ni aucune apparence de jouet.",
+    "palette": ["#8ec5ec", "#5d9a3c", "#7fb04a", "#c8302a", "#a0744a", "#d9c08a", "#4f8fb8", "#f6f1e7"],
+    "always": ["photographie réaliste, qui a l’air d’une vraie photo", "éclairage naturel cohérent d’une image à l’autre (doux soleil du matin, venant d’en haut à droite)", "composition simple et lisible pour une enfant de 7 ans", "sujet principal net et bien exposé"],
+    "never": ["texte, lettres, chiffres ou logos", "filigrane ou signature", "personnages de marques, de films ou de dessins animés existants", "personnes ou parties de personnes", "style dessin animé, illustration ou 3D de jouet", "animaux avec des vêtements, des accessoires, des expressions ou des postures humaines", "éléments effrayants, blessés ou violents"]
+  },
+  "specs": [
+    {
+      "id": "orchard.bg", "kind": "background", "title": "Décor du verger", "size": [1536, 864], "transparent": false,
+      "brief": "Photographie de paysage d’un verger de pommiers dans le Québec rural, par un matin ensoleillé de septembre : ciel bleu avec quelques nuages, douces collines au loin, rangées de pommiers chargés de pommes rouges, une petite grange rouge au loin et légèrement floue, grande pelouse tondue et vide occupant la moitié inférieure de l’image (c’est là que le jeu place les objets).",
+      "mustNot": ["personnes", "animaux", "objets sur la pelouse à l’avant", "véhicules"], "fallback": "/art/scene/orchard-bg.svg", "usedBy": ["Les caisses de pommes", "Accueil"]
+    },
+    {
+      "id": "orchard.blanket", "kind": "prop", "title": "Nappe de pique-nique", "size": [1536, 896], "transparent": true,
+      "brief": "Photographie vue exactement du dessus d’une nappe de pique-nique en coton à carreaux rouges et blancs, étendue et vide, occupant presque toute l’image, avec une texture de tissu et de légers plis naturels sur les bords.",
+      "mustNot": ["objets sur la nappe", "herbe ou décor autour"], "fallback": "/art/scene/blanket.svg", "usedBy": ["Les caisses de pommes"]
+    },
+    {
+      "id": "orchard.crate", "kind": "prop", "title": "Caisse en bois", "size": [1536, 864], "transparent": true,
+      "brief": "Photographie vue exactement du dessus d’une vraie caisse en bois pour la cueillette des pommes : lattes de bois clair avec des veines et des marques d’usure, rectangulaire et large, vide, le fond tapissé de paille; l’intérieur vide occupe la plus grande partie de l’image et les bords sont épais.",
+      "mustNot": ["fruits", "séparations intérieures", "couvercle", "étiquettes ou tampons"], "fallback": "/art/scene/crate.svg", "usedBy": ["Les caisses de pommes"],
+      "grid": { "cols": 5, "rows": 2, "inset": [0.14, 0.075, 0.2, 0.075] }
+    },
+    {
+      "id": "fruit.red_apple", "kind": "prop", "title": "Pomme rouge", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie de produit d’une vraie pomme rouge (variété McIntosh, typique du Québec), entière, avec sa queue et une feuille verte, la pelure marquée de petites taches naturelles, centrée, douce lumière latérale.", "mustNot": ["morsure ou coupe", "autres fruits", "gouttes exagérées ou brillance artificielle"], "fallback": "/art/red_apple.png", "usedBy": ["Les caisses de pommes"]
+    },
+    {
+      "id": "fruit.green_apple", "kind": "prop", "title": "Pomme verte", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie de produit d’une vraie pomme verte (type Granny Smith), entière, avec sa queue et une feuille verte, la pelure marquée de petites taches naturelles, centrée, douce lumière latérale.", "mustNot": ["morsure ou coupe", "autres fruits", "gouttes exagérées ou brillance artificielle"], "fallback": "/art/green_apple.png", "usedBy": ["Les caisses de pommes"]
+    },
+    {
+      "id": "fruit.pear", "kind": "prop", "title": "Poire", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie de produit d’une vraie poire jaune verdâtre (type Bartlett), entière, avec sa queue et une feuille, la pelure marquée de taches naturelles, centrée, douce lumière latérale.", "mustNot": ["morsure ou coupe", "autres fruits", "gouttes exagérées ou brillance artificielle"], "fallback": "/art/pear.png", "usedBy": ["Les caisses de pommes"]
+    },
+    {
+      "id": "lila.idle", "kind": "character", "title": "Lila (au repos)", "size": [1024, 1024], "transparent": true, "master": true,
+      "brief": "Photographie de Lila, un vrai hérisson d’Europe (Erinaceus europaeus) femelle, adulte et en bonne santé : piquants brun clair aux pointes crème, museau et ventre au pelage clair, yeux sombres et brillants, nez humide. En entier, appuyée sur ses quatre pattes, dans une position calme de vrai animal, tournée de trois quarts vers la droite, le museau légèrement relevé, curieuse.",
+      "mustNot": ["vêtements ou accessoires", "posture humaine (debout sur les pattes arrière, pattes utilisées comme des bras)", "yeux ou expression de dessin animé", "autres animaux", "sol ou décor autour"], "fallback": "/art/hedgehog.png", "usedBy": ["tous les jeux"]
+    },
+    {
+      "id": "lila.happy", "kind": "character", "title": "Lila (contente)", "size": [1024, 1024], "transparent": true, "reference": "lila.idle",
+      "brief": "La même hérissonne Lila que sur l’image de référence, identique en pelage, couleurs, proportions et marques, maintenant enjouée comme un vrai hérisson qui a trouvé quelque chose de bon : elle fait un petit pas rapide vers l’avant, le museau relevé en reniflant l’air, les piquants détendus, en entier sur ses quatre pattes.",
+      "mustNot": ["changement de pelage, de couleur ou de proportions", "posture humaine (debout sur les pattes arrière, pattes utilisées comme des bras)", "autres animaux", "sol ou décor autour"], "fallback": "/art/hedgehog.png", "usedBy": ["tous les jeux"]
+    },
+    {
+      "id": "lila.thinking", "kind": "character", "title": "Lila (attentive)", "size": [1024, 1024], "transparent": true, "reference": "lila.idle",
+      "brief": "La même hérissonne Lila que sur l’image de référence, identique en pelage, couleurs, proportions et marques, maintenant immobile et attentive comme un vrai hérisson qui examine quelque chose : la tête légèrement penchée sur le côté, le museau bas en train de renifler, en entier sur ses quatre pattes.",
+      "mustNot": ["changement de pelage, de couleur ou de proportions", "patte sous le menton ou autre posture humaine", "autres animaux", "sol ou décor autour"], "fallback": "/art/hedgehog.png", "usedBy": ["tous les jeux"]
+    },
+    {
+      "id": "pond.water", "kind": "prop", "title": "Étang", "size": [1536, 512], "transparent": true, "drawnByCode": true,
+      "brief": "Photographie vue exactement du dessus d’un petit étang naturel entier, à l’eau calme, bleu-vert et propre, de forme ovale et large, avec une étroite bande d’herbe basse et quelques joncs tout autour de la rive; doux reflets du ciel sur l’eau. L’étang occupe presque toute l’image, mais garde une fine marge transparente tout autour : il ne touche aucun bord.",
+      "mustNot": ["nénuphars", "poissons, grenouilles ou autres animaux", "personnes", "bateaux ou quais", "décor au-delà de la rive"], "fallback": "/art/scene/pond.svg", "usedBy": ["Saute-grenouille", "La pêche aux mots"]
+    },
+    {
+      "id": "pond.lilypad", "kind": "prop", "title": "Nénuphar", "size": [1024, 1024], "transparent": true, "drawnByCode": true,
+      "brief": "Photographie vue exactement du dessus d’une seule vraie feuille de nénuphar, ronde et plate, d’un vert vif, avec l’encoche en V caractéristique et des nervures bien visibles, quelques gouttes d’eau discrètes. Le centre de la feuille reste libre et lisse (le jeu y écrit un nombre).",
+      "mustNot": ["fleur", "grenouille ou autres animaux", "eau ou autres feuilles autour"], "fallback": "/art/scene/lilypad.svg", "usedBy": ["Saute-grenouille"]
+    },
+    {
+      "id": "pond.frog", "kind": "character", "title": "Grenouille", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’une vraie grenouille verte (Lithobates clamitans, commune dans les étangs du Québec), adulte et en bonne santé, assise sur ses quatre pattes, en entier, vue de face de trois quarts, yeux dorés, peau humide avec des taches naturelles, prête à sauter.",
+      "mustNot": ["feuille, pierre ou eau sous la grenouille", "autres animaux", "yeux ou expression de dessin animé", "posture humaine"], "fallback": "/art/frog.png", "usedBy": ["Saute-grenouille", "Accueil"]
+    },
+    {
+      "id": "pond.fish", "kind": "character", "title": "Poisson", "size": [1536, 1024], "transparent": true,
+      "brief": "Photographie de profil d’un vrai poisson d’eau douce du Québec, une perchaude (Perca flavescens), entière, comme si elle nageait, tournée vers la gauche, nageoires ouvertes, rayures et couleurs naturelles, nette de la tête à la queue.",
+      "mustNot": ["hameçon, appât ou ligne", "eau, plantes ou fond autour", "autres poissons", "yeux ou expression de dessin animé"], "fallback": "/art/fish.png", "usedBy": ["La pêche aux mots", "Accueil"]
+    },
+    {
+      "id": "train.locomotive", "kind": "prop", "title": "Locomotive", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie de profil d’une vraie petite locomotive à vapeur ancienne, bien conservée, comme celles des trains touristiques : peinte en rouge et noir, cheminée, chaudière, cabine et roues bien visibles, tournée vers la gauche, profil entier et droit, sans fumée qui cache la machine.",
+      "mustNot": ["rails, gare ou décor", "wagons", "noms, numéros ou logos peints", "personnes dans la cabine"], "fallback": "/art/locomotive.png", "usedBy": ["Le train des nombres", "Accueil"]
+    },
+    {
+      "id": "train.wagon", "kind": "prop", "title": "Wagon", "size": [1536, 1024], "transparent": true, "drawnByCode": true,
+      "brief": "Photographie de profil d’un vrai wagon de marchandises ancien, en bois, ouvert sur le dessus, vide, avec des lattes de bois peintes d’un rouge délavé, des cornières en métal, deux roues et des attelages visibles; profil entier et droit. Le côté du wagon est lisse au centre (le jeu y écrit un nombre).",
+      "mustNot": ["chargement", "rails ou décor", "noms, numéros ou logos peints", "autres wagons"], "fallback": "/art/scene/wagon.svg", "usedBy": ["Le train des nombres"]
+    },
+    {
+      "id": "path.stone", "kind": "prop", "title": "Pierre du chemin", "size": [1024, 1024], "transparent": true, "drawnByCode": true,
+      "brief": "Photographie vue exactement du dessus d’une seule vraie pierre de gué, plate et arrondie, en granit gris clair moucheté de petits points naturels, surface lisse et sèche, bords doux. Le centre de la pierre reste libre et clair (le jeu y écrit un nombre).",
+      "mustNot": ["mousse, terre ou herbe autour", "autres pierres", "grosses fissures", "marques, chiffres ou dessins sur la pierre"], "fallback": "/art/scene/stone.svg", "usedBy": ["Le chemin des nombres"]
+    },
+    {
+      "id": "path.basket", "kind": "prop", "title": "Panier de pommes (arrivée du chemin)", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’un vrai panier en osier rempli de pommes rouges du Québec, vu de face et un peu d’en haut, en entier, avec son anse, douce lumière du matin.",
+      "mustNot": ["personnes ou mains", "nappe, table ou décor autour", "étiquettes ou prix"], "fallback": "/art/basket.png", "usedBy": ["Le chemin des nombres"]
+    },
+    {
+      "id": "hidden.sheet", "kind": "prop", "title": "Feuille des mots cachés", "size": [1024, 1024], "transparent": true, "drawnByCode": true,
+      "brief": "Photographie vue exactement du dessus d’une seule vraie feuille de papier de cahier d’école, carrée, blanche légèrement crème, lisse et propre, avec une douce texture de papier et des bords droits; sans lignes marquées. La feuille occupe presque toute l’image (le jeu y écrit les lettres de la grille).",
+      "mustNot": ["écriture, lettres, chiffres ou dessins", "plis marqués, taches ou déchirures", "table, crayon ou objets autour", "ombre prononcée"], "fallback": "/art/scene/sheet.svg", "usedBy": ["Les mots cachés"]
+    },
+    {
+      "id": "hidden.loupe", "kind": "prop", "title": "Loupe", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’une vraie loupe de lecture, avec une monture en métal foncé et un manche en bois clair, inclinée en diagonale, la lentille propre et transparente avec un léger reflet, entière et centrée.",
+      "mustNot": ["mains ou personnes", "papier, lettres ou objets vus à travers la lentille", "table ou décor autour", "marques ou logos"], "fallback": "/art/scene/loupe.svg", "usedBy": ["Les mots cachés", "Accueil"]
+    },
+    {
+      "id": "domino.table", "kind": "background", "title": "Table en bois (dominos)", "size": [1536, 864], "transparent": false,
+      "brief": "Photographie vue du dessus d’une vraie table en bois clair, de cuisine de maison de campagne au Québec, plateau lisse aux veines naturelles avec peu de marques d’usure, éclairée par la douce lumière du matin venant d’une fenêtre à droite; la table occupe toute l’image et elle est vide (le jeu y place les dominos).",
+      "mustNot": ["objets sur la table", "personnes ou mains", "nappe", "bords de la table ou plancher visibles"], "fallback": "/art/scene/orchard-bg.svg", "usedBy": ["Les dominos des nombres"]
+    },
+    {
+      "id": "domino.tile", "kind": "prop", "title": "Domino vierge", "size": [1536, 768], "transparent": true, "drawnByCode": true,
+      "brief": "Photographie vue exactement du dessus d’un seul vrai domino, grand, posé à l’horizontale, couleur ivoire, surface lisse et légèrement brillante, coins arrondis, avec la ligne centrale en relief et un rivet doré au milieu; les deux moitiés sont VIDES (le jeu y dessine des points, des nombres ou des opérations).",
+      "mustNot": ["points ou chiffres sur les moitiés", "autres dominos", "table ou décor autour", "ombre prononcée"], "fallback": "/art/scene/domino.svg", "usedBy": ["Les dominos des nombres"]
+    },
+    {
+      "id": "garden.bg", "kind": "background", "title": "Jardin de Lila (décor)", "size": [1536, 960], "transparent": false,
+      "brief": "Photographie d’un grand jardin de maison de campagne au Québec, vu d’en haut en légère plongée (trois quarts), un matin d’été : une grande pelouse verte et dégagée occupe le centre et le bas de l’image, quelques arbres feuillus sur les bords, un petit étang en haut à droite et un sentier de terre clair qui traverse la pelouse. La pelouse reste vide : le jeu y place la remise, le puits, le potager et les personnages.",
+      "mustNot": ["personnes", "animaux", "bâtiments, puits ou potager", "objets sur la pelouse", "véhicules"], "fallback": "/art/scene/garden-bg.svg", "usedBy": ["Le jardin de Lila (activités sur papier)"]
+    },
+    {
+      "id": "garden.shed", "kind": "prop", "title": "Remise du jardin", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’une vraie petite remise de jardin en bois, vue de face en trois quarts et un peu d’en haut, entière, porte fermée, toit à deux pentes, planches peintes en rouge grange un peu délavé, socle posé sur un peu d’herbe.",
+      "mustNot": ["personnes", "animaux", "outils ou objets devant la porte", "décor autour", "texte, enseigne ou numéro"], "fallback": "/art/scene/shed.svg", "usedBy": ["Le jardin de Lila"]
+    },
+    {
+      "id": "garden.well", "kind": "prop", "title": "Puits", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’un vrai vieux puits rond en pierres grises, avec un petit toit de bois à deux pentes porté par deux poteaux et une manivelle, vu de trois quarts un peu d’en haut, entier.",
+      "mustNot": ["personnes", "animaux", "seau qui tombe ou eau qui déborde", "décor autour", "texte"], "fallback": "/art/scene/well.svg", "usedBy": ["Le jardin de Lila"]
+    },
+    {
+      "id": "garden.bed", "kind": "prop", "title": "Potager", "size": [1536, 1024], "transparent": true,
+      "brief": "Photographie d’un vrai potager surélevé en planches de bois, rectangulaire et large, rempli de terre brune fraîchement préparée en trois rangs, encore vide (sans plantes), vu de trois quarts un peu d’en haut, entier.",
+      "mustNot": ["plantes ou légumes", "outils", "personnes ou animaux", "décor autour", "étiquettes ou texte"], "fallback": "/art/scene/bed.svg", "usedBy": ["Le jardin de Lila"]
+    },
+    {
+      "id": "garden.sprout", "kind": "prop", "title": "Pousse (récompense)", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’une vraie petite pousse verte avec deux feuilles tendres, qui sort d’une petite motte de terre brune, vue de face, entière et centrée.",
+      "mustNot": ["pot ou contenant", "autres plantes", "décor autour", "texte"], "fallback": "/art/scene/sprout.svg", "usedBy": ["Le jardin de Lila (graines trouvées)"]
+    },
+    {
+      "id": "garden.sunflower", "kind": "prop", "title": "Tournesol (jardin fleuri)", "size": [1024, 1024], "transparent": true,
+      "brief": "Photographie d’un vrai tournesol en fleur, entier avec sa tige droite et deux feuilles, la fleur tournée vers l’avant, pétales jaune vif et cœur brun.",
+      "mustNot": ["autres fleurs", "insectes", "pot ou vase", "décor autour", "texte"], "fallback": "/art/scene/sunflower.svg", "usedBy": ["Le jardin de Lila (mission accomplie)"]
+    },
+    {
+      "id": "lila.dance", "kind": "clip", "title": "Lila qui danse (clip de victoire)", "size": [1024, 1024], "transparent": false, "reference": "lila.idle",
+      "brief": "Court clip de la même hérissonne Lila que sur l’image maîtresse, contente après une bonne réponse, qui bouge comme un vrai hérisson : elle fait de petits pas rapides sur place, tourne lentement d’un tour complet et relève le museau en reniflant l’air. Mouvement naturel et joyeux, sans aucune posture humaine. Fond uni, clair et neutre.",
+      "mustNot": ["son", "posture humaine (debout sur les pattes arrière, pattes utilisées comme des bras)", "vêtements ou accessoires", "autres animaux", "changements de plan", "texte ou sous-titres"], "fallback": "/art/hedgehog.png", "usedBy": ["tous les jeux (quand Melina donne une bonne réponse)"]
+    }
+  ]
+}

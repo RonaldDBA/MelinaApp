@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "id": "fr.comprehension",
+      "version": 1,
+      "subject": "french",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Compréhension d’un court texte",
+      "titleFr": "Je comprends un texte",
+      "description": "Lit un court texte et trouve une information explicite (qui, quoi, où, quand).",
+      "prerequisites": [],
+      "exerciseTypes": ["comprehension.explicit"],
+      "levels": {
+        "1": "Texte de 4 phrases simples, question directe.",
+        "2": "Texte de 4 phrases avec plus de personnages.",
+        "3": "Texte de 5 phrases, questions qui demandent de choisir une information.",
+        "4": "Texte de 7 phrases; questions « pourquoi » et « comment » dont la réponse est écrite dans le texte.",
+        "5": "Histoire de 8 phrases avec début, milieu et fin; questions sur le lieu, le problème, la solution et la fin.",
+        "6": "Défi : inférence — la réponse n’est pas écrite telle quelle, il faut la déduire des indices."
+      },
+      "curriculumRef": "PFEQ Français, langue d'enseignement, 1er cycle — Lire des textes variés : repérer des informations explicites. Nouveau programme de français obligatoire en 2027-2028 : à réviser.",
+      "reviewStatus": "to-validate",
+      "inspiredBy": "Le temps des pommes (images 22_07_08 à 22_08_00); questionnaire Fraisinette (format)"
+    },
+    {
+      "id": "fr.plural",
+      "version": 1,
+      "subject": "french",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Pluriel des noms",
+      "titleFr": "Le pluriel des noms",
+      "description": "Écrit le pluriel de noms fréquents et du groupe du nom, selon les règles vues à l’école (-s, -x, noms qui ne changent pas, noms en -ou).",
+      "prerequisites": [],
+      "exerciseTypes": ["plural.write"],
+      "levels": {
+        "1": "Pluriel régulier en -s avec « un/une → des ».",
+        "2": "Avec « le/la → les » et pluriels en -x (-eau, -eu).",
+        "3": "Noms qui finissent par s, x ou z (ne changent pas) et noms en -au/-eu.",
+        "4": "Noms en -ou : un « s », sauf bijou, caillou, chou, genou, hibou, joujou, pou (« x »); bleu et pneu prennent un « s ».",
+        "5": "Tout le groupe du nom au pluriel : déterminant, nom et adjectif (des beaux chapeaux, des pommes vertes).",
+        "6": "Défi : pluriels en -aux (chevaux, travaux) et leurs exceptions en -s (bals, chandails)."
+      },
+      "curriculumRef": "PFEQ Français, 1er cycle — Écrire : accord du nom (marque du pluriel). Voir la Progression des apprentissages (grammaire de la phrase).",
+      "reviewStatus": "to-validate"
+    },
+    {
+      "id": "fr.spelling",
+      "version": 1,
+      "subject": "french",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Orthographe de mots familiers",
+      "titleFr": "J'écris des mots",
+      "description": "Écrit correctement des mots familiers, y compris les accents et les graphies de sons (ai, eau, oi, eu, eil).",
+      "prerequisites": [],
+      "exerciseTypes": ["spelling.complete-word"],
+      "levels": {
+        "1": "Une ou deux lettres manquantes (le son difficile du mot).",
+        "2": "Tout le son difficile manque (ai, eau, ou, an, ch…), mots plus riches.",
+        "3": "Les parties difficiles manquent : sons, accents, lettre muette, consonne double.",
+        "4": "Seulement la première lettre; mots longs et difficiles; grande grille.",
+        "5": "Dictée : le mot entier, sans aucune lettre; les mots les plus difficiles de la liste.",
+        "6": "Défi : dictée des mots de toute l’année, même ceux que la classe n’a pas encore vus; grande grille de 8 mots."
+      },
+      "curriculumRef": "PFEQ Français, 1er cycle — Écrire : orthographe d'usage (mots fréquents). Valider la liste avec la Liste orthographique du MEQ et l’école.",
+      "reviewStatus": "to-validate",
+      "inspiredBy": "Fiche Jour 1 (dictée et mots à compléter); réponse d’opinion dans Le temps des pommes"
+    }
+  ]
+}

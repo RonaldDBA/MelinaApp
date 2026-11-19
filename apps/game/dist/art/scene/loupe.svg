@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Magnifying glass (original app drawing): card and header of « Les mots cachés ». -->
+  <defs>
+    <radialGradient id="g" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfe8ff"/></radialGradient>
+  </defs>
+  <rect x="150" y="150" width="34" height="96" rx="16" transform="rotate(-45 167 198)" fill="#8b5a36"/>
+  <circle cx="104" cy="104" r="78" fill="#4d6b8a"/>
+  <circle cx="104" cy="104" r="62" fill="url(#g)"/>
+  <text x="104" y="124" text-anchor="middle" font-family="Andika, Arial, sans-serif" font-weight="700" font-size="58" fill="#1f2d47">é</text>
+</svg>

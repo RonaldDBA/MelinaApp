@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1024" height="1024">
+  <!-- Placeholder for the pousse (original app drawing). -->
+  <rect x="10" y="8" width="3" height="14" fill="#3f9b4b"/>
+  <ellipse cx="7" cy="8" rx="5" ry="3" fill="#3f9b4b"/><ellipse cx="16" cy="6" rx="5" ry="3" fill="#3f9b4b"/>
+</svg>

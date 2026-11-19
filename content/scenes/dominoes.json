@@ -1,0 +1,13 @@
+{
+  "id": "dominoes",
+  "stage": { "width": 1920, "height": 1080 },
+  "background": "domino.table",
+  "table": { "x": 250, "y": 200, "half": 210 },
+  "attach": { "x": 690, "y": 200 },
+  "hand": { "y": 545, "half": 160, "gap": 50 },
+  "zones": {
+    "result": { "x": 460, "y": 455, "w": 1000, "h": 380 },
+    "endPanel": { "x": 460, "y": 170, "w": 1000, "h": 680 },
+    "error": { "x": 460, "y": 300, "w": 1000, "h": 400 }
+  }
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="1024" height="1024">
+  <!-- Placeholder for the puits (original app drawing). -->
+  <polygon points="55,58 100,34 145,58" fill="#a0522d"/>
+  <rect x="64" y="58" width="8" height="64" fill="#8b5a2b"/><rect x="128" y="58" width="8" height="64" fill="#8b5a2b"/>
+  <circle cx="100" cy="128" r="40" fill="#9aa5ad" stroke="#6d7880" stroke-width="6"/>
+  <circle cx="100" cy="128" r="26" fill="#2b5d80"/>
+</svg>

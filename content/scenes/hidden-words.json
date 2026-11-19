@@ -1,0 +1,12 @@
+{
+  "id": "hidden-words",
+  "stage": { "width": 1920, "height": 1080 },
+  "background": "orchard.bg",
+  "sheet": { "x": 110, "y": 150, "size": 680, "padding": 30 },
+  "zones": {
+    "list": { "x": 880, "y": 160, "w": 930, "h": 560 },
+    "spell": { "x": 330, "y": 150, "w": 1260, "h": 680 },
+    "result": { "x": 460, "y": 170, "w": 1000, "h": 600 },
+    "endPanel": { "x": 460, "y": 170, "w": 1000, "h": 680 }
+  }
+}

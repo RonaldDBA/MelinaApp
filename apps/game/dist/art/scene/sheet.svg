@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Placeholder for the word-search sheet: the game draws the sheet in code (CSS); this file only illustrates the card in the art studio. -->
+  <rect x="40" y="40" width="944" height="944" rx="40" fill="#fffdf6"/>
+  <g stroke="#cfe3f7" stroke-width="4">
+    <line x1="40" y1="200" x2="984" y2="200"/><line x1="40" y1="360" x2="984" y2="360"/><line x1="40" y1="520" x2="984" y2="520"/>
+    <line x1="40" y1="680" x2="984" y2="680"/><line x1="40" y1="840" x2="984" y2="840"/>
+  </g>
+  <line x1="150" y1="40" x2="150" y2="984" stroke="#ffb3b3" stroke-width="5"/>
+</svg>

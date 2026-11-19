@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "id": "math.place-value",
+      "version": 1,
+      "subject": "mathematics",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Dizaines et unités",
+      "titleFr": "Dizaines et unités",
+      "description": "Écrit le nombre représenté par des dizaines et des unités (et des centaines au niveau 3) et reconnaît la valeur de chaque chiffre.",
+      "prerequisites": [],
+      "exerciseTypes": ["place-value.compose", "place-value.digit-role"],
+      "levels": {
+        "1": "Jusqu’à 59, avec du matériel dessiné (barres de 10 et cubes).",
+        "2": "Jusqu’à 99, décomposition écrite (ex. : 6 dizaines et 3 unités).",
+        "3": "Jusqu’à 999, avec les centaines.",
+        "4": "Jusqu’à 999 : le rôle de chaque chiffre (centaines, dizaines, unités), avec des zéros au milieu.",
+        "5": "Échanges : 13 dizaines = 1 centaine et 3 dizaines; combien de dizaines en tout dans un nombre.",
+        "6": "Défi (au-delà de la 2e année) : nombres à 4 chiffres, milliers, zéros au milieu."
+      },
+      "curriculumRef": "PFEQ Mathématique, 1er cycle — Arithmétique : sens et écriture des nombres naturels (< 1000), valeur de position. Voir la Progression des apprentissages.",
+      "reviewStatus": "to-validate",
+      "inspiredBy": "La récolte de citrouilles (Scanned document (10).pdf, p. 2–3)"
+    },
+    {
+      "id": "math.grouping-tens",
+      "version": 1,
+      "subject": "mathematics",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Grouper par 10 (caisses)",
+      "titleFr": "Faire des groupes de 10",
+      "description": "Détermine combien de groupes de 10 sont nécessaires pour une quantité, y compris le groupe incomplet.",
+      "prerequisites": ["math.place-value"],
+      "exerciseTypes": ["grouping.boxes"],
+      "levels": {
+        "1": "Quantités multiples de 10 (jusqu’à 90).",
+        "2": "Quantités qui ne sont pas des multiples de 10 (jusqu’à 99) : compter la caisse incomplète.",
+        "3": "Deux jours : total des caisses utilisées pendant les deux jours.",
+        "4": "Quantités de 101 à 399 : combien de groupes de 10, avec le groupe incomplet (jeu : jusqu’à 10 caisses).",
+        "5": "Deux étapes : des groupes de 10, puis des groupes de 10 groupes (camions de 10 caisses) (jeu : combien de fruits manquent pour remplir la dernière caisse).",
+        "6": "Défi : groupes de 100 pour des quantités jusqu’à 4 999."
+      },
+      "curriculumRef": "PFEQ Mathématique, 1er cycle — Raisonner : groupements et dénombrement; situation d'application. Voir la Progression des apprentissages.",
+      "reviewStatus": "to-validate",
+      "inspiredBy": "La récolte de citrouilles (Scanned document (10).pdf, p. 2)"
+    },
+    {
+      "id": "math.add-sub",
+      "version": 1,
+      "subject": "mathematics",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Additions et soustractions",
+      "titleFr": "Additions et soustractions",
+      "description": "Effectue des additions et des soustractions de nombres naturels à l’aide de stratégies de calcul.",
+      "prerequisites": [],
+      "exerciseTypes": ["add-sub.compute"],
+      "levels": {
+        "1": "Résultats jusqu’à 20.",
+        "2": "Jusqu’à 99 sans regroupement.",
+        "3": "Jusqu’à 99 avec regroupement (retenue / emprunt).",
+        "4": "Nombre à 3 chiffres ± nombre à 2 chiffres, avec regroupement, jusqu’à 999.",
+        "5": "Nombres à 3 chiffres ± nombres à 3 chiffres, avec regroupement (jeu : sauts de centaines et de dizaines).",
+        "6": "Défi : nombres à 4 chiffres avec regroupement (jeu : bonds de milliers et de centaines)."
+      },
+      "curriculumRef": "PFEQ Mathématique, 1er cycle — Arithmétique : sens et maîtrise des opérations (addition, soustraction). Voir la Progression des apprentissages.",
+      "reviewStatus": "to-validate"
+    },
+    {
+      "id": "math.sequences",
+      "version": 1,
+      "subject": "mathematics",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Suites de nombres",
+      "titleFr": "Les suites de nombres",
+      "description": "Complète des suites de nombres en repérant la régularité.",
+      "prerequisites": [],
+      "exerciseTypes": ["sequence.complete"],
+      "levels": {
+        "1": "Suites croissantes par bonds de 1 ou de 2.",
+        "2": "Suites par bonds de 5 ou de 10.",
+        "3": "Suites décroissantes ou par bonds de 3.",
+        "4": "Bonds de 3, de 4 ou de 25, en passant par 100, dans les deux sens.",
+        "5": "Bonds de 20, de 50 ou de 100 jusqu’à 999, dans les deux sens.",
+        "6": "Défi : bonds des tables (6, 7, 8, 9, 11, 12, 15) et grands bonds (250, 500) jusqu’à 9 999."
+      },
+      "curriculumRef": "PFEQ Mathématique, 1er cycle — Arithmétique : suites de nombres, régularités. Voir la Progression des apprentissages.",
+      "reviewStatus": "to-validate"
+    },
+    {
+      "id": "math.counting",
+      "version": 1,
+      "subject": "mathematics",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Compter avec précision (suite des nombres)",
+      "titleFr": "Compter et la suite des nombres",
+      "description": "Complète les nombres manquants dans un comptage de 1 en 1, en ordre croissant et décroissant, jusqu’à 100, y compris au changement de dizaine, et utilise l’organisation de la grille de 100 (+1 sur la ligne, +10 dans la colonne).",
+      "prerequisites": [],
+      "exerciseTypes": ["counting.path"],
+      "levels": {
+        "1": "Chemin jusqu’à 20, en ordre croissant.",
+        "2": "Commence à n’importe quel nombre jusqu’à 100, en ordre croissant ou décroissant, toujours avec un changement de dizaine.",
+        "3": "Morceau caché de la grille de 100 : +1/−1 sur la ligne, +10/−10 dans la colonne (sur papier : de 10 en 10 à partir de n’importe quel nombre).",
+        "4": "De 1 en 1 avec des nombres à 3 chiffres, en passant une centaine (199 → 200), dans les deux sens.",
+        "5": "De 10 en 10 avec des nombres à 3 chiffres, en passant une centaine (392 → 402), dans les deux sens.",
+        "6": "Défi : nombres à 4 chiffres en passant un millier (999 → 1000; 2 950 → 3 050)."
+      },
+      "curriculumRef": "PFEQ Mathématique, 1er cycle — Arithmétique : sens et écriture des nombres naturels; suite numérique en ordre croissant et décroissant; tableau de nombres (grille de 100). Voir la Progression des apprentissages.",
+      "reviewStatus": "to-validate",
+      "inspiredBy": "Difficulté observée : précision en comptant de grandes collections (La récolte de citrouilles)"
+    },
+    {
+      "id": "math.representations",
+      "version": 1,
+      "subject": "mathematics",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Le même nombre sous différentes formes",
+      "titleFr": "Le même nombre, autrement",
+      "description": "Reconnaît le même nombre dans différentes représentations : points et chiffres, opérations et résultats, dizaines et unités et le nombre écrit.",
+      "prerequisites": [],
+      "exerciseTypes": ["representations.number"],
+      "levels": {
+        "1": "Points ↔ chiffre, de 1 à 9.",
+        "2": "Opération ↔ résultat : sommes et différences jusqu’à 20, en franchissant la dizaine.",
+        "3": "Dizaines et unités (barres et cubes) ↔ nombre jusqu’à 99.",
+        "4": "Opération ↔ résultat avec deux nombres à 2 chiffres, jusqu’à 99 (avec ou sans regroupement).",
+        "5": "Nombre à 3 chiffres ↔ forme décomposée (300 + 40 + 7), avec des zéros.",
+        "6": "Défi : nombre à 4 chiffres ↔ forme décomposée (4000 + 500 + 7)."
+      },
+      "curriculumRef": "PFEQ Mathématique, 1er cycle — Arithmétique : sens et écriture des nombres naturels (représentations variées, décomposition dizaines/unités); sens des opérations (addition et soustraction). Voir la Progression des apprentissages.",
+      "reviewStatus": "to-validate"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Secret guard before every push to GitHub: checks every commit about to be pushed.
+ROOT="$(git rev-parse --show-toplevel)"
+PY="$ROOT/.venv/Scripts/python.exe"
+[ -x "$PY" ] || PY=python
+exec "$PY" -I "$ROOT/scripts/check-secrets.py" --push

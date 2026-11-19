@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="1024" height="1024">
+  <!-- Placeholder for the remise (original app drawing). -->
+  <polygon points="25,72 100,32 175,72" fill="#a0522d"/>
+  <rect x="35" y="72" width="130" height="95" fill="#c98b4b" stroke="#8a5a2b" stroke-width="4"/>
+  <rect x="82" y="117" width="36" height="50" fill="#6b3f1f"/>
+</svg>

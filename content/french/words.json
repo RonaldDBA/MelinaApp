@@ -1,0 +1,568 @@
+{
+  "version": 1,
+  "note": "Mots familiers de 1er cycle choisis pour l'application (à valider avec la Liste orthographique du MEQ et les listes de l'école). Pluriel aligné sur l'aide-mémoire de l'école (2e année) : -s; -au/-eau/-eu → x; s, x, z ne changent pas; -ou → s sauf bijou, caillou, chou, genou, hibou, joujou, pou; bleu, pneu → s; accord dans le groupe du nom.",
+  "spelling": [
+    {
+      "word": "maison",
+      "emoji": "🏠",
+      "level": 1,
+      "blanks": [
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "word": "chat",
+      "emoji": "🐱",
+      "level": 1,
+      "blanks": [
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "word": "lune",
+      "emoji": "🌙",
+      "level": 1,
+      "blanks": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "word": "pomme",
+      "emoji": "🍎",
+      "level": 1,
+      "blanks": [
+        [
+          3,
+          3
+        ]
+      ]
+    },
+    {
+      "word": "livre",
+      "emoji": "📖",
+      "level": 1,
+      "blanks": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "word": "lapin",
+      "emoji": "🐰",
+      "level": 1,
+      "blanks": [
+        [
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "word": "école",
+      "emoji": "🏫",
+      "level": 2,
+      "blanks": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          2
+        ]
+      ]
+    },
+    {
+      "word": "soleil",
+      "emoji": "☀️",
+      "level": 2,
+      "blanks": [
+        [
+          3,
+          5
+        ]
+      ]
+    },
+    {
+      "word": "fleur",
+      "emoji": "🌸",
+      "level": 2,
+      "blanks": [
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "word": "bateau",
+      "emoji": "⛵",
+      "level": 2,
+      "blanks": [
+        [
+          3,
+          5
+        ]
+      ]
+    },
+    {
+      "word": "poisson",
+      "emoji": "🐟",
+      "level": 2,
+      "blanks": [
+        [
+          1,
+          2
+        ],
+        [
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "word": "fraise",
+      "emoji": "🍓",
+      "level": 2,
+      "blanks": [
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "word": "citrouille",
+      "emoji": "🎃",
+      "level": 3,
+      "blanks": [
+        [
+          3,
+          9
+        ]
+      ]
+    },
+    {
+      "word": "arbre",
+      "emoji": "🌳",
+      "level": 3,
+      "blanks": [
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "word": "neige",
+      "emoji": "❄️",
+      "level": 3,
+      "blanks": [
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "word": "été",
+      "emoji": "🏖️",
+      "level": 3,
+      "blanks": [
+        [
+          0,
+          2
+        ]
+      ]
+    },
+    {
+      "word": "gâteau",
+      "emoji": "🎂",
+      "level": 3,
+      "blanks": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "word": "oiseau",
+      "emoji": "🐦",
+      "level": 3,
+      "blanks": [
+        [
+          0,
+          5
+        ]
+      ]
+    }
+  ],
+  "plural": [
+    {
+      "singular": "un chat",
+      "plural": "des chats",
+      "level": 1,
+      "rule": "s"
+    },
+    {
+      "singular": "une pomme",
+      "plural": "des pommes",
+      "level": 1,
+      "rule": "s"
+    },
+    {
+      "singular": "un ami",
+      "plural": "des amis",
+      "level": 1,
+      "rule": "s"
+    },
+    {
+      "singular": "une fleur",
+      "plural": "des fleurs",
+      "level": 1,
+      "rule": "s"
+    },
+    {
+      "singular": "un livre",
+      "plural": "des livres",
+      "level": 1,
+      "rule": "s"
+    },
+    {
+      "singular": "une maison",
+      "plural": "des maisons",
+      "level": 1,
+      "rule": "s"
+    },
+    {
+      "singular": "le ballon",
+      "plural": "les ballons",
+      "level": 2,
+      "rule": "s"
+    },
+    {
+      "singular": "la table",
+      "plural": "les tables",
+      "level": 2,
+      "rule": "s"
+    },
+    {
+      "singular": "le bateau",
+      "plural": "les bateaux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un gâteau",
+      "plural": "des gâteaux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un jeu",
+      "plural": "des jeux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un oiseau",
+      "plural": "des oiseaux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un chapeau",
+      "plural": "des chapeaux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un cheveu",
+      "plural": "des cheveux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un noyau",
+      "plural": "des noyaux",
+      "level": 2,
+      "rule": "x"
+    },
+    {
+      "singular": "un nez",
+      "plural": "des nez",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "une souris",
+      "plural": "des souris",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "un tapis",
+      "plural": "des tapis",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "une noix",
+      "plural": "des noix",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "un prix",
+      "plural": "des prix",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "un bras",
+      "plural": "des bras",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "le lynx",
+      "plural": "les lynx",
+      "level": 3,
+      "rule": "same"
+    },
+    {
+      "singular": "un tuyau",
+      "plural": "des tuyaux",
+      "level": 3,
+      "rule": "x"
+    },
+    {
+      "singular": "un feu",
+      "plural": "des feux",
+      "level": 3,
+      "rule": "x"
+    },
+    {
+      "singular": "un bijou",
+      "plural": "des bijoux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un caillou",
+      "plural": "des cailloux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un chou",
+      "plural": "des choux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un genou",
+      "plural": "des genoux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un hibou",
+      "plural": "des hiboux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un joujou",
+      "plural": "des joujoux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un pou",
+      "plural": "des poux",
+      "level": 4,
+      "rule": "xou"
+    },
+    {
+      "singular": "un trou",
+      "plural": "des trous",
+      "level": 4,
+      "rule": "sou"
+    },
+    {
+      "singular": "un clou",
+      "plural": "des clous",
+      "level": 4,
+      "rule": "sou"
+    },
+    {
+      "singular": "un kangourou",
+      "plural": "des kangourous",
+      "level": 4,
+      "rule": "sou"
+    },
+    {
+      "singular": "un cou",
+      "plural": "des cous",
+      "level": 4,
+      "rule": "sou"
+    },
+    {
+      "singular": "un pneu",
+      "plural": "des pneus",
+      "level": 4,
+      "rule": "eus"
+    },
+    {
+      "singular": "un bleu",
+      "plural": "des bleus",
+      "level": 4,
+      "rule": "eus"
+    },
+    {
+      "singular": "un chat gris",
+      "plural": "des chats gris",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "une pomme verte",
+      "plural": "des pommes vertes",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "un beau chapeau",
+      "plural": "des beaux chapeaux",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "un hibou roux",
+      "plural": "des hiboux roux",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "une petite souris",
+      "plural": "des petites souris",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "un gros caillou",
+      "plural": "des gros cailloux",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "une fleur bleue",
+      "plural": "des fleurs bleues",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "un ami joyeux",
+      "plural": "des amis joyeux",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "un nouveau jeu",
+      "plural": "des nouveaux jeux",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "le grand bateau",
+      "plural": "les grands bateaux",
+      "level": 5,
+      "rule": "gn"
+    },
+    {
+      "singular": "un cheval",
+      "plural": "des chevaux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un journal",
+      "plural": "des journaux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un animal",
+      "plural": "des animaux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un hôpital",
+      "plural": "des hôpitaux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un travail",
+      "plural": "des travaux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un vitrail",
+      "plural": "des vitraux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un canal",
+      "plural": "des canaux",
+      "level": 6,
+      "rule": "aux"
+    },
+    {
+      "singular": "un bal",
+      "plural": "des bals",
+      "level": 6,
+      "rule": "als"
+    },
+    {
+      "singular": "un carnaval",
+      "plural": "des carnavals",
+      "level": 6,
+      "rule": "als"
+    },
+    {
+      "singular": "un festival",
+      "plural": "des festivals",
+      "level": 6,
+      "rule": "als"
+    },
+    {
+      "singular": "un chandail",
+      "plural": "des chandails",
+      "level": 6,
+      "rule": "als"
+    },
+    {
+      "singular": "un éventail",
+      "plural": "des éventails",
+      "level": 6,
+      "rule": "als"
+    }
+  ]
+}
