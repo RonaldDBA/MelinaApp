@@ -96,6 +96,11 @@ export const parent = {
   practiceChoice: 'Choisir la prochaine activité',
 } as const;
 
+/** Name of each subject (parents' area and report). */
+export const subjectName = { french: 'Français', mathematics: 'Mathématiques', english: 'Anglais' } as const;
+/** CSS class of each subject's cards. */
+export const subjectClass = { french: 'fr', mathematics: 'ma', english: 'en' } as const;
+
 export function pickLine(lines: readonly string[], seed: number): string {
   return lines[Math.abs(seed) % lines.length] ?? lines[0] ?? '';
 }

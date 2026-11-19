@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChoiceSpec, Difficulty, DominoSpec, FrogJumpSpec, HiddenWordsSpec, NumberPathSpec, NumberTrainSpec } from '@melina/shared';
-import { dominoFaceLabel, dominoFaceValue, evaluate, games, generateExercise, generateGameRound, gridForms, hiddenWordLevels, hiddenWordOccurrences, schoolPool, schoolWeeks, skills, toPublic, wordLevel } from './index';
+import { dominoFaceLabel, dominoFaceValue, evaluate, games, generateExercise, generateGameRound, gridForms, hasPaper, hiddenWordLevels, hiddenWordOccurrences, schoolPool, schoolWeeks, skills, toPublic, wordLevel } from './index';
 
 const seeds = Array.from({ length: 150 }, (_, i) => 1000 + i * 37);
 const each = (gameId: string, fn: (ex: ReturnType<typeof generateGameRound>, d: Difficulty) => void) => {
@@ -63,7 +63,7 @@ describe('levels 4 and 5 (every skill goes up to 5)', () => {
   });
 
   it('paper exercises at levels 4 and 5: generated and graded fairly', () => {
-    for (const sk of skills) {
+    for (const sk of skills.filter((k) => hasPaper(k.id))) {
       for (const d of [4, 5, 6] as Difficulty[]) {
         for (const s of seeds.slice(0, 40)) {
           const ex = generateExercise(sk.id, d, s);
@@ -79,7 +79,7 @@ describe('levels 4 and 5 (every skill goes up to 5)', () => {
 
 describe('new mini-games: rounds always answerable and graded fairly', () => {
   it('the catalog has the games, each one linked to existing skills', () => {
-    expect(games.map((g) => g.id)).toEqual(['game.apple-crates', 'game.number-train', 'game.frog-jump', 'game.word-fishing', 'game.mystery-story', 'game.number-path', 'game.hidden-words', 'game.dominoes']);
+    expect(games.map((g) => g.id)).toEqual(['game.apple-crates', 'game.number-train', 'game.frog-jump', 'game.word-fishing', 'game.mystery-story', 'game.number-path', 'game.hidden-words', 'game.dominoes', 'game.listen-garden']);
     for (const g of games) for (const s of g.skills) expect(skills.some((k) => k.id === s), `${g.id} → ${s}`).toBe(true);
   });
 

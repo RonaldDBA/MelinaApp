@@ -431,6 +431,53 @@ describe('on-screen mini-games', () => {
   const start = async (app: App) => (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.apple-crates' } })).json();
   const answer = async (app: App, id: string, a: string) => app.inject({ method: 'POST', url: `/api/game-rounds/${id}/answer`, headers: H, payload: { answer: a } });
 
+  it('Le potager qui écoute (English): pictures by ear, evaluated on the server; a sound-alike miss teaches the model', async () => {
+    const app = await makeApp();
+    const games = (await app.inject({ method: 'GET', url: '/api/games', headers: H })).json();
+    expect(games.find((g: { id: string }) => g.id === 'game.listen-garden')).toMatchObject({ skills: ['en.listen-words'], roundsPerSession: 5, level: 1 });
+    const start = async () => (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.listen-garden' } })).json();
+    const r = await start();
+    expect(r.exercise).toMatchObject({ subject: 'english', skillId: 'en.listen-words', difficulty: 1, statement: 'Écoute bien.' });
+    expect(r.exercise.game).toMatchObject({ game: 'listen-pick', mode: 'word' });
+    expect(r.exercise.game.options).toHaveLength(3);
+    expect(JSON.stringify(r)).not.toContain('"expected"');
+    const right = expectedOf(r.id);
+    const wrong = r.exercise.game.options.find((o: string) => o !== right);
+    // only one of the shown pictures is a valid answer
+    expect((await answer(app, r.id, 'zebra-unknown')).statusCode).toBe(400);
+    const miss = (await answer(app, r.id, wrong)).json();
+    expect(miss.state).toBe('retry');
+    expect(miss.feedback.message).toMatch(/^Pas tout à fait. Écoute encore./);
+    const ok = (await answer(app, r.id, right)).json();
+    expect(ok.round.outcome).toMatchObject({ result: 'correct', help: 'hint' });
+    expect(ok.round.outcome.explanation).toMatch(/veut dire/);
+    // paper practice never picks the English skill (screen only, no reading)
+    for (let k = 0; k < 6; k++) {
+      const s = (await app.inject({ method: 'POST', url: '/api/sessions', headers: H, payload: { mode: 'practice', subject: 'any' } })).json();
+      const a = (await app.inject({ method: 'POST', url: '/api/assignments', headers: H, payload: { sessionId: s.id } })).json();
+      expect(a.exercise.subject).not.toBe('english');
+      await app.inject({ method: 'POST', url: `/api/assignments/${a.id}/cancel`, headers: H });
+      clock = new Date(clock.getTime() + 60_000);
+    }
+    // the model learns per word and theme, with French labels for the parents
+    const learned = (await app.inject({ method: 'GET', url: '/api/progress', headers: H })).json().learned.find((x: { skillId: string }) => x.skillId === 'en.listen-words');
+    expect(learned).toMatchObject({ answers: 1 });
+    // the staircase reaches level 4 the same day: a sound-alike appears and the contrast is in the tags
+    let found = false;
+    for (let k = 0; k < 40 && !found; k++) {
+      const x = await start();
+      if (x.exercise.difficulty >= 4) {
+        const sp = x.exercise.game;
+        expect(sp.mode === 'phrase' || sp.mode === 'riddle').toBe(true);
+        expect(sp.options.length).toBeGreaterThanOrEqual(4);
+        found = true;
+      }
+      await answer(app, x.id, expectedOf(x.id));
+      clock = new Date(clock.getTime() + 20_000);
+    }
+    expect(found).toBe(true);
+  });
+
   it('round: does not expose the answer, resumes the open round and evaluates on the server', async () => {
     const app = await makeApp();
     const r = await start(app);

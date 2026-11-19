@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { evaluate, generateExercise, skills, templates, toPublic } from './index';
+import { evaluate, games, generateExercise, hasPaper, skills, templates, toPublic } from './index';
 import type { Difficulty } from '@melina/shared';
 
 describe('catalog', () => {
-  it('has at least six skills, all with a generator', () => {
+  it('has at least six skills, all with a generator (paper or game); the English skills are screen-only', () => {
     expect(skills.length).toBeGreaterThanOrEqual(6);
-    for (const s of skills) expect(templates.some((t) => t.skillId === s.id)).toBe(true);
+    for (const s of skills) expect(templates.some((t) => t.skillId === s.id) || games.some((g) => g.skills.includes(s.id)), s.id).toBe(true);
+    expect(skills.filter((s) => !hasPaper(s.id)).map((s) => s.subject)).toEqual(['english']);
   });
 
   it('generates valid exercises for every level with real variation', () => {
-    for (const s of skills) {
+    for (const s of skills.filter((k) => hasPaper(k.id))) {
       for (const d of [1, 2, 3] as Difficulty[]) {
         const keys = new Set<string>();
         for (let seed = 1; seed <= 30; seed++) {

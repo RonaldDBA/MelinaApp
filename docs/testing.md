@@ -3,6 +3,40 @@
 Date: 17/11/2026. First in the development environment (Linux, Node 22.23, headless Chrome via Playwright);
 then **on the family's Windows** (Windows 11, section [Validation on Windows](#validation-on-windows-17112026-stage-1)).
 
+## English, stage 1: «Le potager qui écoute» (18/11/2026)
+
+**Tested (seen):**
+- **Content** (`english.test.ts`, 10 tests):
+  - Unique ids and pictures; every sound-alike pair points to existing words.
+  - At least 25 new words on each of levels 1–5, and at least 60 riddles.
+  - A riddle never says its own word, in at most 2 sentences.
+- **Rounds** (6 levels × up to 300 seeds):
+  - Right number of pictures, all different, with the answer among them. The answer is accepted and a distractor is not.
+  - No `expected` in what the child receives.
+  - Level 1: three different themes. Levels 2–3: same theme. Level 3: a sentence.
+  - Levels 4–5: a word with a sound-alike always meets it, and the contrast is tagged. Level 6: always a riddle.
+  - Real variety per level. Every tag has a French label, and the praise is at most 10 words.
+- **Model** (`learner.test.ts`): a lucky tap counts less, an error counts the same, and random tapping does not look like
+  knowing the words.
+- **Server** (`server.test.ts`):
+  - A level-1 round with 3 pictures, with no answer exposed. An invalid option gets 400; a wrong picture gets a retry
+    with «Écoute encore»; the right one is graded correct with help.
+  - Paper practice never picks English.
+  - The staircase reaches level 4 the same day, with a sentence or riddle and at least 4 pictures.
+- **E2E** (headless, muted; speech is a no-op, so the audio log is checked):
+  - The 9 home cards fit above «Sur papier».
+  - 3 pictures, and the English word is «spoken» once after the French instruction. It is never written on screen before
+    the answer.
+  - A mistake removes the picture and replays the word slower. The big speaker replays it.
+  - The result shows the picture and the English word. Result and end panels fit.
+  - Round 5 climbed to level 2. Levels 5 and 6 show 6 pictures with no overlap.
+  - Without an English voice: a French message for the parents, and no round is opened.
+
+**Not tested:**
+- The sound of the English voice itself (tests are silent by rule).
+- How Melina likes the game.
+- The emoji look on the family PC (they come from Windows' own emoji font).
+
 ## Difficulty that grows with her within the session (18/11/2026)
 
 **Reported by the guardian:** «my daughter thinks this is too easy, and I'm not seeing the difficulty growing» (Le train des nombres).

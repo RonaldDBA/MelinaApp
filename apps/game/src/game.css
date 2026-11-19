@@ -1963,3 +1963,132 @@
   height: 80px;
   font-size: 38px;
 }
+
+/* ------------------------------------------------------------------ home screen with more than 8 games: 5 per row */
+
+.card-game.c-mint {
+  --c1: #f1fff6;
+  --c2: #bff0d2;
+}
+.cards.many.lots {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px 24px;
+}
+.cards.many.lots .card-game {
+  grid-template-columns: 104px 1fr;
+  column-gap: 12px;
+  padding: 18px 16px;
+}
+.cards.many.lots .card-game .card-art {
+  width: 100px;
+  height: 100px;
+}
+.cards.many.lots .card-title {
+  font-size: 27px;
+}
+.cards.many.lots .card-sub {
+  font-size: 18px;
+}
+
+/* ------------------------------------------------------------------ Le potager qui écoute (English by ear) */
+
+.listen-speaker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  border: 8px solid #fff;
+  border-radius: 110px;
+  background: linear-gradient(170deg, #f1fff6, #bff0d2);
+  box-shadow: var(--panel-shadow);
+  font-family: inherit;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #145c34;
+  cursor: pointer;
+  padding: 0 34px;
+}
+.listen-speaker img {
+  width: 130px;
+  height: 130px;
+  flex: none;
+}
+.listen-speaker:active {
+  transform: scale(0.97);
+}
+.listen-card {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 8px solid #fff;
+  border-radius: 48px;
+  background: linear-gradient(170deg, #ffffff, #eaf7ff);
+  box-shadow: var(--panel-shadow);
+  cursor: pointer;
+  animation: pop 0.35s ease-out both;
+  transition: transform 0.15s, opacity 0.3s;
+}
+.listen-card:hover:not(:disabled) {
+  transform: translateY(-6px);
+}
+.listen-card:focus-visible {
+  outline: 8px solid #2b8cff;
+  outline-offset: 4px;
+}
+.listen-card.away {
+  opacity: 0.25;
+  transform: scale(0.9);
+  cursor: default;
+}
+.listen-pic {
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 230px;
+  line-height: 1;
+}
+.listen-card.small .listen-pic {
+  font-size: 150px;
+}
+.listen-pic.numeral {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 700;
+  color: #124a80;
+  font-size: 200px;
+}
+.listen-card.small .listen-pic.numeral {
+  font-size: 140px;
+}
+.listen-answer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin: 8px 0;
+}
+.listen-answer .listen-pic {
+  font-size: 150px;
+}
+.listen-answer .listen-pic.numeral {
+  font-size: 120px;
+}
+.listen-word {
+  font-size: 84px;
+  font-weight: 700;
+  color: #145c34;
+}
+.listen-hear {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  background: #bff0d2;
+  box-shadow: var(--panel-shadow);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.listen-hear img {
+  width: 64px;
+  height: 64px;
+}

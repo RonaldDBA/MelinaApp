@@ -30,6 +30,7 @@ const FALLBACK: Record<string, string> = {
   'fr.plural': 'Tu as bien regardé la fin des mots.',
   'fr.comprehension': 'Tu as retrouvé l’indice dans le texte.',
   'fr.spelling': 'Tu as bien écouté chaque son.',
+  'en.listen-words': 'Tu as bien écouté le mot anglais.',
 };
 
 export function strategyPraise(ex: ExerciseInstance): string {
@@ -37,6 +38,15 @@ export function strategyPraise(ex: ExerciseInstance): string {
   const k = ex.questionKey;
   const g = ex.game as Record<string, unknown> | undefined;
   switch (ex.skillId) {
+    case 'en.listen-words': {
+      if (t.has('en-devinette')) return 'Tu as compris toute la devinette en anglais.';
+      if (t.has('en-th')) return 'Tu as entendu le « th » de three.';
+      if (t.has('en-voyelle')) return 'Tu as entendu la voyelle courte ou longue.';
+      if (t.has('en-teen-ty')) return 'Tu as entendu « teen » ou « ty ».';
+      if (t.has('en-rime')) return 'Tu as bien écouté le premier son du mot.';
+      if (t.has('en-phrase')) return 'Tu as trouvé le mot dans la phrase anglaise.';
+      return FALLBACK['en.listen-words'] as string;
+    }
     case 'math.add-sub': {
       if (t.has('retenue-centaine')) return 'Tu as bien fait la retenue vers les centaines.';
       if (t.has('emprunt-centaine')) return 'Tu as bien échangé une centaine.';

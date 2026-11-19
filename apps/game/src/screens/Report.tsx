@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, type ProgressReport, type ReportTag } from '../api';
 import { fmtDate } from '../dates';
+import { i18n, type Subject } from '@melina/shared';
 
 /**
  * Progress report (week or month), compared with the previous period.
@@ -26,6 +27,7 @@ export const SKILL_ICON: Record<string, string> = {
   'fr.plural': '🎣',
   'fr.comprehension': '📖',
   'fr.spelling': '🔍',
+  'en.listen-words': '👂',
 };
 
 export function Kpi({ emoji, value, caption, color, delta }: { emoji: string; value: string; caption: string; color: string; delta: React.ReactNode }) {
@@ -217,14 +219,14 @@ export function Report() {
                 const t = TREND[s.trend] ?? (TREND.stable as { icon: string; label: string; cls: string });
                 const pct = s.firstTryRate ?? 0;
                 return (
-                  <div key={s.skillId} className={`rp-skill ${s.subject === 'french' ? 'fr' : 'ma'}`} data-skill={s.skillId}>
+                  <div key={s.skillId} className={`rp-skill ${i18n.subjectClass[s.subject as Subject] ?? 'ma'}`} data-skill={s.skillId}>
                     <div className="rp-skill-top">
                       <span className="rp-skill-icon" aria-hidden="true">
                         {SKILL_ICON[s.skillId] ?? '🌟'}
                       </span>
                       <div>
                         <strong>{s.title}</strong>
-                        <span className="rp-skill-sub">{s.subject === 'french' ? 'Français' : 'Mathématiques'} · {s.answers} activité{s.answers > 1 ? 's' : ''}</span>
+                        <span className="rp-skill-sub">{i18n.subjectName[s.subject as Subject] ?? ''} · {s.answers} activité{s.answers > 1 ? 's' : ''}</span>
                       </div>
                       <span className={`rp-trend ${t.cls}`}>
                         <span aria-hidden="true">{t.icon}</span> {t.label}

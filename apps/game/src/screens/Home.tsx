@@ -17,6 +17,7 @@ export const gameCards = [
   { id: 'game.number-path', title: 'Le chemin des nombres', sub: 'Trouve les nombres qui manquent', img: '/art/scene/path-card.svg', color: 'c-orange' },
   { id: 'game.hidden-words', title: 'Les mots cachés', sub: 'Trouve les mots, puis écris-les', img: 'loupe', color: 'c-yellow' },
   { id: 'game.dominoes', title: 'Les dominos des nombres', sub: 'Attache le même nombre', img: '/art/scene/domino-card.svg', color: 'c-pink' },
+  { id: 'game.listen-garden', title: 'Le potager qui écoute', sub: 'Écoute l’anglais, touche l’image', img: 'speaker_high_volume', color: 'c-mint' },
 ] as const;
 
 /** Cards with a catalogue piece: art approved by the parents shows here too. */
@@ -80,7 +81,7 @@ export function Home({
           </button>
         </p>
       )}
-      <section className={`cards ${gameCards.length > 5 ? 'many' : ''}`} aria-label="Jeux">
+      <section className={`cards ${gameCards.length > 5 ? 'many' : ''} ${gameCards.length > 8 ? 'lots' : ''}`} aria-label="Jeux">
         {gameCards.map((g, i) => {
           const info = games.find((x) => x.id === g.id);
           return info ? (

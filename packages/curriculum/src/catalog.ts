@@ -1,11 +1,13 @@
 import type { MissionDefinition, SkillDefinition, Subject } from '@melina/shared';
 import mathSkills from '../../../content/mathematics/skills.json';
 import frenchSkills from '../../../content/french/skills.json';
+import englishSkills from '../../../content/english/skills.json';
 import gardenMission from '../../../content/missions/garden.json';
 
 export const skills: SkillDefinition[] = [
   ...(mathSkills.skills as SkillDefinition[]),
   ...(frenchSkills.skills as SkillDefinition[]),
+  ...(englishSkills.skills as SkillDefinition[]),
 ];
 
 export const missions: MissionDefinition[] = [gardenMission as MissionDefinition];

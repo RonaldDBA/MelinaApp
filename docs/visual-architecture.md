@@ -42,6 +42,11 @@ Local data             SQLite + files in data/art, all on the PC
 
 ## 4. Scene and cards
 
+- **Le potager qui écoute** (`content/scenes/listen-garden.json`, 18/11/2026): garden background, a big speaker button at
+  the top and three card layouts (3, 4 and 6 pictures). The pictures are system emoji (Segoe UI Emoji on Windows) or
+  numerals, so no download was needed. The 6-picture layout has two rows that stay above Lila's bubble.
+- **Home screen with 9 games:** the cards go to 5 per row (class `lots`), so they still fit above «Sur papier».
+
 - `content/scenes/<game>.json`: background, zones (`pile`, `crates`, `panel`…) and sizes, all in stage points. There is one per game.
 - `content/art/specs.json`: style guide and one **card** per image (subject, size, transparency, prohibitions, built-in art, slot grid, character reference).
 - Scenes and cards enter the app at build time. Changing one of them requires rebuilding; the tests check that they are consistent.

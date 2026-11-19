@@ -49426,6 +49426,34 @@ var skills_default2 = {
   ]
 };
 
+// content/english/skills.json
+var skills_default3 = {
+  skills: [
+    {
+      id: "en.listen-words",
+      version: 1,
+      subject: "english",
+      cycle: 1,
+      grade: 2,
+      title: "Comprendre des mots anglais \xE0 l\u2019oral",
+      titleFr: "J\u2019\xE9coute des mots en anglais",
+      description: "Entend un mot ou une courte phrase en anglais et touche l\u2019image qui correspond (compr\xE9hension orale, sans lecture).",
+      prerequisites: [],
+      exerciseTypes: [],
+      levels: {
+        "1": "Un mot seul (couleurs, nombres 1 \xE0 10, premiers animaux, la classe); 3 images de th\xE8mes diff\xE9rents.",
+        "2": "Un mot seul, plus de th\xE8mes (jardin, corps, nourriture, nombres jusqu\u2019\xE0 20); 3 images du m\xEAme th\xE8me.",
+        "3": "Le mot dans une courte phrase (\xABWhere is the\u2026?\xBB, \xABWho is swimming?\xBB); 4 images du m\xEAme th\xE8me.",
+        "4": "Phrase et 4 images, dont un mot qui sonne presque pareil (ship / sheep, three / tree, thirteen / thirty).",
+        "5": "Phrase et 6 images, avec des mots qui se ressemblent; la ville, le ciel et les saisons, les animaux du Canada.",
+        "6": "D\xE9fi : une devinette en anglais de 2 phrases qui ne dit jamais le mot; 6 images."
+      },
+      curriculumRef: "PFEQ Anglais, langue seconde, 1er cycle du primaire (2006) \u2014 comp\xE9tence 1 : r\xE9agir \xE0 des textes entendus (compr\xE9hension orale, sans attente en lecture ni en \xE9criture). Niveaux 3 \xE0 6 : vocabulaire th\xE9matique du 2e cycle (Progression des apprentissages, 2009).",
+      reviewStatus: "to-validate"
+    }
+  ]
+};
+
 // content/missions/garden.json
 var garden_default = {
   id: "garden-seeds",
@@ -49466,7 +49494,8 @@ var garden_default = {
 // packages/curriculum/src/catalog.ts
 var skills = [
   ...skills_default.skills,
-  ...skills_default2.skills
+  ...skills_default2.skills,
+  ...skills_default3.skills
 ];
 var missions = [garden_default];
 function skillsBySubject(subject) {
@@ -51551,6 +51580,359 @@ var school_words_default = {
   ]
 };
 
+// content/english/words.json
+var words_default2 = {
+  about: "Original English word list for the listening games (Canadian spelling). Pictures are system emoji or numerals. kind: noun (a/the), plural, colour, number, person, action (ing form), feeling. like = sound-alike partners used as diagnostic distractors from level 4. clue = original level-6 riddle that never says the word.",
+  words: [
+    { id: "red", en: "red", fr: "rouge", pic: "\u{1F534}", theme: "colours", level: 1, kind: "colour" },
+    { id: "blue", en: "blue", fr: "bleu", pic: "\u{1F535}", theme: "colours", level: 1, kind: "colour" },
+    { id: "yellow", en: "yellow", fr: "jaune", pic: "\u{1F7E1}", theme: "colours", level: 1, kind: "colour" },
+    { id: "green", en: "green", fr: "vert", pic: "\u{1F7E2}", theme: "colours", level: 1, kind: "colour" },
+    { id: "orange", en: "orange", fr: "orange", pic: "\u{1F7E0}", theme: "colours", level: 1, kind: "colour", cognate: true },
+    { id: "purple", en: "purple", fr: "violet", pic: "\u{1F7E3}", theme: "colours", level: 1, kind: "colour" },
+    { id: "brown", en: "brown", fr: "brun", pic: "\u{1F7E4}", theme: "colours", level: 1, kind: "colour" },
+    { id: "black", en: "black", fr: "noir", pic: "\u26AB", theme: "colours", level: 1, kind: "colour" },
+    { id: "white", en: "white", fr: "blanc", pic: "\u26AA", theme: "colours", level: 1, kind: "colour" },
+    { id: "one", en: "one", fr: "un", pic: "1", theme: "numbers", level: 1, kind: "number" },
+    { id: "two", en: "two", fr: "deux", pic: "2", theme: "numbers", level: 1, kind: "number" },
+    { id: "three", en: "three", fr: "trois", pic: "3", theme: "numbers", level: 1, kind: "number" },
+    { id: "four", en: "four", fr: "quatre", pic: "4", theme: "numbers", level: 1, kind: "number" },
+    { id: "five", en: "five", fr: "cinq", pic: "5", theme: "numbers", level: 1, kind: "number" },
+    { id: "six", en: "six", fr: "six", pic: "6", theme: "numbers", level: 1, kind: "number", cognate: true },
+    { id: "seven", en: "seven", fr: "sept", pic: "7", theme: "numbers", level: 1, kind: "number" },
+    { id: "eight", en: "eight", fr: "huit", pic: "8", theme: "numbers", level: 1, kind: "number" },
+    { id: "nine", en: "nine", fr: "neuf", pic: "9", theme: "numbers", level: 1, kind: "number" },
+    { id: "ten", en: "ten", fr: "dix", pic: "10", theme: "numbers", level: 1, kind: "number" },
+    { id: "cat", en: "cat", fr: "chat", pic: "\u{1F431}", theme: "animals", level: 1, kind: "noun", clue: "It says meow. It likes to sleep in the sun." },
+    { id: "dog", en: "dog", fr: "chien", pic: "\u{1F436}", theme: "animals", level: 1, kind: "noun", clue: "It says woof. It is a good friend." },
+    { id: "duck", en: "duck", fr: "canard", pic: "\u{1F986}", theme: "animals", level: 1, kind: "noun", clue: "It can swim and fly. It says quack." },
+    { id: "frog", en: "frog", fr: "grenouille", pic: "\u{1F438}", theme: "animals", level: 1, kind: "noun", clue: "It can jump very far. It lives near a pond." },
+    { id: "cow", en: "cow", fr: "vache", pic: "\u{1F42E}", theme: "animals", level: 1, kind: "noun", clue: "It lives on a farm. It says moo." },
+    { id: "fish", en: "fish", fr: "poisson", pic: "\u{1F41F}", theme: "animals", level: 1, kind: "noun", clue: "It lives in the water. It can swim, but it can't walk." },
+    { id: "bird", en: "bird", fr: "oiseau", pic: "\u{1F426}", theme: "animals", level: 1, kind: "noun", clue: "It has wings and feathers. It can sing." },
+    { id: "horse", en: "horse", fr: "cheval", pic: "\u{1F434}", theme: "animals", level: 1, kind: "noun", clue: "It is big and fast. You can ride on its back." },
+    { id: "pig", en: "pig", fr: "cochon", pic: "\u{1F437}", theme: "animals", level: 1, kind: "noun", clue: "It is pink. It likes to play in the mud." },
+    { id: "rabbit", en: "rabbit", fr: "lapin", pic: "\u{1F430}", theme: "animals", level: 1, kind: "noun", clue: "It has long ears. It hops." },
+    { id: "book", en: "book", fr: "livre", pic: "\u{1F4D6}", theme: "classroom", level: 1, kind: "noun", clue: "You read it. It has many pages." },
+    { id: "pencil", en: "pencil", fr: "crayon", pic: "\u270F\uFE0F", theme: "classroom", level: 1, kind: "noun", clue: "You write with it. It has an eraser on top." },
+    { id: "chair", en: "chair", fr: "chaise", pic: "\u{1FA91}", theme: "classroom", level: 1, kind: "noun", clue: "You sit on it." },
+    { id: "crayon", en: "crayon", fr: "crayon de cire", pic: "\u{1F58D}\uFE0F", theme: "classroom", level: 1, kind: "noun", falseFriend: true },
+    { id: "ball", en: "ball", fr: "ballon", pic: "\u26BD", theme: "classroom", level: 1, kind: "noun", clue: "It is round. You can kick it or throw it." },
+    { id: "bee", en: "bee", fr: "abeille", pic: "\u{1F41D}", theme: "animals", level: 2, kind: "noun", clue: "It is yellow and black. It makes honey." },
+    { id: "worm", en: "worm", fr: "ver de terre", pic: "\u{1FAB1}", theme: "animals", level: 2, kind: "noun", clue: "It is long and thin. It lives in the ground." },
+    { id: "mouse", en: "mouse", fr: "souris", pic: "\u{1F42D}", theme: "animals", level: 2, kind: "noun", clue: "It is small and grey. It likes cheese." },
+    { id: "sheep", en: "sheep", fr: "mouton", pic: "\u{1F411}", theme: "animals", level: 2, kind: "noun", clue: "It has soft white wool. It says baa." },
+    { id: "chicken", en: "chicken", fr: "poule", pic: "\u{1F414}", theme: "animals", level: 2, kind: "noun", clue: "It lives on a farm. It lays eggs." },
+    { id: "bear", en: "bear", fr: "ours", pic: "\u{1F43B}", theme: "animals", level: 2, kind: "noun", clue: "It is big and brown. It sleeps all winter." },
+    { id: "lion", en: "lion", fr: "lion", pic: "\u{1F981}", theme: "animals", level: 2, kind: "noun", cognate: true, clue: "It is the king of the jungle. It roars." },
+    { id: "monkey", en: "monkey", fr: "singe", pic: "\u{1F435}", theme: "animals", level: 2, kind: "noun", clue: "It climbs trees. It likes bananas." },
+    { id: "elephant", en: "elephant", fr: "\xE9l\xE9phant", pic: "\u{1F418}", theme: "animals", level: 2, kind: "noun", cognate: true, clue: "It is very big and grey. It has a long nose." },
+    { id: "snake", en: "snake", fr: "serpent", pic: "\u{1F40D}", theme: "animals", level: 2, kind: "noun", clue: "It is long. It has no legs." },
+    { id: "giraffe", en: "giraffe", fr: "girafe", pic: "\u{1F992}", theme: "animals", level: 2, kind: "noun", cognate: true, clue: "It has a very long neck." },
+    { id: "tiger", en: "tiger", fr: "tigre", pic: "\u{1F42F}", theme: "animals", level: 2, kind: "noun", cognate: true, clue: "It is orange with black stripes." },
+    { id: "zebra", en: "zebra", fr: "z\xE8bre", pic: "\u{1F993}", theme: "animals", level: 2, kind: "noun", cognate: true, clue: "It has black and white stripes. It lives in Africa." },
+    { id: "flower", en: "flower", fr: "fleur", pic: "\u{1F338}", theme: "garden", level: 2, kind: "noun", clue: "It grows in the garden. Bees love it." },
+    { id: "tree", en: "tree", fr: "arbre", pic: "\u{1F333}", theme: "garden", level: 2, kind: "noun", clue: "It is tall. It has leaves and branches." },
+    { id: "apple", en: "apple", fr: "pomme", pic: "\u{1F34E}", theme: "garden", level: 2, kind: "noun", article: "an", clue: "It is a fruit. It can be red or green." },
+    { id: "sun", en: "sun", fr: "soleil", pic: "\u2600\uFE0F", theme: "garden", level: 2, kind: "noun", clue: "It is in the sky. It is hot and bright." },
+    { id: "seed", en: "seed", fr: "graine", pic: "\u{1F331}", theme: "garden", level: 2, kind: "noun" },
+    { id: "leaf", en: "leaf", fr: "feuille", pic: "\u{1F343}", theme: "garden", level: 2, kind: "noun" },
+    { id: "carrot", en: "carrot", fr: "carotte", pic: "\u{1F955}", theme: "garden", level: 2, kind: "noun", cognate: true, clue: "It is orange. It grows under the ground." },
+    { id: "pear", en: "pear", fr: "poire", pic: "\u{1F350}", theme: "garden", level: 2, kind: "noun" },
+    { id: "strawberry", en: "strawberry", fr: "fraise", pic: "\u{1F353}", theme: "garden", level: 2, kind: "noun", clue: "It is a small red fruit with little seeds on it." },
+    { id: "girl", en: "girl", fr: "fille", pic: "\u{1F467}", theme: "people", level: 2, kind: "person" },
+    { id: "boy", en: "boy", fr: "gar\xE7on", pic: "\u{1F466}", theme: "people", level: 2, kind: "person" },
+    { id: "baby", en: "baby", fr: "b\xE9b\xE9", pic: "\u{1F476}", theme: "people", level: 2, kind: "person", cognate: true },
+    { id: "grandma", en: "grandma", fr: "grand-maman", pic: "\u{1F475}", theme: "people", level: 2, kind: "person", say: "Grandma" },
+    { id: "grandpa", en: "grandpa", fr: "grand-papa", pic: "\u{1F474}", theme: "people", level: 2, kind: "person", say: "Grandpa" },
+    { id: "nose", en: "nose", fr: "nez", pic: "\u{1F443}", theme: "body", level: 2, kind: "noun", clue: "It is on your face. You smell with it." },
+    { id: "ear", en: "ear", fr: "oreille", pic: "\u{1F442}", theme: "body", level: 2, kind: "noun", article: "an", clue: "You hear with it." },
+    { id: "eye", en: "eye", fr: "\u0153il", pic: "\u{1F441}\uFE0F", theme: "body", level: 2, kind: "noun", article: "an", clue: "You see with it." },
+    { id: "mouth", en: "mouth", fr: "bouche", pic: "\u{1F444}", theme: "body", level: 2, kind: "noun", clue: "You eat and talk with it." },
+    { id: "hand", en: "hand", fr: "main", pic: "\u270B", theme: "body", level: 2, kind: "noun", clue: "It has five fingers." },
+    { id: "foot", en: "foot", fr: "pied", pic: "\u{1F9B6}", theme: "body", level: 2, kind: "noun", clue: "You put a sock on it." },
+    { id: "leg", en: "leg", fr: "jambe", pic: "\u{1F9B5}", theme: "body", level: 2, kind: "noun" },
+    { id: "banana", en: "banana", fr: "banane", pic: "\u{1F34C}", theme: "food", level: 2, kind: "noun", cognate: true, clue: "It is a long yellow fruit." },
+    { id: "bread", en: "bread", fr: "pain", pic: "\u{1F35E}", theme: "food", level: 2, kind: "noun", clue: "You make toast with it." },
+    { id: "milk", en: "milk", fr: "lait", pic: "\u{1F95B}", theme: "food", level: 2, kind: "noun", clue: "It is white. You drink it with cookies." },
+    { id: "egg", en: "egg", fr: "\u0153uf", pic: "\u{1F95A}", theme: "food", level: 2, kind: "noun", article: "an", clue: "A chicken lays it." },
+    { id: "cheese", en: "cheese", fr: "fromage", pic: "\u{1F9C0}", theme: "food", level: 2, kind: "noun", clue: "It is yellow. Mice love it." },
+    { id: "cake", en: "cake", fr: "g\xE2teau", pic: "\u{1F370}", theme: "food", level: 2, kind: "noun", clue: "It is sweet. You eat it at a party." },
+    { id: "pizza", en: "pizza", fr: "pizza", pic: "\u{1F355}", theme: "food", level: 2, kind: "noun", cognate: true, clue: "It is round. It has cheese and tomato sauce on top." },
+    { id: "juice", en: "juice", fr: "jus", pic: "\u{1F9C3}", theme: "food", level: 2, kind: "noun" },
+    { id: "eleven", en: "eleven", fr: "onze", pic: "11", theme: "numbers", level: 2, kind: "number" },
+    { id: "twelve", en: "twelve", fr: "douze", pic: "12", theme: "numbers", level: 2, kind: "number" },
+    { id: "thirteen", en: "thirteen", fr: "treize", pic: "13", theme: "numbers", level: 2, kind: "number" },
+    { id: "fourteen", en: "fourteen", fr: "quatorze", pic: "14", theme: "numbers", level: 2, kind: "number" },
+    { id: "fifteen", en: "fifteen", fr: "quinze", pic: "15", theme: "numbers", level: 2, kind: "number" },
+    { id: "sixteen", en: "sixteen", fr: "seize", pic: "16", theme: "numbers", level: 2, kind: "number" },
+    { id: "seventeen", en: "seventeen", fr: "dix-sept", pic: "17", theme: "numbers", level: 2, kind: "number" },
+    { id: "eighteen", en: "eighteen", fr: "dix-huit", pic: "18", theme: "numbers", level: 2, kind: "number" },
+    { id: "nineteen", en: "nineteen", fr: "dix-neuf", pic: "19", theme: "numbers", level: 2, kind: "number" },
+    { id: "twenty", en: "twenty", fr: "vingt", pic: "20", theme: "numbers", level: 2, kind: "number" },
+    { id: "cap", en: "cap", fr: "casquette", pic: "\u{1F9E2}", theme: "clothes", level: 3, kind: "noun" },
+    { id: "hat", en: "hat", fr: "chapeau", pic: "\u{1F452}", theme: "clothes", level: 3, kind: "noun" },
+    { id: "mittens", en: "mittens", fr: "mitaines", pic: "\u{1F9E4}", theme: "clothes", level: 3, kind: "plural", cognate: true, clue: "You wear them on your hands when it is cold." },
+    { id: "scarf", en: "scarf", fr: "foulard", pic: "\u{1F9E3}", theme: "clothes", level: 3, kind: "noun", clue: "You wear it around your neck." },
+    { id: "boots", en: "boots", fr: "bottes", pic: "\u{1F462}", theme: "clothes", level: 3, kind: "plural", clue: "You wear them on your feet in the snow." },
+    { id: "coat", en: "coat", fr: "manteau", pic: "\u{1F9E5}", theme: "clothes", level: 3, kind: "noun" },
+    { id: "socks", en: "socks", fr: "bas", pic: "\u{1F9E6}", theme: "clothes", level: 3, kind: "plural" },
+    { id: "dress", en: "dress", fr: "robe", pic: "\u{1F457}", theme: "clothes", level: 3, kind: "noun" },
+    { id: "shirt", en: "T-shirt", fr: "chandail", pic: "\u{1F455}", theme: "clothes", level: 3, kind: "noun" },
+    { id: "teddy", en: "teddy bear", fr: "ourson en peluche", pic: "\u{1F9F8}", theme: "toys", level: 3, kind: "noun", clue: "It is soft. You hug it at bedtime." },
+    { id: "kite", en: "kite", fr: "cerf-volant", pic: "\u{1FA81}", theme: "toys", level: 3, kind: "noun", clue: "It flies in the sky when it is windy." },
+    { id: "car", en: "car", fr: "auto", pic: "\u{1F697}", theme: "toys", level: 3, kind: "noun" },
+    { id: "train", en: "train", fr: "train", pic: "\u{1F682}", theme: "toys", level: 3, kind: "noun", cognate: true },
+    { id: "balloon", en: "balloon", fr: "ballon gonflable", pic: "\u{1F388}", theme: "toys", level: 3, kind: "noun" },
+    { id: "drum", en: "drum", fr: "tambour", pic: "\u{1F941}", theme: "toys", level: 3, kind: "noun", clue: "You hit it to make music. Boom, boom!" },
+    { id: "robot", en: "robot", fr: "robot", pic: "\u{1F916}", theme: "toys", level: 3, kind: "noun", cognate: true },
+    { id: "doll", en: "doll", fr: "poup\xE9e", pic: "\u{1FA86}", theme: "toys", level: 3, kind: "noun" },
+    { id: "rain", en: "rain", fr: "pluie", pic: "\u{1F327}\uFE0F", theme: "weather", level: 3, kind: "noun", article: "-", clue: "It falls from the sky and makes you wet." },
+    { id: "snow", en: "snow", fr: "neige", pic: "\u2744\uFE0F", theme: "weather", level: 3, kind: "noun", article: "-", clue: "It is white and cold. It falls in winter." },
+    { id: "cloud", en: "cloud", fr: "nuage", pic: "\u2601\uFE0F", theme: "weather", level: 3, kind: "noun" },
+    { id: "wind", en: "wind", fr: "vent", pic: "\u{1F4A8}", theme: "weather", level: 3, kind: "noun", article: "-" },
+    { id: "rainbow", en: "rainbow", fr: "arc-en-ciel", pic: "\u{1F308}", theme: "weather", level: 3, kind: "noun", clue: "You can see it in the sky after a storm. It has many colours." },
+    { id: "snowman", en: "snowman", fr: "bonhomme de neige", pic: "\u26C4", theme: "weather", level: 3, kind: "noun", clue: "Children build it in winter. It melts in the spring." },
+    { id: "run", en: "run", ing: "running", fr: "courir", pic: "\u{1F3C3}", theme: "actions", level: 3, kind: "action" },
+    { id: "swim", en: "swim", ing: "swimming", fr: "nager", pic: "\u{1F3CA}", theme: "actions", level: 3, kind: "action" },
+    { id: "dance", en: "dance", ing: "dancing", fr: "danser", pic: "\u{1F483}", theme: "actions", level: 3, kind: "action", cognate: true },
+    { id: "sleep", en: "sleep", ing: "sleeping", fr: "dormir", pic: "\u{1F634}", theme: "actions", level: 3, kind: "action" },
+    { id: "ski", en: "ski", ing: "skiing", fr: "faire du ski", pic: "\u26F7\uFE0F", theme: "actions", level: 3, kind: "action", cognate: true },
+    { id: "skate", en: "skate", ing: "skating", fr: "patiner", pic: "\u26F8\uFE0F", theme: "actions", level: 3, kind: "action" },
+    { id: "ride", en: "ride a bike", ing: "riding a bike", fr: "faire du v\xE9lo", pic: "\u{1F6B4}", theme: "actions", level: 3, kind: "action" },
+    { id: "climb", en: "climb", ing: "climbing", fr: "grimper", pic: "\u{1F9D7}", theme: "actions", level: 3, kind: "action" },
+    { id: "house", en: "house", fr: "maison", pic: "\u{1F3E0}", theme: "house", level: 4, kind: "noun" },
+    { id: "bed", en: "bed", fr: "lit", pic: "\u{1F6CF}\uFE0F", theme: "house", level: 4, kind: "noun", clue: "You sleep in it at night." },
+    { id: "door", en: "door", fr: "porte", pic: "\u{1F6AA}", theme: "house", level: 4, kind: "noun", clue: "You open it to go in or out." },
+    { id: "window", en: "window", fr: "fen\xEAtre", pic: "\u{1FA9F}", theme: "house", level: 4, kind: "noun" },
+    { id: "bath", en: "bath", fr: "bain", pic: "\u{1F6C1}", theme: "house", level: 4, kind: "noun", clue: "You get in the water to get clean." },
+    { id: "light", en: "light", fr: "lumi\xE8re", pic: "\u{1F4A1}", theme: "house", level: 4, kind: "noun" },
+    { id: "key", en: "key", fr: "cl\xE9", pic: "\u{1F511}", theme: "house", level: 4, kind: "noun", clue: "You need it to open a lock." },
+    { id: "clock", en: "clock", fr: "horloge", pic: "\u{1F552}", theme: "house", level: 4, kind: "noun", clue: "It tells you the time." },
+    { id: "couch", en: "couch", fr: "divan", pic: "\u{1F6CB}\uFE0F", theme: "house", level: 4, kind: "noun" },
+    { id: "spoon", en: "spoon", fr: "cuill\xE8re", pic: "\u{1F944}", theme: "house", level: 4, kind: "noun", clue: "You eat soup with it." },
+    { id: "school", en: "school", fr: "\xE9cole", pic: "\u{1F3EB}", theme: "school", level: 4, kind: "noun" },
+    { id: "bus", en: "school bus", fr: "autobus scolaire", pic: "\u{1F68C}", theme: "school", level: 4, kind: "noun", clue: "It is big and yellow. It takes children to class." },
+    { id: "backpack", en: "backpack", fr: "sac \xE0 dos", pic: "\u{1F392}", theme: "school", level: 4, kind: "noun" },
+    { id: "scissors", en: "scissors", fr: "ciseaux", pic: "\u2702\uFE0F", theme: "school", level: 4, kind: "plural", clue: "You cut paper with them." },
+    { id: "ruler", en: "ruler", fr: "r\xE8gle", pic: "\u{1F4CF}", theme: "school", level: 4, kind: "noun" },
+    { id: "computer", en: "computer", fr: "ordinateur", pic: "\u{1F4BB}", theme: "school", level: 4, kind: "noun" },
+    { id: "teacher", en: "teacher", fr: "enseignante", pic: "\u{1F9D1}\u200D\u{1F3EB}", theme: "school", level: 4, kind: "person", clue: "This person helps you learn to read and count." },
+    { id: "happy", en: "happy", fr: "content", pic: "\u{1F600}", theme: "feelings", level: 4, kind: "feeling", clue: "You smile when you feel like this." },
+    { id: "sad", en: "sad", fr: "triste", pic: "\u{1F622}", theme: "feelings", level: 4, kind: "feeling", clue: "You cry when you feel like this." },
+    { id: "angry", en: "angry", fr: "f\xE2ch\xE9", pic: "\u{1F620}", theme: "feelings", level: 4, kind: "feeling" },
+    { id: "tired", en: "tired", fr: "fatigu\xE9", pic: "\u{1F971}", theme: "feelings", level: 4, kind: "feeling", clue: "You feel like this at bedtime." },
+    { id: "scared", en: "scared", fr: "apeur\xE9", pic: "\u{1F628}", theme: "feelings", level: 4, kind: "feeling" },
+    { id: "sick", en: "sick", fr: "malade", pic: "\u{1F912}", theme: "feelings", level: 4, kind: "feeling", clue: "You feel like this when you have a fever." },
+    { id: "surprised", en: "surprised", fr: "surpris", pic: "\u{1F62E}", theme: "feelings", level: 4, kind: "feeling", cognate: true },
+    { id: "thirty", en: "thirty", fr: "trente", pic: "30", theme: "numbers", level: 4, kind: "number" },
+    { id: "forty", en: "forty", fr: "quarante", pic: "40", theme: "numbers", level: 4, kind: "number" },
+    { id: "fifty", en: "fifty", fr: "cinquante", pic: "50", theme: "numbers", level: 4, kind: "number" },
+    { id: "ship", en: "ship", fr: "navire", pic: "\u{1F6A2}", theme: "transport", level: 4, kind: "noun" },
+    { id: "boat", en: "boat", fr: "bateau", pic: "\u26F5", theme: "transport", level: 4, kind: "noun" },
+    { id: "truck", en: "truck", fr: "camion", pic: "\u{1F69A}", theme: "transport", level: 4, kind: "noun" },
+    { id: "plane", en: "plane", fr: "avion", pic: "\u2708\uFE0F", theme: "transport", level: 4, kind: "noun", clue: "It flies high in the sky. It takes people far away." },
+    { id: "bike", en: "bike", fr: "v\xE9lo", pic: "\u{1F6B2}", theme: "transport", level: 4, kind: "noun" },
+    { id: "helicopter", en: "helicopter", fr: "h\xE9licopt\xE8re", pic: "\u{1F681}", theme: "transport", level: 4, kind: "noun", cognate: true },
+    { id: "rose", en: "rose", fr: "rose", pic: "\u{1F339}", theme: "garden", level: 4, kind: "noun", cognate: true },
+    { id: "snail", en: "snail", fr: "escargot", pic: "\u{1F40C}", theme: "animals", level: 4, kind: "noun", clue: "It is tiny and very slow. It leaves a shiny trail." },
+    { id: "goat", en: "goat", fr: "ch\xE8vre", pic: "\u{1F410}", theme: "animals", level: 4, kind: "noun" },
+    { id: "hospital", en: "hospital", fr: "h\xF4pital", pic: "\u{1F3E5}", theme: "town", level: 5, kind: "noun", cognate: true, clue: "Doctors and nurses work there." },
+    { id: "store", en: "store", fr: "magasin", pic: "\u{1F3EA}", theme: "town", level: 5, kind: "noun" },
+    { id: "bakery", en: "bakery", fr: "boulangerie", pic: "\u{1F950}", theme: "town", level: 5, kind: "noun", clue: "You buy bread and croissants there." },
+    { id: "library", en: "library", fr: "biblioth\xE8que", pic: "\u{1F4DA}", theme: "town", level: 5, kind: "noun", falseFriend: true, clue: "You can borrow books there for free." },
+    { id: "park", en: "park", fr: "parc", pic: "\u{1F3DE}\uFE0F", theme: "town", level: 5, kind: "noun", cognate: true },
+    { id: "firefighter", en: "firefighter", fr: "pompi\xE8re", pic: "\u{1F9D1}\u200D\u{1F692}", theme: "town", level: 5, kind: "person", clue: "This person puts out fires." },
+    { id: "police", en: "police officer", fr: "polici\xE8re", pic: "\u{1F46E}", theme: "town", level: 5, kind: "person" },
+    { id: "firetruck", en: "fire truck", fr: "camion de pompiers", pic: "\u{1F692}", theme: "town", level: 5, kind: "noun", clue: "It is big and red. It has a long ladder and a loud siren." },
+    { id: "ambulance", en: "ambulance", fr: "ambulance", pic: "\u{1F691}", theme: "town", level: 5, kind: "noun", article: "an", cognate: true, clue: "It takes sick people to the doctor, very fast." },
+    { id: "restaurant", en: "restaurant", fr: "restaurant", pic: "\u{1F37D}\uFE0F", theme: "town", level: 5, kind: "noun", cognate: true },
+    { id: "star", en: "star", fr: "\xE9toile", pic: "\u2B50", theme: "seasons", level: 5, kind: "noun", clue: "It shines in the sky at night. It is very, very far." },
+    { id: "moon", en: "moon", fr: "lune", pic: "\u{1F319}", theme: "seasons", level: 5, kind: "noun", clue: "You see it in the sky at night. Sometimes it is round." },
+    { id: "birthday", en: "birthday cake", fr: "g\xE2teau de f\xEAte", pic: "\u{1F382}", theme: "seasons", level: 5, kind: "noun" },
+    { id: "christmas", en: "Christmas tree", fr: "sapin de No\xEBl", pic: "\u{1F384}", theme: "seasons", level: 5, kind: "noun" },
+    { id: "pumpkin", en: "pumpkin", fr: "citrouille", pic: "\u{1F383}", theme: "seasons", level: 5, kind: "noun", clue: "It is big and orange. You see it at Halloween." },
+    { id: "beach", en: "beach", fr: "plage", pic: "\u{1F3D6}\uFE0F", theme: "seasons", level: 5, kind: "noun", clue: "There is sand and water. You go there in summer." },
+    { id: "fall", en: "fall", fr: "automne", pic: "\u{1F342}", theme: "seasons", level: 5, kind: "noun", article: "-", say: "fall" },
+    { id: "beaver", en: "beaver", fr: "castor", pic: "\u{1F9AB}", theme: "wild", level: 5, kind: "noun", clue: "It builds a dam in the river. It is on the Canadian nickel." },
+    { id: "owl", en: "owl", fr: "hibou", pic: "\u{1F989}", theme: "wild", level: 5, kind: "noun", article: "an", clue: "It is awake at night. It says hoo, hoo." },
+    { id: "fox", en: "fox", fr: "renard", pic: "\u{1F98A}", theme: "wild", level: 5, kind: "noun", clue: "It is orange with a big fluffy tail. It lives in the forest." },
+    { id: "deer", en: "deer", fr: "chevreuil", pic: "\u{1F98C}", theme: "wild", level: 5, kind: "noun" },
+    { id: "squirrel", en: "squirrel", fr: "\xE9cureuil", pic: "\u{1F43F}\uFE0F", theme: "wild", level: 5, kind: "noun", clue: "It lives in a tree. It hides nuts for the winter." },
+    { id: "butterfly", en: "butterfly", fr: "papillon", pic: "\u{1F98B}", theme: "wild", level: 5, kind: "noun", clue: "It has big beautiful wings. Before, it was a caterpillar." },
+    { id: "spider", en: "spider", fr: "araign\xE9e", pic: "\u{1F577}\uFE0F", theme: "wild", level: 5, kind: "noun", clue: "It has eight legs. It makes a web." },
+    { id: "turtle", en: "turtle", fr: "tortue", pic: "\u{1F422}", theme: "wild", level: 5, kind: "noun", clue: "It is slow. It carries a hard shell on its back." },
+    { id: "whale", en: "whale", fr: "baleine", pic: "\u{1F433}", theme: "wild", level: 5, kind: "noun", clue: "It is the biggest animal in the sea." },
+    { id: "penguin", en: "penguin", fr: "manchot", pic: "\u{1F427}", theme: "wild", level: 5, kind: "noun", clue: "It is a black and white bird. It can't fly, but it can swim." },
+    { id: "thumb", en: "thumb", fr: "pouce", pic: "\u{1F44D}", theme: "body", level: 6, kind: "noun", clue: "It is the short, thick finger on your hand." },
+    { id: "tooth", en: "tooth", fr: "dent", pic: "\u{1F9B7}", theme: "body", level: 6, kind: "noun", clue: "It is white and hard. You brush it every day." }
+  ],
+  pairs: [
+    { a: "ship", b: "sheep", tag: "en-voyelle" },
+    { a: "bread", b: "bed", tag: "en-voyelle" },
+    { a: "three", b: "tree", tag: "en-th" },
+    { a: "thirteen", b: "thirty", tag: "en-teen-ty" },
+    { a: "fourteen", b: "forty", tag: "en-teen-ty" },
+    { a: "fifteen", b: "fifty", tag: "en-teen-ty" },
+    { a: "cat", b: "hat", tag: "en-rime" },
+    { a: "bear", b: "pear", tag: "en-rime" },
+    { a: "bear", b: "chair", tag: "en-rime" },
+    { a: "pear", b: "chair", tag: "en-rime" },
+    { a: "boat", b: "coat", tag: "en-rime" },
+    { a: "boat", b: "goat", tag: "en-rime" },
+    { a: "coat", b: "goat", tag: "en-rime" },
+    { a: "mouse", b: "house", tag: "en-rime" },
+    { a: "snake", b: "cake", tag: "en-rime" },
+    { a: "car", b: "star", tag: "en-rime" },
+    { a: "rose", b: "nose", tag: "en-rime" },
+    { a: "duck", b: "truck", tag: "en-rime" },
+    { a: "rain", b: "train", tag: "en-rime" },
+    { a: "moon", b: "spoon", tag: "en-rime" },
+    { a: "snail", b: "whale", tag: "en-rime" },
+    { a: "light", b: "kite", tag: "en-rime" },
+    { a: "frog", b: "dog", tag: "en-rime" },
+    { a: "egg", b: "leg", tag: "en-rime" },
+    { a: "bee", b: "key", tag: "en-rime" }
+  ]
+};
+
+// packages/curriculum/src/english.ts
+var englishWords = words_default2.words;
+var englishPairs = words_default2.pairs;
+var byId = new Map(englishWords.map((w) => [w.id, w]));
+var englishWord = (id) => byId.get(id);
+var LISTEN_OPTIONS = { 1: 3, 2: 3, 3: 4, 4: 4, 5: 6, 6: 6 };
+var THEME_FR = {
+  colours: "les couleurs",
+  numbers: "les nombres",
+  animals: "les animaux",
+  classroom: "la classe",
+  garden: "le jardin et les fruits",
+  people: "les personnes",
+  body: "le corps",
+  food: "la nourriture",
+  clothes: "les v\xEAtements",
+  toys: "les jouets",
+  weather: "la m\xE9t\xE9o",
+  actions: "les actions",
+  house: "la maison",
+  school: "l\u2019\xE9cole",
+  feelings: "les \xE9motions",
+  transport: "les transports",
+  town: "la ville",
+  seasons: "le ciel et les f\xEAtes",
+  wild: "les animaux sauvages"
+};
+function soundAlikes(id) {
+  return englishPairs.flatMap((p) => p.a === id ? [{ id: p.b, tag: p.tag }] : p.b === id ? [{ id: p.a, tag: p.tag }] : []);
+}
+function named(w) {
+  if (w.say) return w.say;
+  if (w.article === "-") return w.en;
+  return `the ${w.en}`;
+}
+function carrier(w, rng) {
+  switch (w.kind) {
+    case "colour":
+      return rng.pick([`Touch ${w.en}.`, `Find ${w.en}.`, `Where is ${w.en}?`, `Show me ${w.en}.`]);
+    case "number":
+      return rng.pick([`Show me ${w.en}.`, `Find number ${w.en}.`, `Touch ${w.en}.`, `Where is ${w.en}?`]);
+    case "action":
+      return rng.pick([`Who is ${w.ing}?`, `Find someone ${w.ing}.`, `Touch the picture of someone ${w.ing}.`]);
+    case "feeling":
+      return rng.pick([`Who is ${w.en}?`, `Find someone ${w.en}.`, `Touch the ${w.en} face.`]);
+    case "plural":
+      return rng.pick([`Where are ${named(w)}?`, `Find ${named(w)}.`, `Touch ${named(w)}.`, `Show me ${named(w)}.`]);
+    case "person":
+      return rng.pick([`Where is ${named(w)}?`, `Find ${named(w)}.`, `Touch ${named(w)}.`]);
+    default:
+      return rng.pick([`Where is ${named(w)}?`, `Find ${named(w)}.`, `Touch ${named(w)}.`, `Show me ${named(w)}.`, `I see ${w.article === "-" ? "" : `${w.article ?? "a"} `}${w.en}. Where is it?`]);
+  }
+}
+function riddle(w) {
+  const ask = w.kind === "person" ? "Who is it?" : w.kind === "feeling" ? "How do you feel?" : w.kind === "plural" ? "What are they?" : "What is it?";
+  return `${w.clue} ${ask}`;
+}
+function listenPool(difficulty) {
+  if (difficulty >= 6) return englishWords.filter((w) => w.clue);
+  return englishWords.filter((w) => w.level <= difficulty);
+}
+function buildListenRound(difficulty, rng) {
+  const pool = listenPool(difficulty);
+  const fresh = difficulty < 6 ? pool.filter((w) => w.level === difficulty) : [];
+  const target = rng.pick(fresh.length && rng.next() < 0.5 ? fresh : pool);
+  const n = LISTEN_OPTIONS[difficulty] ?? 3;
+  const taken = /* @__PURE__ */ new Set([target.id]);
+  const pics = /* @__PURE__ */ new Set([target.pic]);
+  const options = [target];
+  const add = (w) => {
+    if (!w || options.length >= n || taken.has(w.id) || pics.has(w.pic)) return;
+    taken.add(w.id);
+    pics.add(w.pic);
+    options.push(w);
+  };
+  let contrast = null;
+  const known = englishWords.filter((w) => w.level <= Math.max(difficulty, 1));
+  if (difficulty >= 4) {
+    for (const s of rng.shuffle(soundAlikes(target.id))) {
+      const before = options.length;
+      add(englishWord(s.id));
+      if (options.length > before && !contrast) contrast = s.tag;
+      if (difficulty === 4 && contrast) break;
+    }
+  }
+  if (difficulty === 1) {
+    for (const w of rng.shuffle(known.filter((x) => x.theme !== target.theme))) {
+      if (!options.some((o) => o.theme === w.theme)) add(w);
+    }
+  }
+  for (const w of rng.shuffle(known.filter((x) => x.theme === target.theme))) add(w);
+  for (const w of rng.shuffle(known)) add(w);
+  for (const w of rng.shuffle(englishWords)) add(w);
+  const mode = difficulty >= 6 && target.clue ? "riddle" : difficulty >= 3 ? "phrase" : "word";
+  const say = mode === "riddle" ? riddle(target) : mode === "phrase" ? carrier(target, rng) : target.kind === "action" ? target.ing : target.say ?? target.en;
+  return {
+    target,
+    contrast,
+    spec: { game: "listen-pick", mode, say, options: rng.shuffle(options).map((o) => o.id), pics: Object.fromEntries(options.map((o) => [o.id, o.pic])) }
+  };
+}
+function listenExplanation(w, mode) {
+  const base2 = `\xAB ${w.en} \xBB veut dire \xAB ${w.fr} \xBB.`;
+  if (w.falseFriend) return `${base2} Attention : ce mot ressemble au fran\xE7ais, mais il ne veut pas dire la m\xEAme chose.`;
+  if (w.cognate) return `${base2} Presque comme en fran\xE7ais, mais \xE7a se dit autrement!`;
+  if (mode === "riddle") return `${base2} La devinette parlait de ce mot sans jamais le dire.`;
+  return base2;
+}
+function listenTags(ex) {
+  const g = ex.game;
+  const id = ex.expected.type === "word" ? ex.expected.value : "";
+  const w = englishWord(id);
+  if (!g || !w) return [];
+  const t = [`en-theme-${w.theme}`, `en-mot-${w.id}`];
+  const pairs = soundAlikes(w.id).filter((s) => g.options.includes(s.id));
+  for (const tag of new Set(pairs.map((p) => p.tag))) t.push(tag);
+  if (/th/i.test(w.en) && !t.includes("en-th")) t.push("en-son-th");
+  if (g.mode === "phrase") t.push("en-phrase");
+  if (g.mode === "riddle") t.push("en-devinette");
+  if (w.cognate) t.push("en-cognat");
+  if (w.falseFriend) t.push("en-faux-ami");
+  return t;
+}
+var ENGLISH_TAG_LABELS = {
+  ...Object.fromEntries(Object.entries(THEME_FR).map(([k, v]) => [`en-theme-${k}`, `anglais : ${v}`])),
+  ...Object.fromEntries(englishWords.map((w) => [`en-mot-${w.id}`, `anglais : \xAB ${w.en} \xBB (${w.fr})`])),
+  "en-th": "anglais : le son \xAB th \xBB (three / tree)",
+  "en-son-th": "anglais : les mots avec \xAB th \xBB",
+  "en-voyelle": "anglais : voyelles courtes et longues (ship / sheep)",
+  "en-teen-ty": "anglais : thirteen ou thirty",
+  "en-rime": "anglais : mots qui riment (cat / hat)",
+  "en-phrase": "anglais : le mot dans une phrase",
+  "en-devinette": "anglais : devinettes",
+  "en-cognat": "anglais : mots presque pareils au fran\xE7ais",
+  "en-faux-ami": "anglais : faux amis"
+};
+
 // packages/curriculum/src/tags.ts
 var TAG_LABELS = {
   addition: "addition",
@@ -51623,7 +52005,8 @@ var TAG_LABELS = {
   "question-comment": "questions \xAB comment \xBB",
   "question-combien": "questions \xAB combien \xBB",
   "question-quoi": "questions \xAB quoi / quel \xBB",
-  "texte-long": "textes longs"
+  "texte-long": "textes longs",
+  ...ENGLISH_TAG_LABELS
 };
 var nums = (s) => (s.match(/\d+/g) ?? []).map(Number);
 var innerZero = (n) => {
@@ -51785,6 +52168,8 @@ function tagsOf(ex) {
     }
     case "fr.spelling":
       return ex.expected.type === "word" ? spellingTags(ex.expected.value) : [];
+    case "en.listen-words":
+      return listenTags(ex);
     case "fr.comprehension": {
       const q = ex.statement.trim();
       const t = [
@@ -52707,6 +53092,7 @@ var representations = {
   }
 };
 var templates = [placeValue, groupingTens, addSub, sequences, countingPath, representations, comprehension, plural, spelling];
+var hasPaper = (skillId) => templates.some((t) => t.skillId === skillId);
 function templatesForSkill(skillId) {
   return templates.filter((t) => t.skillId === skillId);
 }
@@ -53211,7 +53597,36 @@ var dominoes = {
     };
   }
 };
-var games = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes];
+var listenGarden = {
+  id: "game.listen-garden",
+  version: 1,
+  title: "Le potager qui \xE9coute",
+  description: "Anglais \xE0 l\u2019oral : entendre un mot, une courte phrase ou une devinette en anglais et toucher la bonne image (sans lecture). Mots qui se ressemblent (ship / sheep, three / tree) \xE0 partir du niveau 4.",
+  skills: ["en.listen-words"],
+  subject: "english",
+  responseType: "word",
+  roundsPerSession: 5,
+  generate(skillId, difficulty, rng, seed) {
+    const { target, spec: spec2 } = buildListenRound(difficulty, rng);
+    return {
+      ...gameBase(this, skillId, difficulty, seed),
+      questionKey: `lg-${target.id}`,
+      instruction: spec2.mode === "riddle" ? "\xC9coute la devinette en anglais et touche la r\xE9ponse." : spec2.mode === "phrase" ? "\xC9coute la phrase en anglais et touche la bonne image." : "\xC9coute le mot en anglais et touche la bonne image.",
+      // the English text is never written before the answer (listening game): the statement is generic
+      statement: "\xC9coute bien.",
+      hint: "Touche le haut-parleur pour entendre encore, plus lentement.",
+      answerFormat: "une image",
+      readingHint: "une image",
+      game: spec2,
+      expected: { type: "word", value: target.id, accentsMatter: false },
+      explanation: listenExplanation(target, spec2.mode),
+      commonErrors: [],
+      origin: "Original \u2014 mots et devinettes \xE9crits pour l\u2019application (orthographe canadienne).",
+      retryMessage: "Pas tout \xE0 fait. \xC9coute encore."
+    };
+  }
+};
+var games = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes, listenGarden];
 function getGame(id) {
   const g = games.find((x) => x.id === id);
   if (!g) throw new Error(`Unknown game: ${id}`);
@@ -53245,13 +53660,23 @@ var FALLBACK = {
   "math.representations": "Tu as reconnu le m\xEAme nombre sous une autre forme.",
   "fr.plural": "Tu as bien regard\xE9 la fin des mots.",
   "fr.comprehension": "Tu as retrouv\xE9 l\u2019indice dans le texte.",
-  "fr.spelling": "Tu as bien \xE9cout\xE9 chaque son."
+  "fr.spelling": "Tu as bien \xE9cout\xE9 chaque son.",
+  "en.listen-words": "Tu as bien \xE9cout\xE9 le mot anglais."
 };
 function strategyPraise(ex) {
   const t = new Set(tagsOf(ex));
   const k = ex.questionKey;
   const g = ex.game;
   switch (ex.skillId) {
+    case "en.listen-words": {
+      if (t.has("en-devinette")) return "Tu as compris toute la devinette en anglais.";
+      if (t.has("en-th")) return "Tu as entendu le \xAB th \xBB de three.";
+      if (t.has("en-voyelle")) return "Tu as entendu la voyelle courte ou longue.";
+      if (t.has("en-teen-ty")) return "Tu as entendu \xAB teen \xBB ou \xAB ty \xBB.";
+      if (t.has("en-rime")) return "Tu as bien \xE9cout\xE9 le premier son du mot.";
+      if (t.has("en-phrase")) return "Tu as trouv\xE9 le mot dans la phrase anglaise.";
+      return FALLBACK["en.listen-words"];
+    }
     case "math.add-sub": {
       if (t.has("retenue-centaine")) return "Tu as bien fait la retenue vers les centaines.";
       if (t.has("emprunt-centaine")) return "Tu as bien \xE9chang\xE9 une centaine.";
@@ -54839,7 +55264,9 @@ function learnInto(profile, events) {
   for (const ev of events) {
     const m = profile[ev.skillId] ??= { theta: ev.level, n: 0, tags: {} };
     const p = predict(m, ev.level, ev.tags);
-    const err = Y[ev.outcome] - p;
+    const c = Math.max(0, Math.min(0.5, ev.guess ?? 0));
+    const pe = c + (1 - c) * p;
+    const err = c > 0 ? (Y[ev.outcome] - pe) * (1 - c) * p * (1 - p) / Math.max(1e-6, pe * (1 - pe)) : Y[ev.outcome] - p;
     m.theta = Math.max(-1, Math.min(7, m.theta + K_THETA * err));
     for (const t of ev.tags) {
       const s = m.tags[t] ??= { w: 0, n: 0, levels: [] };
@@ -55472,7 +55899,9 @@ var toEvent = (r) => {
     level: Number(r.difficulty),
     tags: ex ? tagsOf(ex) : [],
     outcome: r.result !== "correct" ? "wrong" : r.help === "none" ? "first" : "retry",
-    day: localDay(String(r.created_at))
+    day: localDay(String(r.created_at)),
+    // picture choice by ear (English): a lucky tap counts as weaker evidence (guessing floor)
+    ...ex?.game?.game === "listen-pick" ? { guess: 1 / ex.game.options.length } : {}
   };
 };
 var LEARN_SQL = `SELECT t.rowid AS rowid, t.skill_id, t.difficulty, t.result, t.help, t.created_at, a.snapshot_json
@@ -55651,7 +56080,7 @@ function createAssignment(c, body) {
   const settings = getSettings(c);
   const states = allMastery(c);
   const lastRow = one(c, "SELECT skill_id FROM assignments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 1", PROFILE_ID);
-  const candidates = skillsBySubject(subject);
+  const candidates = skillsBySubject(subject).filter((s) => hasPaper(s.id));
   let decision;
   const choice = settings["parent.nextChoice"];
   if (choice && candidates.some((s) => s.id === choice.skillId)) {
@@ -56082,12 +56511,12 @@ function progress(c) {
   const states = allMastery(c);
   const now = c.now().getTime();
   const learned = learnerProfile(c);
-  const named = (tags) => tags.slice(0, 4).map((t) => ({ tag: t, label: TAG_LABELS[t] ?? t }));
+  const named2 = (tags) => tags.slice(0, 4).map((t) => ({ tag: t, label: TAG_LABELS[t] ?? t }));
   return {
     // what the model learned from her answers (strong points and points to strengthen, per skill)
     learned: skills.filter((s) => learned[s.id]).map((s) => {
       const m = learned[s.id];
-      return { skillId: s.id, title: s.title, answers: m?.n ?? 0, comfortableLevel: comfortableLevel(m, skillMax(s.id)), ability: m?.theta ?? 0, weak: named(weakTags(m)), strong: named(strongTags(m)) };
+      return { skillId: s.id, title: s.title, answers: m?.n ?? 0, comfortableLevel: comfortableLevel(m, skillMax(s.id)), ability: m?.theta ?? 0, weak: named2(weakTags(m)), strong: named2(strongTags(m)) };
     }),
     skills: skills.map((s) => {
       const st = states[s.id];

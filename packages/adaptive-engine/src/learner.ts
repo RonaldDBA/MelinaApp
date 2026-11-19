@@ -21,6 +21,12 @@ export interface LearnEvent {
   outcome: 'first' | 'retry' | 'wrong';
   /** Local day of the answer («2026-11-17»): a win over a weak point only counts on ANOTHER day. */
   day?: string;
+  /**
+   * Chance of getting it right by luck (multiple-choice pictures: 1 / number of options). With it, the model uses a
+   * guessing floor (3PL-style: p = c + (1 − c)·σ): a lucky tap counts as weaker evidence, so a word is never «known» from
+   * recognition alone; an error weighs exactly as before.
+   */
+  guess?: number;
 }
 
 export interface TagStat {
@@ -85,7 +91,10 @@ export function learnInto(profile: LearnerProfile, events: LearnEvent[]): Learne
   for (const ev of events) {
     const m = (profile[ev.skillId] ??= { theta: ev.level, n: 0, tags: {} });
     const p = predict(m, ev.level, ev.tags);
-    const err = Y[ev.outcome] - p;
+    const c = Math.max(0, Math.min(0.5, ev.guess ?? 0));
+    // gradient of the log-likelihood with a guessing floor; with c = 0 it is the usual (y − p)
+    const pe = c + (1 - c) * p;
+    const err = c > 0 ? ((Y[ev.outcome] - pe) * (1 - c) * p * (1 - p)) / Math.max(1e-6, pe * (1 - pe)) : Y[ev.outcome] - p;
     m.theta = Math.max(-1, Math.min(7, m.theta + K_THETA * err));
     for (const t of ev.tags) {
       const s = (m.tags[t] ??= { w: 0, n: 0, levels: [] });

@@ -694,6 +694,9 @@ const representations: ExerciseTemplate = {
 
 export const templates: ExerciseTemplate[] = [placeValue, groupingTens, addSub, sequences, countingPath, representations, comprehension, plural, spelling];
 
+/** Skills that have a PAPER activity (the English listening skills are screen-only: no paper, no reading). */
+export const hasPaper = (skillId: string) => templates.some((t) => t.skillId === skillId);
+
 export function templatesForSkill(skillId: string): ExerciseTemplate[] {
   return templates.filter((t) => t.skillId === skillId);
 }

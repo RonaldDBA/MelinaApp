@@ -223,6 +223,8 @@ code { background: #eef3ea; padding: 0 4px; border-radius: 4px; }
 .rp-skill-top > div { flex: 1; display: flex; flex-direction: column; }
 .rp-skill-icon { font-size: 1.8rem; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: #f2f7ff; }
 .rp-skill.fr .rp-skill-icon { background: #fff2f7; }
+.rp-skill.en { border-color: #e2f5e6; }
+.rp-skill.en .rp-skill-icon { background: #effaf1; }
 .rp-skill-sub { font-size: 0.82rem; color: var(--rp-soft); }
 .rp-trend { font-size: 0.85rem; font-weight: bold; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
 .rp-trend.up { background: #d4f5dc; color: #1f6b3d; } .rp-trend.down { background: #ffe3d3; color: #9a4a20; }

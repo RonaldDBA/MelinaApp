@@ -4,6 +4,7 @@ import words from '../../../content/french/words.json';
 import { bigSequence, buildCountingPath, countingErrors, countingExplanation, countingHint, holeValues } from './counting';
 import { buildDominoRound, decoFace, dominoErrors, faceLabel } from './dominoes';
 import { evaluate } from './evaluate';
+import { buildListenRound, listenExplanation } from './english';
 import { blanksFor, buildGrid, letterBank, letters, LEVELS, pickWords, soundHint } from './hiddenwords';
 import { schoolPool } from './schoolwords';
 import { pickPreferred } from './pick';
@@ -493,7 +494,44 @@ export const dominoes: GameDefinition = {
   },
 };
 
-export const games: GameDefinition[] = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes];
+// ---------------------------------------------------------------- Le potager qui écoute (English)
+
+export const listenGarden: GameDefinition = {
+  id: 'game.listen-garden',
+  version: 1,
+  title: 'Le potager qui écoute',
+  description: 'Anglais à l’oral : entendre un mot, une courte phrase ou une devinette en anglais et toucher la bonne image (sans lecture). Mots qui se ressemblent (ship / sheep, three / tree) à partir du niveau 4.',
+  skills: ['en.listen-words'],
+  subject: 'english',
+  responseType: 'word',
+  roundsPerSession: 5,
+  generate(skillId, difficulty, rng, seed) {
+    const { target, spec } = buildListenRound(difficulty, rng);
+    return {
+      ...gameBase(this, skillId, difficulty, seed),
+      questionKey: `lg-${target.id}`,
+      instruction:
+        spec.mode === 'riddle'
+          ? 'Écoute la devinette en anglais et touche la réponse.'
+          : spec.mode === 'phrase'
+            ? 'Écoute la phrase en anglais et touche la bonne image.'
+            : 'Écoute le mot en anglais et touche la bonne image.',
+      // the English text is never written before the answer (listening game): the statement is generic
+      statement: 'Écoute bien.',
+      hint: 'Touche le haut-parleur pour entendre encore, plus lentement.',
+      answerFormat: 'une image',
+      readingHint: 'une image',
+      game: spec,
+      expected: { type: 'word', value: target.id, accentsMatter: false },
+      explanation: listenExplanation(target, spec.mode),
+      commonErrors: [],
+      origin: 'Original — mots et devinettes écrits pour l’application (orthographe canadienne).',
+      retryMessage: 'Pas tout à fait. Écoute encore.',
+    };
+  },
+};
+
+export const games: GameDefinition[] = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes, listenGarden];
 
 export function getGame(id: string): GameDefinition {
   const g = games.find((x) => x.id === id);

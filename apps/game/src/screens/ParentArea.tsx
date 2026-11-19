@@ -1,7 +1,7 @@
-import { voiceInfo } from '../audio';
+import { englishVoiceInfo, voiceInfo } from '../audio';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArtStudio } from './ArtStudio';
-import { i18n, type HelpLevel } from '@melina/shared';
+import { i18n, type HelpLevel, type Subject } from '@melina/shared';
 import { Kpi, Report, SKILL_ICON } from './Report';
 import { fmtDate, fmtDateTime, fmtDay, fmtTime } from '../dates';
 import { api, ApiError, type Assignment, type ConfirmResponse, type LearnedSkill, type Review, type Settings, type SkillProgress } from '../api';
@@ -475,14 +475,14 @@ function Dashboard() {
         {data.skills.map((s) => {
           const est = s.state ? Math.round(s.state.estimate * 100) : 0;
           return (
-            <div key={s.id} className={`rp-skill ${s.subject === 'french' ? 'fr' : 'ma'}`} data-skill={s.id}>
+            <div key={s.id} className={`rp-skill ${i18n.subjectClass[s.subject as Subject] ?? 'ma'}`} data-skill={s.id}>
               <div className="rp-skill-top">
                 <span className="rp-skill-icon" aria-hidden="true">
                   {SKILL_ICON[s.id] ?? '🌟'}
                 </span>
                 <div>
                   <strong>{s.title}</strong>
-                  <span className="rp-skill-sub">{s.subject === 'french' ? 'Français' : 'Mathématiques'}</span>
+                  <span className="rp-skill-sub">{i18n.subjectName[s.subject as Subject] ?? ''}</span>
                 </div>
                 <span className="rp-trend new" title={s.levels[String(s.state?.level ?? 1)]}>
                   niveau {s.state?.level ?? 1}
@@ -788,14 +788,26 @@ function Samples() {
 /** The browser voice in use (the technical name stays here, for the parents; her screen shows only «française»). */
 function VoiceLine() {
   const [v, setV] = useState(voiceInfo());
+  const [en, setEn] = useState(englishVoiceInfo());
   useEffect(() => {
-    const id = window.setTimeout(() => setV(voiceInfo()), 800);
+    const id = window.setTimeout(() => {
+      setV(voiceInfo());
+      setEn(englishVoiceInfo());
+    }, 800);
     return () => window.clearTimeout(id);
   }, []);
   return (
-    <p className="muted small" data-testid="voice-line">
-      Voix du jeu : {v.available ? `${v.name}${v.canadian ? ' (français du Canada)' : ' (français, pas du Canada)'}${v.natural ? ' · voix naturelle' : ''}` : 'aucune voix française trouvée dans ce navigateur'}
-    </p>
+    <>
+      <p className="muted small" data-testid="voice-line">
+        Voix du jeu : {v.available ? `${v.name}${v.canadian ? ' (français du Canada)' : ' (français, pas du Canada)'}${v.natural ? ' · voix naturelle' : ''}` : 'aucune voix française trouvée dans ce navigateur'}
+      </p>
+      <p className={`muted small ${en.available ? '' : 'warn'}`} data-testid="english-voice-line">
+        Voix anglaise (Le potager qui écoute) :{' '}
+        {en.available
+          ? `${en.name}${en.canadian ? ' (anglais du Canada)' : ' (anglais, pas du Canada)'}${en.natural ? ' · voix naturelle' : ''}`
+          : 'aucune voix anglaise : le jeu d’anglais ne démarre pas. Ajoutez-en une dans Paramètres de Windows › Heure et langue › Voix.'}
+      </p>
+    </>
   );
 }
 

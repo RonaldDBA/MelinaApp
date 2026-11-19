@@ -621,6 +621,79 @@ def main():
             for oid in open_ids:
                 urllib.request.urlopen(urllib.request.Request(f'{base}/api/assignments/{oid}/cancel', data=b'{}', method='POST', headers={'content-type': 'application/json', 'x-melina-client': '1', 'Origin': base}))
 
+            # 11a. Le potager qui écoute (English by ear): 9 cards fit on the home screen; the English is "spoken" (audio log,
+            # speech is a no-op in tests) after the French instruction; a mistake removes the picture and replays it slower
+            home = page.evaluate("""() => { const cards = [...document.querySelectorAll('.card-game')].map((c) => c.getBoundingClientRect());
+              const paper = document.querySelector('.paper').getBoundingClientRect(); const st = document.querySelector('.stage').getBoundingClientRect();
+              return { n: cards.length, below: cards.filter((r) => r.bottom > paper.top + 1).length, out: cards.filter((r) => r.right > st.right + 1 || r.left < st.left - 1).length }; }""")
+            check(home['n'] == 9 and home['below'] == 0 and home['out'] == 0, f'home screen: the 9 game cards fit above «Sur papier» and inside the stage {home}')
+            shot('24a-home-nine-games')
+            page.evaluate("window.__melinaAudioLog = []")
+            page.locator('[data-game="game.listen-garden"]').click()
+            page.locator('.game[data-phase=question]').wait_for(timeout=8000)
+            page.wait_for_timeout(500)
+            lg = page.evaluate("""() => ({ cards: document.querySelectorAll('.listen-card').length, en: (window.__melinaAudioLog || []).filter((e) => e.ev === 'en').map((e) => e.what),
+              pics: [...document.querySelectorAll('.listen-card .listen-pic')].map((e) => e.textContent), text: document.querySelector('.stage').innerText })""")
+            con = sqlite3.connect(db_file)
+            snap = json.loads(con.execute("SELECT snapshot_json FROM assignments WHERE exercise_id = 'game.listen-garden' AND status = 'presented' ORDER BY created_at DESC LIMIT 1").fetchone()[0])
+            con.close()
+            say = snap['game']['say']
+            check(lg['cards'] == 3 and lg['en'] == [say] and all(lg['pics']), f'Le potager qui écoute: 3 pictures and the English word is spoken once at the start ({lg["en"]})')
+            check(say.lower() not in lg['text'].lower(), 'Le potager qui écoute: the English word is never written on screen before the answer')
+            shot('24b-listen-question')
+            right = snap['expected']['value']
+            wrong = next(o for o in snap['game']['options'] if o != right)
+            page.locator(f'.listen-card[data-option="{wrong}"]').click()
+            page.wait_for_timeout(700)
+            lg2 = page.evaluate("() => ({ away: document.querySelectorAll('.listen-card.away').length, en: (window.__melinaAudioLog || []).filter((e) => e.ev === 'en').map((e) => e.what) })")
+            check(lg2['away'] == 1 and lg2['en'][-1] == f'slow:{say}', f'Le potager qui écoute: after a mistake the picture leaves and the English comes back slower ({lg2})')
+            page.get_by_test_id('listen-again').click()
+            page.wait_for_timeout(200)
+            last = page.evaluate("() => (window.__melinaAudioLog || []).filter((e) => e.ev === 'en').map((e) => e.what).pop()")
+            check(last in (say, f'slow:{say}'), f'Le potager qui écoute: the big speaker says it again ({last})')
+            page.locator(f'.listen-card[data-option="{right}"]').click()
+            page.locator('.game[data-phase=result]').wait_for()
+            page.wait_for_timeout(600)
+            ans = page.get_by_test_id('listen-answer').inner_text()
+            word = next(w for w in json.loads((ROOT / 'content' / 'english' / 'words.json').read_text(encoding='utf-8'))['words'] if w['id'] == right)
+            check(word['en'] in ans, f'Le potager qui écoute: the result shows the picture and the English word «{word["en"]}»')
+            panel_fit('Le potager qui écoute result')
+            shot('24c-listen-result')
+            for k in range(4):
+                page.locator('[data-next]').first.click()
+                page.locator('.game[data-phase=question]').wait_for()
+                page.wait_for_timeout(350)
+                con = sqlite3.connect(db_file)
+                snap = json.loads(con.execute("SELECT snapshot_json FROM assignments WHERE exercise_id = 'game.listen-garden' AND status = 'presented' ORDER BY created_at DESC LIMIT 1").fetchone()[0])
+                con.close()
+                n = len(snap['game']['options'])
+                check(page.locator('.listen-card').count() == n, f'Le potager qui écoute round {k + 2}: level {snap["difficulty"]}, {n} pictures on screen')
+                if n == 6 and k == 3:
+                    shot('24d-listen-six')
+                page.locator(f'.listen-card[data-option="{snap["expected"]["value"]}"]').click()
+                page.locator('.game[data-phase=result]').wait_for()
+                page.wait_for_timeout(400)
+            page.locator('[data-next]').first.click()
+            page.locator('.game[data-phase=end]').wait_for()
+            page.wait_for_timeout(900)
+            panel_fit('Le potager qui écoute end')
+            shot('24e-listen-end')
+            page.get_by_role('button', name='Accueil', exact=True).click()
+            page.locator('.card-game').first.wait_for()
+            # without an English voice the game does not start (a listening round without sound would teach nothing)
+            nv = browser.new_page(viewport={'width': 1280, 'height': 800})
+            nv.add_init_script("""try { const all = speechSynthesis.getVoices.bind(speechSynthesis);
+              speechSynthesis.getVoices = () => all().filter((v) => !v.lang.toLowerCase().startsWith('en')); } catch (e) {}""")
+            nv.goto(base)
+            nv.locator('[data-game="game.listen-garden"]').click()
+            nv.get_by_test_id('no-english-voice').wait_for(timeout=8000)
+            con = sqlite3.connect(db_file)
+            opened = con.execute("SELECT COUNT(*) FROM assignments WHERE exercise_id = 'game.listen-garden' AND status = 'presented'").fetchone()[0]
+            con.close()
+            check(opened == 0, 'Le potager qui écoute without an English voice: a French message for the parents, and no round is opened')
+            nv.screenshot(path=str(OUT / '24f-listen-no-voice.png'))
+            nv.close()
+
             # 11b. Le chemin des nombres: empty stones, right stones locked after an error, hundred chart at level 3
             def path_values():
                 con = sqlite3.connect(db_file)
@@ -868,7 +941,8 @@ def main():
 
             # 11e. Level 5 (the highest) in each game: 3-digit numbers, long texts, word groups; everything fits on the stage
             for level, gid, skill_id in [(lv, g, sk) for lv in (5, 6) for g, sk in [('apple-crates', 'math.place-value'), ('number-train', 'math.sequences'), ('frog-jump', 'math.add-sub'), ('word-fishing', 'fr.plural'),
-                                  ('mystery-story', 'fr.comprehension'), ('number-path', 'math.counting'), ('dominoes', 'math.representations'), ('hidden-words', 'fr.spelling')] if not (lv == 5 and g == 'hidden-words')]:
+                                  ('mystery-story', 'fr.comprehension'), ('number-path', 'math.counting'), ('dominoes', 'math.representations'), ('hidden-words', 'fr.spelling'),
+                                  ('listen-garden', 'en.listen-words')] if not (lv == 5 and g == 'hidden-words')]:
                 req = urllib.request.Request(f'{base}/api/settings', data=json.dumps({'parent.nextChoice': {'skillId': skill_id, 'difficulty': level}}).encode(), method='PATCH', headers={'content-type': 'application/json', 'x-melina-client': '1', 'Origin': base})
                 urllib.request.urlopen(req)
                 page.locator(f'[data-game="game.{gid}"]').click()
@@ -881,6 +955,13 @@ def main():
                 cut = page.evaluate("""() => [...document.querySelectorAll('.stage *')].filter((e) => e.children.length === 0 && !e.closest('.sr-only') && e.textContent.trim() && getComputedStyle(e).overflow !== 'visible' && (e.scrollWidth > e.clientWidth + 2 || e.scrollHeight > e.clientHeight + 2)).map((e) => e.className + ': ' + e.textContent.trim().slice(0, 30)).concat([...document.querySelectorAll('.stage .book, .stage .domino .half, .stage .fish span')].filter((e) => e.scrollHeight > e.clientHeight + 2 || e.scrollWidth > e.clientWidth + 2 || [...e.children].some((c) => { const a = c.getBoundingClientRect(), b = e.getBoundingClientRect(); return a.right > b.right + 2 || a.bottom > b.bottom + 2 || a.left < b.left - 2; })).map((e) => 'overflows: ' + e.className + ' ' + e.textContent.trim().slice(0, 30)))""")
                 check(lvl == level and stage_ok() and not cut, f'level {level} in {gid}: round opened at level {level}, everything inside the stage, no clipped text {cut[:3]}')
                 shot(f'5{level - 5}-level{level}-{gid}')
+                if gid == 'listen-garden':
+                    # 6 pictures: none overlaps another, the big speaker or Lila's bubble
+                    ov = page.evaluate("""() => { const r = (e) => e.getBoundingClientRect(); const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+                      const cards = [...document.querySelectorAll('.listen-card')].map(r); const others = [r(document.querySelector('.listen-speaker')), r(document.querySelector('.guide .bubble'))];
+                      let n = 0; cards.forEach((a, i) => { cards.forEach((b, j) => { if (j > i && hit(a, b)) n++; }); others.forEach((o) => { if (hit(a, o)) n++; }); });
+                      return { cards: cards.length, overlaps: n }; }""")
+                    check(ov == {'cards': 6, 'overlaps': 0}, f'level {level} in listen-garden: 6 pictures, no overlap with each other, the speaker or the bubble {ov}')
                 # level 6 (thousands): a 4-digit number can be typed in full and fits in the box (before, the keypad stopped at 3)
                 if level == 6 and gid in ('number-train', 'number-path'):
                     first = expected_answer(db_file, 'screen').replace(' ', '').split(',')[0]

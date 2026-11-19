@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Difficulty, ExerciseInstance } from '@melina/shared';
-import { games, generateExercise, generateGameRound, skills, spellingTags, tagsOf, wordLevel as levelOfWord } from './index';
+import { games, generateExercise, generateGameRound, hasPaper, skills, spellingTags, tagsOf, wordLevel as levelOfWord } from './index';
 
 /**
  * Quality sweep (deep review): every paper and game generator, levels 1 to 6,
@@ -10,7 +10,7 @@ const SEEDS = Array.from({ length: 400 }, (_, i) => 7 + i * 131);
 const LEVELS: Difficulty[] = [1, 2, 3, 4, 5, 6];
 
 function* allItems(): Generator<[string, ExerciseInstance]> {
-  for (const s of skills) for (const d of LEVELS) for (const seed of SEEDS) yield [`paper ${s.id} n${d} #${seed}`, generateExercise(s.id, d, seed)];
+  for (const s of skills.filter((k) => hasPaper(k.id))) for (const d of LEVELS) for (const seed of SEEDS) yield [`paper ${s.id} n${d} #${seed}`, generateExercise(s.id, d, seed)];
   for (const g of games) for (const sk of g.skills) for (const d of LEVELS) for (const seed of SEEDS.slice(0, 120)) yield [`${g.id} ${sk} n${d} #${seed}`, generateGameRound(g.id, sk, d, seed)];
 }
 

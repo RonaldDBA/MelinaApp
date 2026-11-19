@@ -4,6 +4,8 @@
  *   No third-party sound files.
  * - Voice: the browser's speech synthesis. It only speaks if there is a French voice;
  *   it prefers the natural Canadian voice that ships with Microsoft Edge.
+ * - English voice (listening games): a SEPARATE voice, only English (en-CA first, then en-US); one single voice for all
+ *   the English content (children understand one talker better than several), a bit slower than normal.
  */
 
 const KEY = 'melina.muted';
@@ -470,7 +472,7 @@ function utter(text: string, rate: number, pitch: number): SpeechSynthesisUttera
  * Log of audio events (so the browser test can check the ORDER: applause, then speech). The voice is disabled
  * in tests, so this log is the only way to see when speech would start. Keeps only the last 40.
  */
-function audioLog(ev: 'sfx' | 'cheer', what: string) {
+function audioLog(ev: 'sfx' | 'cheer' | 'en', what: string) {
   try {
     const w = window as unknown as { __melinaAudioLog?: Array<{ ev: string; what: string; t: number }> };
     const log = (w.__melinaAudioLog ??= []);
@@ -558,4 +560,93 @@ export function voiceInfo(): { available: boolean; name: string; canadian: boole
     canadian: voice ? voice.lang.replace('_', '-').toLowerCase() === 'fr-ca' : false,
     natural: voice ? /natural/i.test(voice.name) : false,
   };
+}
+
+// ------------------------------------------------------------------ English voice (listening games)
+
+let enVoice: SpeechSynthesisVoice | null = null;
+
+function rankEnglish(v: SpeechSynthesisVoice): number {
+  const lang = v.lang.replace('_', '-').toLowerCase();
+  if (!lang.startsWith('en')) return -1;
+  let score = 1;
+  if (lang === 'en-ca') score += 10;
+  else if (lang === 'en-us') score += 6;
+  if (/natural/i.test(v.name)) score += 5;
+  if (v.localService) score += 1;
+  return score;
+}
+
+function pickEnglishVoice() {
+  if (!hasSpeech) return;
+  const best = window.speechSynthesis
+    .getVoices()
+    .map((v) => ({ v, r: rankEnglish(v) }))
+    .filter((x) => x.r > 0)
+    .sort((a, b) => b.r - a.r)[0];
+  enVoice = best?.v ?? null;
+}
+if (hasSpeech) {
+  pickEnglishVoice();
+  window.speechSynthesis.addEventListener?.('voiceschanged', pickEnglishVoice);
+}
+
+/** Rates of the English voice: normal listening, and the slower replay (research: ~0.85–0.9 of normal speed). */
+export const EN_RATE = { normal: 0.85, slow: 0.62 } as const;
+
+/**
+ * Says English text with the English voice. `queue`: after what is being said (the French instruction first, then
+ * the English word). Never says the child's name (Edge's natural voices may be an online service: rule 4); it only
+ * says words of the game.
+ */
+export function speakEnglish(text: string, opts: { slow?: boolean; queue?: boolean } = {}) {
+  audioLog('en', `${opts.slow ? 'slow:' : ''}${text}`);
+  if (muted || !hasSpeech) return;
+  if (!enVoice) pickEnglishVoice();
+  if (!enVoice) return;
+  try {
+    if (!opts.queue) {
+      cancelPendingCheer();
+      window.speechSynthesis.cancel();
+    }
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = enVoice;
+    u.lang = enVoice.lang;
+    u.rate = opts.slow ? EN_RATE.slow : EN_RATE.normal;
+    u.pitch = 1;
+    u.onstart = () => duck(true);
+    u.onend = () => duck(false);
+    u.onerror = () => duck(false);
+    window.speechSynthesis.speak(u);
+  } catch {
+    /* speech is an extra: it never interrupts the game */
+  }
+}
+
+/** For the parents' panel and the listening games: which English voice is in use. */
+export function englishVoiceInfo(): { available: boolean; name: string; canadian: boolean; natural: boolean } {
+  if (!enVoice) pickEnglishVoice();
+  return {
+    available: Boolean(enVoice),
+    name: enVoice?.name ?? '',
+    canadian: enVoice ? enVoice.lang.replace('_', '-').toLowerCase() === 'en-ca' : false,
+    natural: enVoice ? /natural/i.test(enVoice.name) : false,
+  };
+}
+
+/** The browser loads its voices a little after the page: waits up to `ms` for an English voice. */
+export function waitForEnglishVoice(ms = 2500): Promise<boolean> {
+  if (englishVoiceInfo().available || !hasSpeech) return Promise.resolve(englishVoiceInfo().available);
+  return new Promise((resolve) => {
+    const done = () => {
+      window.speechSynthesis.removeEventListener?.('voiceschanged', check);
+      window.clearTimeout(timer);
+      resolve(englishVoiceInfo().available);
+    };
+    const check = () => {
+      if (englishVoiceInfo().available) done();
+    };
+    const timer = window.setTimeout(done, ms);
+    window.speechSynthesis.addEventListener?.('voiceschanged', check);
+  });
 }

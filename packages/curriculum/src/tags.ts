@@ -1,6 +1,7 @@
 import type { ExerciseInstance } from '@melina/shared';
 import words from '../../../content/french/words.json';
 import school from '../../../content/french/school-words.json';
+import { ENGLISH_TAG_LABELS, listenTags } from './english';
 
 /**
  * Tags of each exercise: WHAT it requires (retenue, passage de centaine, son « eau », noms en -ou…).
@@ -81,6 +82,7 @@ export const TAG_LABELS: Record<string, string> = {
   'question-combien': 'questions « combien »',
   'question-quoi': 'questions « quoi / quel »',
   'texte-long': 'textes longs',
+  ...ENGLISH_TAG_LABELS,
 };
 
 const nums = (s: string) => (s.match(/\d+/g) ?? []).map(Number);
@@ -258,6 +260,8 @@ export function tagsOf(ex: ExerciseInstance): string[] {
     }
     case 'fr.spelling':
       return ex.expected.type === 'word' ? spellingTags(ex.expected.value) : [];
+    case 'en.listen-words':
+      return listenTags(ex);
     case 'fr.comprehension': {
       const q = ex.statement.trim();
       const t = [

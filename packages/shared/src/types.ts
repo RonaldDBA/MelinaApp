@@ -1,6 +1,6 @@
 // Contracts shared by the server, the teaching engine and the interface.
 
-export type Subject = 'french' | 'mathematics';
+export type Subject = 'french' | 'mathematics' | 'english';
 /** Levels 1 to 5; each skill says how far it goes (keys of `levels`, see `maxLevel`). */
 export type Difficulty = 1 | 2 | 3 | 4 | 5 | 6; // 6 = « Défi », au-delà de la 2e année
 export type ResponseType = 'number' | 'word' | 'sequence' | 'short-text';
@@ -110,7 +110,18 @@ export interface DominoSpec {
   pieces: Array<{ label: string; left: DominoFace; right: DominoFace }>;
   options: string[];
 }
-export type GameSpec = AppleCratesSpec | NumberTrainSpec | FrogJumpSpec | ChoiceSpec | NumberPathSpec | HiddenWordsSpec | DominoSpec;
+/**
+ * « Le potager qui écoute » (English listening): the app SAYS `say` in English (never shown before the answer) and the
+ * child taps the matching picture. Each picture is an emoji or a numeral; the option id is what is sent as the answer.
+ */
+export interface ListenPickSpec {
+  game: 'listen-pick';
+  mode: 'word' | 'phrase' | 'riddle';
+  say: string;
+  options: string[]; // word ids, the value sent as the answer
+  pics: Record<string, string>; // picture of each option
+}
+export type GameSpec = AppleCratesSpec | NumberTrainSpec | FrogJumpSpec | ChoiceSpec | NumberPathSpec | HiddenWordsSpec | DominoSpec | ListenPickSpec;
 
 /** Part of the exercise that may be shown to the child before confirmation. */
 export interface PublicExercise {

@@ -181,3 +181,20 @@ describe('session staircase: the play level follows her during the day', () => {
     expect(planRound(prof, 'math.sequences', 1, 6, 0.95, {}, { sessionLevel: 4, allowExplore: false }).level).toBe(1);
   });
 });
+
+describe('guessing floor for picture choices (English listening: 1 chance in 3 by luck)', () => {
+  const at = (outcome: LearnEvent['outcome'], guess?: number): LearnEvent => ({ skillId: 'en.listen-words', level: 1, tags: ['en-mot-cat'], outcome, guess });
+  it('a right tap counts less when it could be luck; an error counts the same', () => {
+    const plain = learnProfile([at('first')])['en.listen-words']!;
+    const lucky = learnProfile([at('first', 1 / 3)])['en.listen-words']!;
+    expect(lucky.theta).toBeLessThan(plain.theta);
+    expect(lucky.theta).toBeGreaterThan(1); // still evidence
+    const wrongPlain = learnProfile([at('wrong')])['en.listen-words']!;
+    const wrongLucky = learnProfile([at('wrong', 1 / 3)])['en.listen-words']!;
+    expect(wrongLucky.theta).toBeCloseTo(wrongPlain.theta, 6);
+  });
+  it('random tapping (1 in 3 right) does not look like knowing the words', () => {
+    const taps: LearnEvent[] = Array.from({ length: 30 }, (_, i) => at(i % 3 === 0 ? 'first' : 'wrong', 1 / 3));
+    expect(learnProfile(taps)['en.listen-words']!.theta).toBeLessThan(1);
+  });
+});

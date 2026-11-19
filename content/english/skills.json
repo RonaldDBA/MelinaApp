@@ -1,0 +1,26 @@
+{
+  "skills": [
+    {
+      "id": "en.listen-words",
+      "version": 1,
+      "subject": "english",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Comprendre des mots anglais à l’oral",
+      "titleFr": "J’écoute des mots en anglais",
+      "description": "Entend un mot ou une courte phrase en anglais et touche l’image qui correspond (compréhension orale, sans lecture).",
+      "prerequisites": [],
+      "exerciseTypes": [],
+      "levels": {
+        "1": "Un mot seul (couleurs, nombres 1 à 10, premiers animaux, la classe); 3 images de thèmes différents.",
+        "2": "Un mot seul, plus de thèmes (jardin, corps, nourriture, nombres jusqu’à 20); 3 images du même thème.",
+        "3": "Le mot dans une courte phrase («Where is the…?», «Who is swimming?»); 4 images du même thème.",
+        "4": "Phrase et 4 images, dont un mot qui sonne presque pareil (ship / sheep, three / tree, thirteen / thirty).",
+        "5": "Phrase et 6 images, avec des mots qui se ressemblent; la ville, le ciel et les saisons, les animaux du Canada.",
+        "6": "Défi : une devinette en anglais de 2 phrases qui ne dit jamais le mot; 6 images."
+      },
+      "curriculumRef": "PFEQ Anglais, langue seconde, 1er cycle du primaire (2006) — compétence 1 : réagir à des textes entendus (compréhension orale, sans attente en lecture ni en écriture). Niveaux 3 à 6 : vocabulaire thématique du 2e cycle (Progression des apprentissages, 2009).",
+      "reviewStatus": "to-validate"
+    }
+  ]
+}

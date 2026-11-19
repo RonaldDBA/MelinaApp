@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSyn
 import { join } from 'node:path';
 import { almostTags, applyEvidence, comfortableLevel, conqueredTags, defaultParams, initialState, learnInto, learnProfile, roundProfile, parentChoice, planRound, selectNext, sessionLevel, strongTags, weakTags, type EngineParams, type LearnEvent, type LearnerProfile, type RoundPlan } from '@melina/adaptive-engine';
 import { readHandwriting, ReadingError } from '@melina/ai';
-import { evaluate, games, generateExercise, generateGameRound, getGame, getMission, isSchoolWeek, missions, schoolWeeks, skills, skillsBySubject, strategyPraise, tagsOf, TAG_LABELS, templates, toPublic } from '@melina/curriculum';
+import { evaluate, games, generateExercise, generateGameRound, getGame, getMission, hasPaper, isSchoolWeek, missions, schoolWeeks, skills, skillsBySubject, strategyPraise, tagsOf, TAG_LABELS, templates, toPublic } from '@melina/curriculum';
 import { imageLimits, kindForResponse, selectSamples, sniffImage, stripMetadata, type SampleCandidate } from '@melina/handwriting';
 import type {
   AssignmentStatus,
@@ -224,6 +224,8 @@ const toEvent = (r: LearnRow): LearnEvent => {
     tags: ex ? tagsOf(ex) : [],
     outcome: r.result !== 'correct' ? 'wrong' : r.help === 'none' ? 'first' : 'retry',
     day: localDay(String(r.created_at)),
+    // picture choice by ear (English): a lucky tap counts as weaker evidence (guessing floor)
+    ...(ex?.game?.game === 'listen-pick' ? { guess: 1 / ex.game.options.length } : {}),
   };
 };
 const LEARN_SQL = `SELECT t.rowid AS rowid, t.skill_id, t.difficulty, t.result, t.help, t.created_at, a.snapshot_json
@@ -461,7 +463,8 @@ export function createAssignment(c: Ctx, body: { sessionId?: string; missionStep
   const settings = getSettings(c);
   const states = allMastery(c);
   const lastRow = one(c, 'SELECT skill_id FROM assignments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 1', PROFILE_ID);
-  const candidates = skillsBySubject(subject);
+  // paper only: the English listening skills are played on screen (no paper activity, no reading)
+  const candidates = skillsBySubject(subject).filter((s) => hasPaper(s.id));
 
   let decision;
   const choice = settings['parent.nextChoice'];

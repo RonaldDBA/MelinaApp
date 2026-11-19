@@ -9,6 +9,13 @@
 - To do on the family PC: first real image generation (style guide, scenery, box, fruits, Lila) and assessment of the result.
 - Later: dedicated scenery for each game (lake, train station, library); drag and drop in addition to clicking; optional background music; a profile for her brother; bring the paper adventure onto the same stage.
 
+## English (report `reports/English learning games for kids.md`)
+- Done (18/11/2026), stage 1: English subject, 182 original words, English voice, guessing floor in the model,
+  «Le potager qui écoute» (levels 1 to 6).
+- Next: «La jardinière dit» (commands, levels 1–4); word-level spaced schedule and the English part of the report
+  (words still known after 7+ days); «Paires de sons» with adult-checked recorded audio; sentences and stories;
+  reading and spelling behind a parents' switch.
+
 ## Short term
 - Validate the catalogue against the official PDA and with the teacher. Adjust the number ranges.
 - Measure the accuracy of Claude's reading on real photos of Melina's work, with consent (real reading already works with synthetic images).

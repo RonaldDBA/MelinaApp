@@ -9,7 +9,7 @@
 
 > **This catalogue is preliminary.** It is not a complete or certified coverage of the curriculum. All skills have status `to-validate` and must be checked against the official PDA and with the teacher.
 
-## Skills in the initial catalogue (9)
+## Skills in the initial catalogue (10)
 
 | Id | Subject | Observable description | Levels | Prereq. | Inspired by |
 |---|---|---|---|---|---|
@@ -22,8 +22,35 @@
 | `fr.comprehension` | French | Finds explicit information in a short text | 1–3: original texts of 4 to 5 sentences · 4: 7 sentences, «pourquoi/comment» · 5: 8 sentences with beginning, middle and end | — | Le temps des pommes (format) |
 | `fr.plural` | French | Writes the plural of nouns | 1: -s · 2: le/la→les, -x (-au, -eau, -eu) · 3: s, x, z do not change · 4: -ou and the 7 exceptions; bleu, pneu · 5: the whole noun group (aligned with the school aide-mémoire; -al → -aux was removed) | — | — |
 | `fr.spelling` | French | Writes familiar words with accents and sound spellings | 1: 1–2 missing letters · 2: ai/eau/oi/eu/eil · 3: only the 1st letter | — | Jour 1 worksheet |
+| `en.listen-words` | English | Hears an English word, a short sentence or a riddle and taps the matching picture (listening only, no reading) | 1: word alone, 3 pictures of different themes · 2: word alone, 3 pictures of the same theme · 3: word in a short sentence, 4 pictures · 4: 4 pictures with a sound-alike (ship/sheep, three/tree, thirteen/thirty) · 5: 6 pictures with sound-alikes · 6: original riddle that never says the word, 6 pictures | — | Report `reports/English learning games for kids.md` |
 
 The full definitions, with curriculum reference and review status, are in `content/*/skills.json`.
+
+## English (since 18/11/2026)
+
+Based on the research report `reports/English learning games for kids.md` (notes in `research_notes/English learning games for kids/`).
+Québec's Cycle One ESL program (2006) is oral only: listening is the «cornerstone» and there are no reading or writing
+expectations. So the first English game is **listening only**: nothing is written in English before the answer.
+
+- **Content:** `content/english/words.json`, 182 original words in Canadian spelling, each with a French gloss, a picture
+  (system emoji or a numeral), a theme and a level (1 to 5; 2 extra «th» words at level 6), plus 25 sound-alike pairs and
+  92 original riddles. Themes follow the Cycle Two inventory: colours, numbers, animals, the classroom, the garden, people,
+  the body, food, clothes, toys, weather, actions, the house, school, feelings, transport, the town, the sky and holidays,
+  wild animals of Canada.
+- **Skill** `en.listen-words` (`content/english/skills.json`), screen only: `hasPaper()` keeps it out of the paper
+  activities.
+- **Game** «Le potager qui écoute» (`game.listen-garden`, 5 rounds): Lila gives the instruction in French, then the English
+  voice says the word (`speakEnglish`). The big speaker replays it, slower from the second replay. After a mistake the
+  wrong picture leaves and the word comes back slower (prompt before the answer).
+- **Wrong pictures are hypotheses:** a sound-alike tests a sound contrast (`en-th`, `en-voyelle`, `en-teen-ty`, `en-rime`);
+  a picture of the same theme tests meaning. Tags per round: theme, the word itself (`en-mot-…`), the contrast, the kind of
+  listening (`en-phrase`, `en-devinette`), cognates and false friends (crayon, library). The learner model learns
+  which words and contrasts she misses, and reinforcement rounds bring them back.
+- **Guessing floor:** a correct tap among 3 pictures may be luck. The model counts it as weaker evidence (3PL-style), so a
+  word is not «known» from a lucky tap; an error weighs as before.
+- **Not yet (later stages of the report):** a word-level spaced schedule with modality unlock; adult-checked recorded audio
+  for the minimal pairs (today: the browser's English voice); «La jardinière dit» (commands), «Paires de sons», sentences,
+  stories; reading and spelling behind a parents' switch.
 
 ## On-screen mini-games
 

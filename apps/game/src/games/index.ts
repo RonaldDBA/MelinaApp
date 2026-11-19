@@ -3,6 +3,7 @@ import { AppleCrates } from './AppleCrates';
 import { Dominoes } from './Dominoes';
 import { FrogJump } from './FrogJump';
 import { HiddenWords } from './HiddenWords';
+import { ListenGarden } from './ListenGarden';
 import { MysteryStory } from './MysteryStory';
 import { NumberPath } from './NumberPath';
 import { NumberTrain } from './NumberTrain';
@@ -18,4 +19,5 @@ export const gameScreens: Record<string, ComponentType<{ onExit: () => void }>> 
   'game.number-path': NumberPath,
   'game.hidden-words': HiddenWords,
   'game.dominoes': Dominoes,
+  'game.listen-garden': ListenGarden,
 };

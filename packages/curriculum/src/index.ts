@@ -5,6 +5,7 @@ export * from './games';
 export * from './counting';
 export { tagsOf, TAG_LABELS, spellingTags } from './tags';
 export { strategyPraise } from './praise';
+export { englishWords, englishWord, englishPairs, buildListenRound, listenPool, soundAlikes, LISTEN_OPTIONS, THEME_FR, type EnglishWord } from './english';
 export { faceLabel as dominoFaceLabel, faceValue as dominoFaceValue } from './dominoes';
 export { occurrences as hiddenWordOccurrences, LEVELS as hiddenWordLevels } from './hiddenwords';
 export { schoolWeeks, schoolPool, isSchoolWeek, gridForms, levelOf as wordLevel, type SchoolWeek } from './schoolwords';
