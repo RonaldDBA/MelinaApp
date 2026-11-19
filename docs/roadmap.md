@@ -12,9 +12,10 @@
 ## English (report `reports/English learning games for kids.md`)
 - Done (18/11/2026), stage 1: English subject, 182 original words, English voice, guessing floor in the model,
   «Le potager qui écoute» (levels 1 to 6).
-- Next: «La jardinière dit» (commands, levels 1–4); word-level spaced schedule and the English part of the report
-  (words still known after 7+ days); «Paires de sons» with adult-checked recorded audio; sentences and stories;
-  reading and spelling behind a parents' switch.
+- Done (18/11/2026), stage 2: «La jardinière dit» (commands, levels 1–6); words on a ladder of days; wrong tries kept
+  (migration 7); English part of the parents' report (words still known after 7+ days, confusions, can-do lines).
+- Next: «Paires de sons» with adult-checked recorded audio (h, th, ship/sheep, final consonants, stress); «La phrase et
+  l’image»; stories with refrains; modality unlock; reading and spelling behind a parents' switch.
 
 ## Short term
 - Validate the catalogue against the official PDA and with the teacher. Adjust the number ranges.

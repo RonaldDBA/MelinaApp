@@ -18,6 +18,7 @@ export const gameCards = [
   { id: 'game.hidden-words', title: 'Les mots cachés', sub: 'Trouve les mots, puis écris-les', img: 'loupe', color: 'c-yellow' },
   { id: 'game.dominoes', title: 'Les dominos des nombres', sub: 'Attache le même nombre', img: '/art/scene/domino-card.svg', color: 'c-pink' },
   { id: 'game.listen-garden', title: 'Le potager qui écoute', sub: 'Écoute l’anglais, touche l’image', img: 'speaker_high_volume', color: 'c-mint' },
+  { id: 'game.garden-says', title: 'La jardinière dit', sub: 'Fais ce qu’on dit en anglais', img: 'basket', color: 'c-lime' },
 ] as const;
 
 /** Cards with a catalogue piece: art approved by the parents shows here too. */

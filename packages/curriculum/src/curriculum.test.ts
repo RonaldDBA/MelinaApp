@@ -6,7 +6,7 @@ describe('catalog', () => {
   it('has at least six skills, all with a generator (paper or game); the English skills are screen-only', () => {
     expect(skills.length).toBeGreaterThanOrEqual(6);
     for (const s of skills) expect(templates.some((t) => t.skillId === s.id) || games.some((g) => g.skills.includes(s.id)), s.id).toBe(true);
-    expect(skills.filter((s) => !hasPaper(s.id)).map((s) => s.subject)).toEqual(['english']);
+    expect(new Set(skills.filter((s) => !hasPaper(s.id)).map((s) => s.subject))).toEqual(new Set(['english']));
   });
 
   it('generates valid exercises for every level with real variation', () => {

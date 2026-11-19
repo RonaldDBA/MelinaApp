@@ -49450,6 +49450,28 @@ var skills_default3 = {
       },
       curriculumRef: "PFEQ Anglais, langue seconde, 1er cycle du primaire (2006) \u2014 comp\xE9tence 1 : r\xE9agir \xE0 des textes entendus (compr\xE9hension orale, sans attente en lecture ni en \xE9criture). Niveaux 3 \xE0 6 : vocabulaire th\xE9matique du 2e cycle (Progression des apprentissages, 2009).",
       reviewStatus: "to-validate"
+    },
+    {
+      id: "en.commands",
+      version: 1,
+      subject: "english",
+      cycle: 1,
+      grade: 2,
+      title: "Comprendre des consignes en anglais",
+      titleFr: "Je fais ce qu\u2019on me dit en anglais",
+      description: "Entend une consigne en anglais et la fait en touchant les objets (montrer qu\u2019on a compris en agissant, sans lecture).",
+      prerequisites: [],
+      exerciseTypes: [],
+      levels: {
+        "1": "\xAB Touch the cat. \xBB : un objet parmi 4.",
+        "2": "\xAB Touch the red book. \xBB : la couleur ET le nom (en anglais, la couleur vient avant le nom).",
+        "3": "\xAB Touch the duck, then the frog. \xBB : deux consignes dans l\u2019ordre.",
+        "4": "\xAB Put the green apple in the basket. \xBB : un objet de couleur dans le panier ou la bo\xEEte.",
+        "5": "\xAB Touch the blue heart, then the yellow square. \xBB : deux objets de couleur dans l\u2019ordre, parmi 6.",
+        "6": "D\xE9fi : \xAB Put the red book in the box, then touch the green heart. \xBB : trois \xE9tapes."
+      },
+      curriculumRef: "PFEQ Anglais, langue seconde, 1er cycle du primaire (2006) \u2014 comp\xE9tence 1 : r\xE9agir \xE0 des textes entendus (r\xE9ponses non verbales, consignes de la classe). Couleurs et formes : vocabulaire du 2e cycle (Progression des apprentissages, 2009).",
+      reviewStatus: "to-validate"
     }
   ]
 };
@@ -51857,10 +51879,12 @@ function listenPool(difficulty) {
   if (difficulty >= 6) return englishWords.filter((w) => w.clue);
   return englishWords.filter((w) => w.level <= difficulty);
 }
-function buildListenRound(difficulty, rng) {
+function buildListenRound(difficulty, rng, due = []) {
   const pool = listenPool(difficulty);
   const fresh = difficulty < 6 ? pool.filter((w) => w.level === difficulty) : [];
-  const target = rng.pick(fresh.length && rng.next() < 0.5 ? fresh : pool);
+  const dueHere = due.map((id) => pool.find((w) => w.id === id)).filter((w) => Boolean(w)).slice(0, 6);
+  const r = rng.next();
+  const target = rng.pick(dueHere.length && r < 0.4 ? dueHere : fresh.length && r < (dueHere.length ? 0.7 : 0.5) ? fresh : pool);
   const n = LISTEN_OPTIONS[difficulty] ?? 3;
   const taken = /* @__PURE__ */ new Set([target.id]);
   const pics = /* @__PURE__ */ new Set([target.pic]);
@@ -51931,6 +51955,153 @@ var ENGLISH_TAG_LABELS = {
   "en-devinette": "anglais : devinettes",
   "en-cognat": "anglais : mots presque pareils au fran\xE7ais",
   "en-faux-ami": "anglais : faux amis"
+};
+
+// packages/curriculum/src/commands.ts
+var COLOURED = {
+  heart: { fr: "c\u0153ur", pics: { red: "\u2764\uFE0F", blue: "\u{1F499}", yellow: "\u{1F49B}", green: "\u{1F49A}", purple: "\u{1F49C}", orange: "\u{1F9E1}" } },
+  book: { fr: "livre", pics: { red: "\u{1F4D5}", green: "\u{1F4D7}", blue: "\u{1F4D8}", orange: "\u{1F4D9}" } },
+  circle: { fr: "cercle", pics: { red: "\u{1F534}", blue: "\u{1F535}", yellow: "\u{1F7E1}", green: "\u{1F7E2}", orange: "\u{1F7E0}", purple: "\u{1F7E3}" } },
+  square: { fr: "carr\xE9", pics: { red: "\u{1F7E5}", blue: "\u{1F7E6}", yellow: "\u{1F7E8}", green: "\u{1F7E9}", orange: "\u{1F7E7}", purple: "\u{1F7EA}" } },
+  apple: { fr: "pomme", feminine: true, pics: { red: "\u{1F34E}", green: "\u{1F34F}" } }
+};
+var COLOUR_FR = {
+  red: ["rouge", "rouge"],
+  blue: ["bleu", "bleue"],
+  yellow: ["jaune", "jaune"],
+  green: ["vert", "verte"],
+  purple: ["violet", "violette"],
+  orange: ["orange", "orange"]
+};
+var CONTAINERS = [
+  { id: "basket", en: "basket", fr: "le panier", pic: "\u{1F9FA}", noun: "basket" },
+  { id: "box", en: "box", fr: "la bo\xEEte", pic: "\u{1F4E6}", noun: "box" }
+];
+function coloured(noun, colour) {
+  const n = COLOURED[noun];
+  const adj = (COLOUR_FR[colour] ?? [colour, colour])[n.feminine ? 1 : 0];
+  return { id: `${colour}-${noun}`, en: `${colour} ${noun}`, fr: `${n.feminine ? "la" : "le"} ${n.fr} ${adj}`, pic: n.pics[colour], noun, colour };
+}
+var PLAIN = englishWords.filter((w) => w.kind === "noun" && w.level <= 2 && ["animals", "garden", "food", "classroom", "body"].includes(w.theme));
+var plain = (w) => ({ id: w.id, en: w.en, fr: w.fr, pic: w.pic, noun: w.id });
+function colourGrid(rng, nouns, colours) {
+  for (let tries = 0; tries < 50; tries++) {
+    const ns = rng.shuffle(Object.keys(COLOURED)).slice(0, nouns);
+    const common = Object.keys(COLOUR_FR).filter((c) => ns.every((n) => COLOURED[n].pics[c]));
+    if (common.length < colours) continue;
+    const cs = rng.shuffle(common).slice(0, colours);
+    return ns.flatMap((n) => cs.map((c) => coloured(n, c)));
+  }
+  throw new Error("no colour grid");
+}
+var touch = (rng) => rng.pick(["Touch", "Point to", "Show me"]);
+function buildCommandRound(difficulty, rng) {
+  const errors = [];
+  const COLOUR_MSG = "Regarde bien la couleur : en anglais, elle vient avant le nom.";
+  const NOUN_MSG = "La couleur est bonne. \xC9coute bien le nom de l\u2019objet.";
+  const ORDER_MSG = "Les bons objets, mais pas dans le bon ordre. \xC9coute : d\u2019abord\u2026 ensuite (then)\u2026";
+  const PLACE_MSG = "Le bon objet! \xC9coute bien o\xF9 le mettre : basket (panier) ou box (bo\xEEte)?";
+  const confusions = (target, items, prefix, suffix) => {
+    for (const o of items) {
+      if (o.id === target.id || !o.colour) continue;
+      if (o.noun === target.noun) errors.push({ match: [...prefix, o.id, ...suffix].join(","), type: "en-couleur", message: COLOUR_MSG });
+      else if (o.colour === target.colour) errors.push({ match: [...prefix, o.id, ...suffix].join(","), type: "en-nom", message: NOUN_MSG });
+    }
+  };
+  const spec2 = (say, items, steps, containers = []) => ({
+    game: "commands",
+    say,
+    steps,
+    items: rng.shuffle(items).map((t) => t.id),
+    containers: containers.map((t) => t.id),
+    pics: Object.fromEntries([...items, ...containers].map((t) => [t.id, t.pic]))
+  });
+  switch (difficulty) {
+    case 1: {
+      const items = rng.shuffle(PLAIN).slice(0, 4).map(plain);
+      const t = items[0];
+      const verb = touch(rng);
+      return {
+        kind: "touch",
+        spec: spec2(`${verb} the ${t.en}.`, items, 1),
+        answer: [t.id],
+        explanation: `\xAB ${verb} the ${t.en} \xBB : ${verb === "Show me" ? "montre-moi" : verb === "Point to" ? "montre du doigt" : "touche"} \xAB ${t.fr} \xBB.`,
+        errors
+      };
+    }
+    case 2: {
+      const items = colourGrid(rng, 2, 2);
+      const t = rng.pick(items);
+      confusions(t, items, [], []);
+      return { kind: "colour", spec: spec2(`${touch(rng)} the ${t.en}.`, items, 1), answer: [t.id], explanation: `\xAB ${t.en} \xBB = ${t.fr}. En anglais, la couleur vient avant le nom.`, errors };
+    }
+    case 3: {
+      const items = rng.shuffle(PLAIN).slice(0, 5).map(plain);
+      const [a, b] = [items[0], items[1]];
+      const say = rng.pick([`Touch the ${a.en}, then touch the ${b.en}.`, `First touch the ${a.en}. Then touch the ${b.en}.`, `Touch the ${a.en}, then the ${b.en}.`]);
+      errors.push({ match: `${b.id},${a.id}`, type: "en-ordre", message: ORDER_MSG });
+      return { kind: "then", spec: spec2(say, items, 2), answer: [a.id, b.id], explanation: `\xAB then \xBB veut dire \xAB ensuite \xBB : d\u2019abord ${a.en}, ensuite ${b.en}.`, errors };
+    }
+    case 4: {
+      const items = colourGrid(rng, 2, 2);
+      const t = rng.pick(items);
+      const place = rng.pick(CONTAINERS);
+      const other = CONTAINERS.find((c) => c.id !== place.id);
+      confusions(t, items, [], [place.id]);
+      errors.push({ match: `${t.id},${other.id}`, type: "en-contenant", message: PLACE_MSG });
+      return {
+        kind: "put",
+        spec: spec2(`Put the ${t.en} in the ${place.en}.`, items, 2, CONTAINERS),
+        answer: [t.id, place.id],
+        explanation: `\xAB Put the ${t.en} in the ${place.en} \xBB : mets ${t.fr} dans ${place.fr}.`,
+        errors
+      };
+    }
+    case 5: {
+      const items = colourGrid(rng, 2, 3);
+      const [a, b] = rng.shuffle(items);
+      confusions(a, items, [], [b.id]);
+      confusions(b, items, [a.id], []);
+      errors.push({ match: `${b.id},${a.id}`, type: "en-ordre", message: ORDER_MSG });
+      const say = rng.pick([`Touch the ${a.en}, then the ${b.en}.`, `First touch the ${a.en}. Then touch the ${b.en}.`]);
+      return { kind: "colour-then", spec: spec2(say, items, 2), answer: [a.id, b.id], explanation: `D\u2019abord ${a.fr}, ensuite (then) ${b.fr}.`, errors };
+    }
+    default: {
+      const items = colourGrid(rng, 2, 3);
+      const [a, b] = rng.shuffle(items);
+      const place = rng.pick(CONTAINERS);
+      const other = CONTAINERS.find((c) => c.id !== place.id);
+      confusions(a, items, [], [place.id, b.id]);
+      confusions(b, items, [a.id, place.id], []);
+      errors.push({ match: `${a.id},${other.id},${b.id}`, type: "en-contenant", message: PLACE_MSG });
+      return {
+        kind: "put-then",
+        spec: spec2(`Put the ${a.en} in the ${place.en}, then touch the ${b.en}.`, items, 3, CONTAINERS),
+        answer: [a.id, place.id, b.id],
+        explanation: `Mets ${a.fr} dans ${place.fr}, ensuite (then) touche ${b.fr}.`,
+        errors
+      };
+    }
+  }
+}
+function commandTags(ex) {
+  const g = ex.game;
+  if (!g || g.game !== "commands") return [];
+  const t = ["en-consigne"];
+  const answer = ex.expected.type === "word" ? ex.expected.value.split(",") : [];
+  if (answer.some((id) => id.includes("-"))) t.push("en-couleur-nom");
+  if (g.containers.length) t.push("en-mettre-dans");
+  if (g.steps >= 2 && answer.filter((id) => g.items.includes(id)).length >= 2) t.push("en-deux-etapes");
+  if (g.steps >= 3) t.push("en-trois-etapes");
+  for (const id of answer) if (englishWords.some((w) => w.id === id)) t.push(`en-mot-${id}`);
+  return t;
+}
+var COMMAND_TAG_LABELS = {
+  "en-consigne": "anglais : suivre une consigne",
+  "en-couleur-nom": "anglais : la couleur avant le nom (red book)",
+  "en-mettre-dans": "anglais : \xAB put \u2026 in the \u2026 \xBB",
+  "en-deux-etapes": "anglais : deux consignes dans l\u2019ordre (then)",
+  "en-trois-etapes": "anglais : trois \xE9tapes"
 };
 
 // packages/curriculum/src/tags.ts
@@ -52006,7 +52177,8 @@ var TAG_LABELS = {
   "question-combien": "questions \xAB combien \xBB",
   "question-quoi": "questions \xAB quoi / quel \xBB",
   "texte-long": "textes longs",
-  ...ENGLISH_TAG_LABELS
+  ...ENGLISH_TAG_LABELS,
+  ...COMMAND_TAG_LABELS
 };
 var nums = (s) => (s.match(/\d+/g) ?? []).map(Number);
 var innerZero = (n) => {
@@ -52170,6 +52342,8 @@ function tagsOf(ex) {
       return ex.expected.type === "word" ? spellingTags(ex.expected.value) : [];
     case "en.listen-words":
       return listenTags(ex);
+    case "en.commands":
+      return commandTags(ex);
     case "fr.comprehension": {
       const q = ex.statement.trim();
       const t = [
@@ -53606,8 +53780,8 @@ var listenGarden = {
   subject: "english",
   responseType: "word",
   roundsPerSession: 5,
-  generate(skillId, difficulty, rng, seed) {
-    const { target, spec: spec2 } = buildListenRound(difficulty, rng);
+  generate(skillId, difficulty, rng, seed, opts) {
+    const { target, spec: spec2 } = buildListenRound(difficulty, rng, opts.due);
     return {
       ...gameBase(this, skillId, difficulty, seed),
       questionKey: `lg-${target.id}`,
@@ -53626,7 +53800,35 @@ var listenGarden = {
     };
   }
 };
-var games = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes, listenGarden];
+var gardenSays = {
+  id: "game.garden-says",
+  version: 1,
+  title: "La jardini\xE8re dit",
+  description: "Anglais \xE0 l\u2019oral : entendre une consigne en anglais et la faire en touchant les objets (\xAB Touch the red book \xBB, \xAB Put the apple in the basket \xBB, deux \xE9tapes avec \xAB then \xBB). Sans lecture.",
+  skills: ["en.commands"],
+  subject: "english",
+  responseType: "word",
+  roundsPerSession: 5,
+  generate(skillId, difficulty, rng, seed) {
+    const r = buildCommandRound(difficulty, rng);
+    return {
+      ...gameBase(this, skillId, difficulty, seed),
+      questionKey: `gs-${r.answer.join("-")}`,
+      instruction: r.spec.steps > 1 ? "\xC9coute la consigne en anglais et fais-la, dans l\u2019ordre." : "\xC9coute la consigne en anglais et fais-la.",
+      statement: "\xC9coute bien.",
+      hint: "Touche le haut-parleur pour entendre encore, plus lentement.",
+      answerFormat: r.spec.steps > 1 ? `${r.spec.steps} gestes dans l\u2019ordre` : "un geste",
+      readingHint: "des objets touch\xE9s",
+      game: r.spec,
+      expected: { type: "word", value: r.answer.join(","), accentsMatter: false },
+      explanation: r.explanation,
+      commonErrors: r.errors,
+      origin: "Original \u2014 consignes \xE9crites pour l\u2019application.",
+      retryMessage: "Pas tout \xE0 fait. \xC9coute encore la consigne."
+    };
+  }
+};
+var games = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes, listenGarden, gardenSays];
 function getGame(id) {
   const g = games.find((x) => x.id === id);
   if (!g) throw new Error(`Unknown game: ${id}`);
@@ -53661,7 +53863,8 @@ var FALLBACK = {
   "fr.plural": "Tu as bien regard\xE9 la fin des mots.",
   "fr.comprehension": "Tu as retrouv\xE9 l\u2019indice dans le texte.",
   "fr.spelling": "Tu as bien \xE9cout\xE9 chaque son.",
-  "en.listen-words": "Tu as bien \xE9cout\xE9 le mot anglais."
+  "en.listen-words": "Tu as bien \xE9cout\xE9 le mot anglais.",
+  "en.commands": "Tu as bien suivi la consigne en anglais."
 };
 function strategyPraise(ex) {
   const t = new Set(tagsOf(ex));
@@ -53676,6 +53879,13 @@ function strategyPraise(ex) {
       if (t.has("en-rime")) return "Tu as bien \xE9cout\xE9 le premier son du mot.";
       if (t.has("en-phrase")) return "Tu as trouv\xE9 le mot dans la phrase anglaise.";
       return FALLBACK["en.listen-words"];
+    }
+    case "en.commands": {
+      if (t.has("en-trois-etapes")) return "Tu as fait les trois \xE9tapes dans l\u2019ordre.";
+      if (t.has("en-mettre-dans")) return "Tu as mis l\u2019objet au bon endroit.";
+      if (t.has("en-deux-etapes")) return "Tu as suivi les deux consignes dans l\u2019ordre.";
+      if (t.has("en-couleur-nom")) return "Tu as \xE9cout\xE9 la couleur et le nom.";
+      return FALLBACK["en.commands"];
     }
     case "math.add-sub": {
       if (t.has("retenue-centaine")) return "Tu as bien fait la retenue vers les centaines.";
@@ -55164,6 +55374,13 @@ CREATE INDEX idx_assignments_profile ON assignments(profile_id, created_at);
     name: "time the sheet was finished",
     // the paper evaluation counts at the moment SHE finished, not when the parents confirmed (the «another day» rule)
     sql: `ALTER TABLE assignments ADD COLUMN done_at TEXT;`
+  },
+  {
+    version: 7,
+    name: "wrong tries of on-screen rounds",
+    // which wrong answers she gave before the right one (e.g. «tree» when she heard «three»): JSON list, in order.
+    // It tells the parents WHAT she confuses (research report on English, «diagnostic distractors»).
+    sql: `ALTER TABLE assignments ADD COLUMN wrong_answers TEXT;`
   }
 ];
 function openDatabase(file) {
@@ -55394,6 +55611,64 @@ function conqueredTags(before, after) {
 }
 function almostTags(m) {
   return Object.entries(m?.tags ?? {}).filter(([, s]) => s.wasWeak === true && nearly(s)).map(([t]) => t);
+}
+
+// packages/adaptive-engine/src/words.ts
+var WORD_LADDER = [1, 3, 7, 14, 30];
+function addDays(day, n) {
+  const [y, m, d] = day.split("-").map(Number);
+  const t = new Date(Date.UTC(y, m - 1, d + n));
+  return t.toISOString().slice(0, 10);
+}
+function daysBetween(a, b) {
+  const ms = (s) => {
+    const [y, m, d] = s.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((ms(b) - ms(a)) / 864e5);
+}
+function wordSchedule(events) {
+  const out = {};
+  for (const ev of events) {
+    const s = out[ev.word] ??= { word: ev.word, step: 0, firstDay: ev.day, lastDay: ev.day, stepDay: null, successDays: [], due: ev.day, tests: 0, misses: 0 };
+    s.tests += 1;
+    if (ev.first) {
+      if (s.stepDay === null || ev.day > s.stepDay) {
+        s.step = Math.min(s.step + 1, WORD_LADDER.length);
+        s.stepDay = ev.day;
+      }
+      if (!s.successDays.includes(ev.day)) s.successDays.push(ev.day);
+    } else {
+      s.misses += 1;
+      s.step = Math.max(0, s.step - 1);
+    }
+    if (ev.day > s.lastDay) s.lastDay = ev.day;
+    s.due = s.step === 0 ? s.lastDay : addDays(s.lastDay, WORD_LADDER[s.step - 1]);
+  }
+  return out;
+}
+function dueWords(states, today) {
+  return Object.values(states).filter((s) => s.due <= today).sort((a, b) => a.due === b.due ? a.word.localeCompare(b.word) : a.due.localeCompare(b.due)).map((s) => s.word);
+}
+var isKnown = (s) => s.successDays.length >= 2;
+function retention(events, minDays = 7) {
+  const firstSuccess = /* @__PURE__ */ new Map();
+  const done = /* @__PURE__ */ new Set();
+  const words = [];
+  for (const ev of events) {
+    const since = firstSuccess.get(ev.word);
+    if (since === void 0) {
+      if (ev.first) firstSuccess.set(ev.word, ev.day);
+      continue;
+    }
+    if (done.has(ev.word)) continue;
+    const after = daysBetween(since, ev.day);
+    if (after >= minDays) {
+      done.add(ev.word);
+      words.push({ word: ev.word, kept: ev.first, after });
+    }
+  }
+  return { tested: words.length, kept: words.filter((w) => w.kept).length, words };
 }
 
 // packages/adaptive-engine/src/index.ts
@@ -55901,7 +56176,8 @@ var toEvent = (r) => {
     outcome: r.result !== "correct" ? "wrong" : r.help === "none" ? "first" : "retry",
     day: localDay(String(r.created_at)),
     // picture choice by ear (English): a lucky tap counts as weaker evidence (guessing floor)
-    ...ex?.game?.game === "listen-pick" ? { guess: 1 / ex.game.options.length } : {}
+    ...ex?.game?.game === "listen-pick" ? { guess: 1 / ex.game.options.length } : {},
+    ...ex?.game?.game === "commands" && ex.game.steps === 1 ? { guess: 1 / ex.game.items.length } : {}
   };
 };
 var LEARN_SQL = `SELECT t.rowid AS rowid, t.skill_id, t.difficulty, t.result, t.help, t.created_at, a.snapshot_json
@@ -55941,6 +56217,18 @@ function recentHelp(c, skillId) {
   const rows = all(c, "SELECT help FROM attempts WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?", PROFILE_ID, skillId, HINT_ALARM.last);
   const helped = rows.filter((r) => r.help !== "none").length;
   return { n: rows.length, helped, rate: rows.length ? helped / rows.length : 0 };
+}
+function englishWordEvents(c) {
+  return all(
+    c,
+    `SELECT a.snapshot_json, t.result, t.help, t.created_at FROM attempts t JOIN assignments a ON a.id = t.assignment_id
+     WHERE t.profile_id = ? AND t.skill_id = 'en.listen-words' ORDER BY t.created_at, t.rowid`,
+    PROFILE_ID
+  ).flatMap((r) => {
+    const ex = json(String(r.snapshot_json), null);
+    if (!ex || ex.expected.type !== "word") return [];
+    return [{ word: ex.expected.value, day: localDay(String(r.created_at)), first: r.result === "correct" && r.help === "none" }];
+  });
 }
 function todayLevel(c, skillId) {
   const now = c.now();
@@ -56736,14 +57024,17 @@ function startGameRound(c, body) {
   const lastRow = one(c, "SELECT skill_id FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 1", PROFILE_ID, game.id);
   const choice = settings["parent.nextChoice"];
   let decision = choice && candidates.some((s) => s.id === choice.skillId) ? parentChoice(choice.skillId, states[choice.skillId], choice.difficulty) : selectNext({ skills: candidates, states, allStates: states, now, lastSkillId: lastRow?.skill_id ?? null, params: engineParams(c) });
-  const recentKeys = all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8", PROFILE_ID, game.id).map((r) => String(r.question_key));
+  const english = game.subject === "english";
+  const dayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const recentKeys = (english ? all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 3", PROFILE_ID, game.id, dayStartIso) : all(c, "SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8", PROFILE_ID, game.id)).map((r) => String(r.question_key));
   if (body.challenge === true && decision.reasonCode !== "parent-choice") {
     const base2 = Math.max(decision.difficulty, todayLevel(c, decision.skillId));
     decision = { ...decision, difficulty: Math.min(skillMax(decision.skillId), base2 + 1), reasonCode: "child-choice", reason: `Choix de l\u2019enfant : un d\xE9fi un peu plus difficile (niveau ${Math.min(skillMax(decision.skillId), base2 + 1)}).` };
   }
   const learned = decision.reasonCode === "child-choice" ? { decision, plan: null } : applyLearner(c, decision, seedFrom(id));
   decision = learned.decision;
-  const ex = generateGameRound(game.id, decision.skillId, decision.difficulty, seedFrom(id), recentKeys, { schoolWeek: settings["french.schoolWeek"], recentKeys, prefer: learned.plan?.prefer });
+  const due = decision.skillId === "en.listen-words" ? dueWords(wordSchedule(englishWordEvents(c)), localDay(now.toISOString())) : void 0;
+  const ex = generateGameRound(game.id, decision.skillId, decision.difficulty, seedFrom(id), recentKeys, { schoolWeek: settings["french.schoolWeek"], recentKeys, prefer: learned.plan?.prefer, due });
   tx(c.db, () => {
     run(
       c,
@@ -56777,7 +57068,10 @@ function answerGameRound(c, id, body) {
   const exp = ex.expected;
   const answer = exp.type === "sequence" ? body.answer.replace(/\s+/g, "") : body.answer.trim().normalize("NFC");
   const options = ex.game && "options" in ex.game ? ex.game.options : null;
-  const valid = options ? options.includes(answer) : ex.game?.game === "hidden-words" ? spellingAnswerFits(ex.game, answer) : exp.type === "sequence" ? (
+  const valid = options ? options.includes(answer) : ex.game?.game === "commands" ? (
+    // «La jardinière dit»: exactly `steps` taps, each on something that is on the table
+    answer.split(",").length === ex.game.steps && answer.split(",").every((t) => ex.game.items.includes(t) || ex.game.containers.includes(t))
+  ) : ex.game?.game === "hidden-words" ? spellingAnswerFits(ex.game, answer) : exp.type === "sequence" ? (
     // up to 4 digits: level 6 «Défi» goes up to the thousands (1000 → 9000)
     new RegExp(`^\\d{1,4}(,\\d{1,4}){${exp.values.length - 1}}$`).test(answer)
   ) : /^\d{1,4}$/.test(answer);
@@ -56786,8 +57080,9 @@ function answerGameRound(c, id, body) {
   const ev = evaluate(ex, answer);
   const correct = ev.result === "correct";
   const now = iso(c);
+  const wrongs = correct ? null : JSON.stringify([...json(row.wrong_answers, []), answer]);
   if (!correct && tries < MAX_TRIES) {
-    run(c, "UPDATE assignments SET tries = ?, updated_at = ? WHERE id = ?", tries, now, id);
+    run(c, "UPDATE assignments SET tries = ?, wrong_answers = ?, updated_at = ? WHERE id = ?", tries, wrongs, now, id);
     return {
       state: "retry",
       duplicate: false,
@@ -56832,7 +57127,7 @@ function answerGameRound(c, id, body) {
       JSON.stringify(after),
       now
     );
-    run(c, "UPDATE assignments SET status = 'confirmed', tries = ?, hint_used = ?, updated_at = ? WHERE id = ?", tries, tries > 1 ? 1 : 0, now, id);
+    run(c, "UPDATE assignments SET status = 'confirmed', tries = ?, hint_used = ?, wrong_answers = COALESCE(?, wrong_answers), updated_at = ? WHERE id = ?", tries, tries > 1 ? 1 : 0, wrongs, now, id);
     run(c, "INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at", PROFILE_ID, ex.skillId, JSON.stringify(after), now);
     plantFlower(c, ex.skillId, after, now);
     celebrateConquest(c, ex, attemptId, prevProfile, now);
@@ -57315,15 +57610,15 @@ function listBackups(c) {
 var MIN_TAG = 3;
 var MONTHS = ["janvier", "f\xE9vrier", "mars", "avril", "mai", "juin", "juillet", "ao\xFBt", "septembre", "octobre", "novembre", "d\xE9cembre"];
 var startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-var addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+var addDays2 = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 var iso3 = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 var fmt = (d) => `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 function periodBounds(kind, now, offset) {
   if (kind === "week") {
     const day = (now.getDay() + 6) % 7;
-    const start2 = addDays(startOfDay(now), -day + 7 * offset);
-    const end2 = addDays(start2, 7);
-    const last = addDays(end2, -1);
+    const start2 = addDays2(startOfDay(now), -day + 7 * offset);
+    const end2 = addDays2(start2, 7);
+    const last = addDays2(end2, -1);
     return { start: start2, end: end2, label: `Semaine du ${fmt(start2)} au ${fmt(last)}` };
   }
   const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
@@ -57419,6 +57714,77 @@ var TALK = [
   "Quand tu ne sais pas, qu\u2019est-ce que tu fais pour trouver?"
 ];
 var wOf = (p, skillId, tag) => p[skillId]?.tags[tag]?.w ?? 0;
+var COMMAND_MISTAKE = {
+  "en-couleur": "la bonne chose, mais pas la bonne couleur (en anglais, la couleur vient avant le nom : \xAB red book \xBB)",
+  "en-nom": "la bonne couleur, mais pas le bon objet",
+  "en-ordre": "les bonnes choses, mais pas dans l\u2019ordre (\xAB then \xBB = ensuite)",
+  "en-contenant": "le bon objet, mais pas au bon endroit (basket / box)"
+};
+function englishSection(c, until) {
+  const end = iso3(until);
+  const events = englishWordEvents(c).filter((e) => e.day < end);
+  const rounds = all(
+    c,
+    `SELECT a.exercise_id, a.snapshot_json, a.wrong_answers, t.result, t.help, t.difficulty FROM attempts t JOIN assignments a ON a.id = t.assignment_id
+     WHERE t.profile_id = ? AND t.skill_id IN ('en.listen-words', 'en.commands') AND t.created_at < ? ORDER BY t.created_at`,
+    PROFILE_ID,
+    until.toISOString()
+  );
+  if (!events.length && !rounds.length) return null;
+  const sched = wordSchedule(events);
+  const states = Object.values(sched);
+  const ret = retention(events);
+  const confusions = /* @__PURE__ */ new Map();
+  const mistakes = /* @__PURE__ */ new Map();
+  const proven = { "game.listen-garden": {}, "game.garden-says": {} };
+  for (const r of rounds) {
+    const ex = JSON.parse(String(r.snapshot_json));
+    const wrong = r.wrong_answers ? JSON.parse(String(r.wrong_answers)) : [];
+    const id = String(r.exercise_id);
+    if (r.result === "correct" && r.help === "none" && proven[id]) proven[id][Number(r.difficulty)] = (proven[id][Number(r.difficulty)] ?? 0) + 1;
+    if (id === "game.listen-garden" && ex.expected.type === "word") {
+      const target = ex.expected.value;
+      for (const w of wrong) {
+        const pair = soundAlikes(target).find((s) => s.id === w);
+        if (!pair) continue;
+        const key = `${target}>${w}`;
+        const cur = confusions.get(key) ?? { heard: englishWord(target)?.en ?? target, picked: englishWord(w)?.en ?? w, label: TAG_LABELS[pair.tag] ?? pair.tag, n: 0 };
+        cur.n += 1;
+        confusions.set(key, cur);
+      }
+    }
+    if (id === "game.garden-says")
+      for (const w of wrong) {
+        const t = evaluate(ex, w).errorType;
+        if (t && COMMAND_MISTAKE[t]) mistakes.set(t, (mistakes.get(t) ?? 0) + 1);
+      }
+  }
+  const top = (id) => Math.max(0, ...Object.entries(proven[id] ?? {}).filter(([, n]) => n >= 2).map(([l]) => Number(l)));
+  const listen = top("game.listen-garden");
+  const cmd = top("game.garden-says");
+  const canDo = [
+    listen >= 1 && "Reconna\xEEt \xE0 l\u2019oral des mots anglais simples (couleurs, nombres, animaux, objets de la classe).",
+    listen >= 3 && "Comprend un mot connu dans une courte phrase entendue (\xAB Where is the cat? \xBB).",
+    listen >= 4 && "Entend la diff\xE9rence entre des mots qui se ressemblent (ship / sheep, three / tree).",
+    listen >= 6 && "Comprend une courte devinette entendue en anglais.",
+    cmd >= 1 && "Fait une consigne simple entendue en anglais (\xAB Touch the duck \xBB).",
+    cmd >= 2 && "Comprend la couleur plac\xE9e avant le nom (\xAB the red book \xBB).",
+    cmd >= 3 && "Suit deux consignes dans l\u2019ordre (\xAB then \xBB).",
+    cmd >= 4 && "Comprend \xAB Put the \u2026 in the \u2026 \xBB."
+  ].filter((x) => Boolean(x));
+  const lastDay = iso3(addDays2(until, -1));
+  const toReview = states.filter((s) => s.misses > 0 && !isKnown(s)).sort((a, b) => b.misses - a.misses).slice(0, 8).map((s) => englishWord(s.word)?.en ?? s.word);
+  return {
+    wordsMet: states.length,
+    wordsKnown: states.filter(isKnown).length,
+    dueNow: dueWords(sched, lastDay).length,
+    retention: { tested: ret.tested, kept: ret.kept },
+    confusions: [...confusions.values()].sort((a, b) => b.n - a.n).slice(0, 6),
+    commandMistakes: [...mistakes.entries()].sort((a, b) => b[1] - a[1]).map(([type, n]) => ({ type, label: COMMAND_MISTAKE[type], n })),
+    canDo,
+    toReview
+  };
+}
 function buildReport(c, kind, offset) {
   const now = c.now();
   const cur = periodBounds(kind, now, offset);
@@ -57428,7 +57794,7 @@ function buildReport(c, kind, offset) {
   const totals = summary(rows);
   const prevTotals = summary(prevRows);
   const days = [];
-  for (let d = cur.start; d < cur.end; d = addDays(d, 1)) {
+  for (let d = cur.start; d < cur.end; d = addDays2(d, 1)) {
     const key = iso3(d);
     const dayRows = rows.filter((r) => iso3(new Date(r.created_at)) === key);
     days.push({ date: key, answers: dayRows.length, firstTry: dayRows.filter(firstTry).length });
@@ -57536,8 +57902,8 @@ function buildReport(c, kind, offset) {
   return {
     kind,
     offset,
-    period: { start: iso3(cur.start), end: iso3(addDays(cur.end, -1)), label: cur.label },
-    previous: { start: iso3(prev.start), end: iso3(addDays(prev.end, -1)), label: prev.label },
+    period: { start: iso3(cur.start), end: iso3(addDays2(cur.end, -1)), label: cur.label },
+    previous: { start: iso3(prev.start), end: iso3(addDays2(prev.end, -1)), label: prev.label },
     generatedAt: now.toISOString(),
     totals,
     prevTotals,
@@ -57549,7 +57915,8 @@ function buildReport(c, kind, offset) {
     lowData,
     home,
     talk,
-    goal
+    goal,
+    english: englishSection(c, cur.end)
   };
 }
 

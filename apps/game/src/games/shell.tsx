@@ -85,6 +85,7 @@ export function useRounds(gameId: string, total: number, intro: (r: GameRound) =
   /** she chose «un défi plus difficile» for this session */
   const challenge = useRef(false);
   const introRef = useRef(intro);
+  const inFlight = useRef(false); // an answer is on its way to the server
   const lastLevel = useRef<number | null>(null); // level of the previous round on this screen (also across «Encore»)
   introRef.current = intro;
   /** is the game still on screen? (a response arriving after leaving neither speaks nor plays sounds on the home screen) */
@@ -134,7 +135,10 @@ export function useRounds(gameId: string, total: number, intro: (r: GameRound) =
   /** Sends the answer. On a mistake with another try left, returns the clue so the game can react. */
   const submit = useCallback(
     async (answer: string): Promise<AnswerResult | null> => {
-      if (!round || busy || status !== 'playing' || answer.length === 0) return null;
+      // `busy` comes from the last render: two very fast taps (same frame) would both see it false and send two answers.
+      // The ref blocks a second answer while the first one is on its way.
+      if (!round || busy || inFlight.current || status !== 'playing' || answer.length === 0) return null;
+      inFlight.current = true;
       setBusy(true);
       try {
         const r = await api.answerRound(round.id, answer);
@@ -187,6 +191,7 @@ export function useRounds(gameId: string, total: number, intro: (r: GameRound) =
         setMessage((e as { code?: string }).code === 'offline' ? i18n.child.serverDown : i18n.child.sendError);
         return null;
       } finally {
+        inFlight.current = false;
         setBusy(false);
       }
     },

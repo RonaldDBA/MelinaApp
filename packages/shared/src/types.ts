@@ -121,7 +121,19 @@ export interface ListenPickSpec {
   options: string[]; // word ids, the value sent as the answer
   pics: Record<string, string>; // picture of each option
 }
-export type GameSpec = AppleCratesSpec | NumberTrainSpec | FrogJumpSpec | ChoiceSpec | NumberPathSpec | HiddenWordsSpec | DominoSpec | ListenPickSpec;
+/**
+ * « La jardinière dit » (English commands): the app SAYS a command; she does it by tapping `steps` things in order.
+ * `items` are the objects on the table, `containers` the basket and the box (levels 4 and 6). Answer = ids joined by commas.
+ */
+export interface CommandsSpec {
+  game: 'commands';
+  say: string;
+  steps: number;
+  items: string[];
+  containers: string[];
+  pics: Record<string, string>;
+}
+export type GameSpec = AppleCratesSpec | NumberTrainSpec | FrogJumpSpec | ChoiceSpec | NumberPathSpec | HiddenWordsSpec | DominoSpec | ListenPickSpec | CommandsSpec;
 
 /** Part of the exercise that may be shown to the child before confirmation. */
 export interface PublicExercise {

@@ -147,6 +147,19 @@ export interface ProgressReport {
   home: { skill: string; text: string } | null;
   talk: string;
   goal: string | null;
+  /** English, from the beginning up to the end of the period (null when she has not played in English yet). */
+  english: EnglishReport | null;
+}
+
+export interface EnglishReport {
+  wordsMet: number;
+  wordsKnown: number;
+  dueNow: number;
+  retention: { tested: number; kept: number };
+  confusions: Array<{ heard: string; picked: string; label: string; n: number }>;
+  commandMistakes: Array<{ type: string; label: string; n: number }>;
+  canDo: string[];
+  toReview: string[];
 }
 
 /** What the model learned from her answers, per skill. */

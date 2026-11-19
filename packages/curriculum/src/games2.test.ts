@@ -79,7 +79,7 @@ describe('levels 4 and 5 (every skill goes up to 5)', () => {
 
 describe('new mini-games: rounds always answerable and graded fairly', () => {
   it('the catalog has the games, each one linked to existing skills', () => {
-    expect(games.map((g) => g.id)).toEqual(['game.apple-crates', 'game.number-train', 'game.frog-jump', 'game.word-fishing', 'game.mystery-story', 'game.number-path', 'game.hidden-words', 'game.dominoes', 'game.listen-garden']);
+    expect(games.map((g) => g.id)).toEqual(['game.apple-crates', 'game.number-train', 'game.frog-jump', 'game.word-fishing', 'game.mystery-story', 'game.number-path', 'game.hidden-words', 'game.dominoes', 'game.listen-garden', 'game.garden-says']);
     for (const g of games) for (const s of g.skills) expect(skills.some((k) => k.id === s), `${g.id} → ${s}`).toBe(true);
   });
 

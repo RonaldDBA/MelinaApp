@@ -3,6 +3,36 @@
 Date: 17/11/2026. First in the development environment (Linux, Node 22.23, headless Chrome via Playwright);
 then **on the family's Windows** (Windows 11, section [Validation on Windows](#validation-on-windows-17112026-stage-1)).
 
+## English, stage 2: «La jardinière dit», words on a ladder of days, English in the report (18/11/2026)
+
+**Tested (seen):**
+- **Commands** (`english.test.ts`, 4 tests, 6 levels × 150 seeds):
+  - The right number of taps, on things that are on the table.
+  - The answer is accepted, and each predicted mistake is rejected with its own type.
+  - Colour levels: the colour comes before the noun, and there is always the same object in another colour and the same
+    colour on another object.
+  - Wrong order and wrong container are recognized. Real variety; French help after the answer.
+- **Due words:** with words due, about 4 rounds in 10 bring one back. A due word above the level is never forced in.
+- **Ladder of days** (`words.test.ts`, 5 tests): 1 → 3 → 7 → 14 → 30 days, one step per day; a miss goes down one step;
+  the most overdue first; «known» needs 2 days; retention counts the first answer 7+ days later.
+- **Server:**
+  - Taps in order; a wrong number of taps or an unknown thing gets 400.
+  - The wrong container and the wrong colour get their own message, and the wrong tries are kept (`wrong_answers`).
+  - The report counts command mistakes by kind.
+  - Words right on day 1 come back 8 days later and count as «still known». A sound-alike confusion shows in the report
+    with its French label.
+  - Ran 5 times in a row with no failure (rounds are random, so the checks do not depend on luck).
+- **E2E:**
+  - 10 home cards fit.
+  - Level 4: the command is spoken, not written. Numbered taps; a wrong container is explained, the taps start over and
+    the command comes back slower. The result shows the command in English.
+  - Level 6: 6 objects + 2 containers with no overlap. 3 taps in the same frame count in order, as one single answer.
+  - The parents' report has the English part.
+- **Bug found in review and fixed:** two very fast taps (same frame) could send two answers, because `busy` came from the
+  last render. Now a ref blocks a second answer while the first is on its way, in every game.
+
+**Not tested:** the English voice itself (silent tests), and real retention over weeks (needs her real use).
+
 ## English, stage 1: «Le potager qui écoute» (18/11/2026)
 
 **Tested (seen):**

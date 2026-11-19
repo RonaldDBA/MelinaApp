@@ -371,6 +371,13 @@ CREATE INDEX idx_assignments_profile ON assignments(profile_id, created_at);
     // the paper evaluation counts at the moment SHE finished, not when the parents confirmed (the «another day» rule)
     sql: `ALTER TABLE assignments ADD COLUMN done_at TEXT;`,
   },
+  {
+    version: 7,
+    name: 'wrong tries of on-screen rounds',
+    // which wrong answers she gave before the right one (e.g. «tree» when she heard «three»): JSON list, in order.
+    // It tells the parents WHAT she confuses (research report on English, «diagnostic distractors»).
+    sql: `ALTER TABLE assignments ADD COLUMN wrong_answers TEXT;`,
+  },
 ];
 
 export function openDatabase(file: string): DB {

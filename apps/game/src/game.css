@@ -2092,3 +2092,72 @@
   width: 64px;
   height: 64px;
 }
+
+/* ------------------------------------------------------------------ La jardinière dit (English commands) */
+
+.card-game.c-lime {
+  --c1: #fbfff0;
+  --c2: #e2f5b3;
+}
+.says-item.picked,
+.says-container.picked {
+  outline: 10px solid #ffc83d;
+  outline-offset: -4px;
+}
+.says-item.moved {
+  opacity: 0.35;
+  transform: scale(0.85);
+}
+.says-badge {
+  position: absolute;
+  top: -22px;
+  right: -22px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  background: #ff8a3d;
+  color: #fff;
+  font-size: 44px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.12);
+}
+.says-container {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 8px dashed #9fd29f;
+  border-radius: 48px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: var(--panel-shadow);
+  cursor: pointer;
+}
+.says-container .listen-pic {
+  font-size: 150px;
+}
+.says-inside {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 80px;
+  animation: pop 0.3s ease-out both;
+}
+.says-answer {
+  flex-wrap: wrap;
+}
+.says-sentence {
+  font-size: 54px;
+  font-weight: 700;
+  color: #145c34;
+  text-align: center;
+  max-width: 760px;
+}
+.says-picks {
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 72px;
+  margin: 4px 0;
+}

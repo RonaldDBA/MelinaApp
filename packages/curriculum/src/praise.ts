@@ -31,6 +31,7 @@ const FALLBACK: Record<string, string> = {
   'fr.comprehension': 'Tu as retrouvé l’indice dans le texte.',
   'fr.spelling': 'Tu as bien écouté chaque son.',
   'en.listen-words': 'Tu as bien écouté le mot anglais.',
+  'en.commands': 'Tu as bien suivi la consigne en anglais.',
 };
 
 export function strategyPraise(ex: ExerciseInstance): string {
@@ -46,6 +47,13 @@ export function strategyPraise(ex: ExerciseInstance): string {
       if (t.has('en-rime')) return 'Tu as bien écouté le premier son du mot.';
       if (t.has('en-phrase')) return 'Tu as trouvé le mot dans la phrase anglaise.';
       return FALLBACK['en.listen-words'] as string;
+    }
+    case 'en.commands': {
+      if (t.has('en-trois-etapes')) return 'Tu as fait les trois étapes dans l’ordre.';
+      if (t.has('en-mettre-dans')) return 'Tu as mis l’objet au bon endroit.';
+      if (t.has('en-deux-etapes')) return 'Tu as suivi les deux consignes dans l’ordre.';
+      if (t.has('en-couleur-nom')) return 'Tu as écouté la couleur et le nom.';
+      return FALLBACK['en.commands'] as string;
     }
     case 'math.add-sub': {
       if (t.has('retenue-centaine')) return 'Tu as bien fait la retenue vers les centaines.';

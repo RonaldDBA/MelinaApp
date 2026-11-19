@@ -112,11 +112,17 @@ export interface ListenRound {
   contrast: string | null; // tag of the sound-alike contrast tested, if any
 }
 
-export function buildListenRound(difficulty: Difficulty, rng: Rng): ListenRound {
+/**
+ * `due`: English words due for review today (spaced ladder of days, most overdue first). About 4 rounds in 10 bring one
+ * back when there is one at this level; otherwise half of the rounds use the level's new words.
+ */
+export function buildListenRound(difficulty: Difficulty, rng: Rng, due: string[] = []): ListenRound {
   const pool = listenPool(difficulty);
   // half of the rounds use the words that are new at this level (the level's own content); the rest review older words
   const fresh = difficulty < 6 ? pool.filter((w) => w.level === difficulty) : [];
-  const target = rng.pick(fresh.length && rng.next() < 0.5 ? fresh : pool);
+  const dueHere = due.map((id) => pool.find((w) => w.id === id)).filter((w): w is EnglishWord => Boolean(w)).slice(0, 6);
+  const r = rng.next();
+  const target = rng.pick(dueHere.length && r < 0.4 ? dueHere : fresh.length && r < (dueHere.length ? 0.7 : 0.5) ? fresh : pool);
   const n = LISTEN_OPTIONS[difficulty] ?? 3;
   const taken = new Set([target.id]);
   const pics = new Set([target.pic]);

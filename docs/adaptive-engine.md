@@ -45,6 +45,7 @@ Code in `packages/adaptive-engine/src/index.ts`. These are **deterministic** rul
       review schedule is kept. Above the pending level they change nothing in it; at or below it, the pending level goes
       back to the level under that error (or is cancelled right above the official level).
     - *On screen:* when a round is harder than the previous one, Lila starts with «Ça monte d’un cran!».
+  - **English words on a ladder of days (18/11/2026, `words.ts`):** per word, 1 → 3 → 7 → 14 → 30 days, one step per day at most with a first-try success; a miss goes down ONE step (not to the start) and makes the word due now. «Known» = first-try successes on 2 different days. `retention()` measures, for each word she got right, the first answer 7 days or more later. Recomputed from the history; no new table.
   - **Guessing floor (18/11/2026, English listening):** for picture choices, the learner model uses p = c + (1 − c)·σ(…), with c = 1 / number of pictures. A correct tap counts as weaker evidence (it may be luck); an error weighs exactly as before. Only the `listen-pick` rounds use it for now.
   - **Going down:** 2 consecutive mistakes move down 1 level. Her limit is where the level oscillates.
   - **Help:** a correct answer with help (correct on the 2nd attempt) still resets the streak.

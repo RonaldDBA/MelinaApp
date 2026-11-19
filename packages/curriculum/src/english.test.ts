@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Difficulty, ListenPickSpec } from '@melina/shared';
+import type { CommandsSpec, Difficulty, ListenPickSpec } from '@melina/shared';
 import { englishPairs, englishWord, englishWords, evaluate, generateGameRound, LISTEN_OPTIONS, soundAlikes, strategyPraise, tagsOf, TAG_LABELS, toPublic } from './index';
 
 const LEVELS: Difficulty[] = [1, 2, 3, 4, 5, 6];
@@ -133,5 +133,89 @@ describe('Le potager qui écoute: rounds per level', () => {
         expect(p.split(' ').length).toBeLessThanOrEqual(10);
         if (tags.includes('en-devinette')) expect(p).toMatch(/devinette/);
       }
+  });
+});
+
+describe('La jardinière dit: English commands done by tapping', () => {
+  const cmd = (d: Difficulty, seed: number) => generateGameRound('game.garden-says', 'en.commands', d, seed);
+  const steps: Record<number, number> = { 1: 1, 2: 1, 3: 2, 4: 2, 5: 2, 6: 3 };
+  it('every level: the right number of taps, things that exist on the table, the answer accepted and each predicted mistake rejected', () => {
+    for (const d of LEVELS)
+      for (const seed of SEEDS.slice(0, 150)) {
+        const ex = cmd(d, seed);
+        const g = ex.game as CommandsSpec;
+        const ans = ex.expected.type === 'word' ? ex.expected.value : '';
+        expect(g.steps).toBe(steps[d]);
+        expect(ans.split(',')).toHaveLength(g.steps);
+        for (const id of ans.split(',')) expect([...g.items, ...g.containers]).toContain(id);
+        expect(new Set(Object.values(g.pics)).size, `n${d} #${seed}`).toBe(Object.keys(g.pics).length);
+        expect(evaluate(ex, ans).result).toBe('correct');
+        for (const e of ex.commonErrors) {
+          const r = evaluate(ex, e.match);
+          expect(r.result, e.match).toBe('incorrect');
+          expect(r.errorType).toBe(e.type);
+        }
+        expect(g.say).toMatch(/[.!]$/);
+        expect(ex.statement).toBe('Écoute bien.');
+        for (const t of tagsOf(ex)) expect(TAG_LABELS[t], t).toBeTruthy();
+      }
+  });
+
+  it('colour levels: the colour comes before the noun, and both the colour and the noun matter', () => {
+    for (const d of [2, 4, 5, 6] as Difficulty[])
+      for (const seed of SEEDS.slice(0, 80)) {
+        const ex = cmd(d, seed);
+        const g = ex.game as CommandsSpec;
+        const target = (ex.expected.type === 'word' ? ex.expected.value : '').split(',')[0] as string;
+        const [colour, noun] = target.split('-');
+        expect(g.say).toContain(`${colour} ${noun}`);
+        // there is always another object of the same kind in another colour, and another object in the same colour
+        expect(g.items.some((i) => i !== target && i.endsWith(`-${noun}`))).toBe(true);
+        expect(g.items.some((i) => i !== target && i.startsWith(`${colour}-`))).toBe(true);
+        expect(tagsOf(ex)).toContain('en-couleur-nom');
+        expect(ex.commonErrors.map((e) => e.type)).toEqual(expect.arrayContaining(['en-couleur', 'en-nom']));
+      }
+  });
+
+  it('two steps: doing them in the wrong order is a recognized mistake; «put in» knows the wrong container', () => {
+    for (const seed of SEEDS.slice(0, 60)) {
+      for (const d of [3, 5] as Difficulty[]) {
+        const ex = cmd(d, seed);
+        const [a, b] = (ex.expected.type === 'word' ? ex.expected.value : '').split(',');
+        expect(evaluate(ex, `${b},${a}`).errorType).toBe('en-ordre');
+        expect(tagsOf(ex)).toContain('en-deux-etapes');
+        expect((ex.game as CommandsSpec).say).toMatch(/then/i);
+      }
+      const put = cmd(4, seed);
+      const g = put.game as CommandsSpec;
+      const [obj, box] = (put.expected.type === 'word' ? put.expected.value : '').split(',');
+      expect(g.containers).toEqual(['basket', 'box']);
+      expect(g.say).toBe(`Put the ${obj!.replace('-', ' ')} in the ${box}.`);
+      expect(evaluate(put, `${obj},${g.containers.find((c) => c !== box)}`).errorType).toBe('en-contenant');
+      expect(tagsOf(put)).toContain('en-mettre-dans');
+    }
+  });
+
+  it('real variety and French help after the answer', () => {
+    for (const d of LEVELS) {
+      const keys = new Set(SEEDS.slice(0, 120).map((s) => cmd(d, s).questionKey));
+      expect(keys.size, `level ${d}`).toBeGreaterThanOrEqual(d === 2 ? 15 : 30);
+      const ex = cmd(d, 5);
+      expect(ex.explanation.length).toBeGreaterThan(10);
+      expect(strategyPraise(ex).split(' ').length).toBeLessThanOrEqual(10);
+    }
+  });
+});
+
+describe('Le potager qui écoute: words due for review come back', () => {
+  it('with words due, about 4 rounds in 10 bring one back (the most overdue first); without, nothing changes', () => {
+    const due = ['cow', 'pig', 'seven', 'blue'];
+    const picked = SEEDS.slice(0, 300).map((s) => generateGameRound('game.listen-garden', 'en.listen-words', 1, s, [], { due }));
+    const back = picked.filter((ex) => ex.expected.type === 'word' && due.includes(ex.expected.value)).length / picked.length;
+    expect(back).toBeGreaterThan(0.35);
+    expect(back).toBeLessThan(0.6);
+    // a due word above the level is not forced into the round
+    const tooHard = SEEDS.slice(0, 100).map((s) => generateGameRound('game.listen-garden', 'en.listen-words', 1, s, [], { due: ['penguin'] }));
+    expect(tooHard.some((ex) => ex.expected.type === 'word' && ex.expected.value === 'penguin')).toBe(false);
   });
 });

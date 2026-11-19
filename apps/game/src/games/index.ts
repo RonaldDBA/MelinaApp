@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { AppleCrates } from './AppleCrates';
 import { Dominoes } from './Dominoes';
 import { FrogJump } from './FrogJump';
+import { GardenSays } from './GardenSays';
 import { HiddenWords } from './HiddenWords';
 import { ListenGarden } from './ListenGarden';
 import { MysteryStory } from './MysteryStory';
@@ -20,4 +21,5 @@ export const gameScreens: Record<string, ComponentType<{ onExit: () => void }>> 
   'game.hidden-words': HiddenWords,
   'game.dominoes': Dominoes,
   'game.listen-garden': ListenGarden,
+  'game.garden-says': GardenSays,
 };

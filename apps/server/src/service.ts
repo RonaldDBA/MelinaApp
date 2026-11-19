@@ -1,12 +1,13 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { almostTags, applyEvidence, comfortableLevel, conqueredTags, defaultParams, initialState, learnInto, learnProfile, roundProfile, parentChoice, planRound, selectNext, sessionLevel, strongTags, weakTags, type EngineParams, type LearnEvent, type LearnerProfile, type RoundPlan } from '@melina/adaptive-engine';
+import { almostTags, applyEvidence, comfortableLevel, conqueredTags, defaultParams, dueWords, initialState, isKnown, learnInto, retention, wordSchedule, type WordEvent, learnProfile, roundProfile, parentChoice, planRound, selectNext, sessionLevel, strongTags, weakTags, type EngineParams, type LearnEvent, type LearnerProfile, type RoundPlan } from '@melina/adaptive-engine';
 import { readHandwriting, ReadingError } from '@melina/ai';
 import { evaluate, games, generateExercise, generateGameRound, getGame, getMission, hasPaper, isSchoolWeek, missions, schoolWeeks, skills, skillsBySubject, strategyPraise, tagsOf, TAG_LABELS, templates, toPublic } from '@melina/curriculum';
 import { imageLimits, kindForResponse, selectSamples, sniffImage, stripMetadata, type SampleCandidate } from '@melina/handwriting';
 import type {
   AssignmentStatus,
+  CommandsSpec,
   Difficulty,
   ExerciseInstance,
   HelpLevel,
@@ -58,7 +59,7 @@ export const photosDir = (c: Ctx) => join(c.cfg.dataDir, 'photos');
 
 type Row = Record<string, unknown>;
 const one = (c: Ctx, sql: string, ...p: Array<string | number | null>) => c.db.prepare(sql).get(...p) as Row | undefined;
-const all = (c: Ctx, sql: string, ...p: Array<string | number | null>) => c.db.prepare(sql).all(...p) as Row[];
+export const all = (c: Ctx, sql: string, ...p: Array<string | number | null>) => c.db.prepare(sql).all(...p) as Row[];
 const run = (c: Ctx, sql: string, ...p: Array<string | number | null>) => c.db.prepare(sql).run(...p);
 
 // ------------------------------------------------------------------ bootstrap
@@ -226,6 +227,7 @@ const toEvent = (r: LearnRow): LearnEvent => {
     day: localDay(String(r.created_at)),
     // picture choice by ear (English): a lucky tap counts as weaker evidence (guessing floor)
     ...(ex?.game?.game === 'listen-pick' ? { guess: 1 / ex.game.options.length } : {}),
+    ...(ex?.game?.game === 'commands' && ex.game.steps === 1 ? { guess: 1 / ex.game.items.length } : {}),
   };
 };
 const LEARN_SQL = `SELECT t.rowid AS rowid, t.skill_id, t.difficulty, t.result, t.help, t.created_at, a.snapshot_json
@@ -284,6 +286,20 @@ export function recentHelp(c: Ctx, skillId: string): { n: number; helped: number
   const rows = all(c, 'SELECT help FROM attempts WHERE profile_id = ? AND skill_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?', PROFILE_ID, skillId, HINT_ALARM.last);
   const helped = rows.filter((r) => r.help !== 'none').length;
   return { n: rows.length, helped, rate: rows.length ? helped / rows.length : 0 };
+}
+
+/** Every English listening answer, in order: the word heard, the day, right on the first try or not. */
+export function englishWordEvents(c: Ctx): WordEvent[] {
+  return all(
+    c,
+    `SELECT a.snapshot_json, t.result, t.help, t.created_at FROM attempts t JOIN assignments a ON a.id = t.assignment_id
+     WHERE t.profile_id = ? AND t.skill_id = 'en.listen-words' ORDER BY t.created_at, t.rowid`,
+    PROFILE_ID,
+  ).flatMap((r) => {
+    const ex = json<ExerciseInstance | null>(String(r.snapshot_json), null);
+    if (!ex || ex.expected.type !== 'word') return [];
+    return [{ word: ex.expected.value, day: localDay(String(r.created_at)), first: r.result === 'correct' && r.help === 'none' }];
+  });
 }
 
 /**
@@ -1246,7 +1262,15 @@ export function startGameRound(c: Ctx, body: { gameId?: unknown; sessionId?: unk
       ? parentChoice(choice.skillId, states[choice.skillId], choice.difficulty)
       : selectNext({ skills: candidates, states, allStates: states, now, lastSkillId: (lastRow?.skill_id as string) ?? null, params: engineParams(c) });
   // last 8 rounds: do not repeat the same round and (Les mots cachés) leave recent words for last
-  const recentKeys = all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8', PROFILE_ID, game.id).map((r) => String(r.question_key));
+  // English (spaced retrieval): only the last 3 rounds of TODAY are avoided, so a word comes back after a few others
+  // and yesterday's words can come back when they are due
+  const english = game.subject === 'english';
+  const dayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const recentKeys = (
+    english
+      ? all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 3', PROFILE_ID, game.id, dayStartIso)
+      : all(c, 'SELECT question_key FROM assignments WHERE profile_id = ? AND exercise_id = ? ORDER BY created_at DESC LIMIT 8', PROFILE_ID, game.id)
+  ).map((r) => String(r.question_key));
   // autonomy (research): she herself asked for «un défi un peu plus difficile»
   if (body.challenge === true && decision.reasonCode !== 'parent-choice') {
     // one level above where she is playing TODAY (the session staircase), not only above the official level
@@ -1255,7 +1279,9 @@ export function startGameRound(c: Ctx, body: { gameId?: unknown; sessionId?: unk
   }
   const learned = decision.reasonCode === 'child-choice' ? { decision, plan: null } : applyLearner(c, decision, seedFrom(id));
   decision = learned.decision;
-  const ex = generateGameRound(game.id, decision.skillId, decision.difficulty, seedFrom(id), recentKeys, { schoolWeek: settings['french.schoolWeek'], recentKeys, prefer: learned.plan?.prefer });
+  // English words: those due for review today come back (spaced ladder of days)
+  const due = decision.skillId === 'en.listen-words' ? dueWords(wordSchedule(englishWordEvents(c)), localDay(now.toISOString())) : undefined;
+  const ex = generateGameRound(game.id, decision.skillId, decision.difficulty, seedFrom(id), recentKeys, { schoolWeek: settings['french.schoolWeek'], recentKeys, prefer: learned.plan?.prefer, due });
   tx(c.db, () => {
     run(
       c,
@@ -1300,7 +1326,10 @@ export function answerGameRound(c: Ctx, id: string, body: { answer?: unknown }) 
   const options = ex.game && 'options' in ex.game ? ex.game.options : null;
   const valid = options
     ? options.includes(answer)
-    : ex.game?.game === 'hidden-words'
+    : ex.game?.game === 'commands'
+      ? // «La jardinière dit»: exactly `steps` taps, each on something that is on the table
+        answer.split(',').length === ex.game.steps && answer.split(',').every((t) => (ex.game as CommandsSpec).items.includes(t) || (ex.game as CommandsSpec).containers.includes(t))
+      : ex.game?.game === 'hidden-words'
       ? spellingAnswerFits(ex.game, answer)
       : exp.type === 'sequence'
         ? // up to 4 digits: level 6 «Défi» goes up to the thousands (1000 → 9000)
@@ -1312,8 +1341,10 @@ export function answerGameRound(c: Ctx, id: string, body: { answer?: unknown }) 
   const correct = ev.result === 'correct';
   const now = iso(c);
 
+  // every wrong try is kept, in order: it tells the parents WHAT she confuses
+  const wrongs = correct ? null : JSON.stringify([...json<string[]>(row.wrong_answers as string | null, []), answer]);
   if (!correct && tries < MAX_TRIES) {
-    run(c, 'UPDATE assignments SET tries = ?, updated_at = ? WHERE id = ?', tries, now, id);
+    run(c, 'UPDATE assignments SET tries = ?, wrong_answers = ?, updated_at = ? WHERE id = ?', tries, wrongs, now, id);
     return {
       state: 'retry' as const,
       duplicate: false,
@@ -1362,7 +1393,7 @@ export function answerGameRound(c: Ctx, id: string, body: { answer?: unknown }) 
       JSON.stringify(after),
       now,
     );
-    run(c, "UPDATE assignments SET status = 'confirmed', tries = ?, hint_used = ?, updated_at = ? WHERE id = ?", tries, tries > 1 ? 1 : 0, now, id);
+    run(c, "UPDATE assignments SET status = 'confirmed', tries = ?, hint_used = ?, wrong_answers = COALESCE(?, wrong_answers), updated_at = ? WHERE id = ?", tries, tries > 1 ? 1 : 0, wrongs, now, id);
     run(c, 'INSERT INTO mastery (profile_id, skill_id, state_json, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(profile_id, skill_id) DO UPDATE SET state_json = excluded.state_json, updated_at = excluded.updated_at', PROFILE_ID, ex.skillId, JSON.stringify(after), now);
     plantFlower(c, ex.skillId, after, now);
     celebrateConquest(c, ex, attemptId, prevProfile, now);

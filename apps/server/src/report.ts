@@ -1,7 +1,7 @@
-import { almostTags, strongTags, weakTags, type LearnerProfile } from '@melina/adaptive-engine';
-import { games, skills, tagsOf, TAG_LABELS } from '@melina/curriculum';
+import { almostTags, dueWords, isKnown, retention, strongTags, weakTags, wordSchedule, type LearnerProfile } from '@melina/adaptive-engine';
+import { englishWord, evaluate, games, skills, soundAlikes, tagsOf, TAG_LABELS } from '@melina/curriculum';
 import type { ExerciseInstance, MasteryState } from '@melina/shared';
-import { learnerProfile, localDay, PROFILE_ID, type Ctx } from './service';
+import { all, englishWordEvents, learnerProfile, localDay, PROFILE_ID, type Ctx } from './service';
 
 /**
  * Progress report for the parents (week or month), compared with the previous period.
@@ -160,6 +160,94 @@ const TALK = [
 
 /** Change in a tag's weight within a skill between two profiles (positive = it got harder). */
 const wOf = (p: LearnerProfile, skillId: string, tag: string) => p[skillId]?.tags[tag]?.w ?? 0;
+
+/** What each recognized command mistake says to the parents. */
+const COMMAND_MISTAKE: Record<string, string> = {
+  'en-couleur': 'la bonne chose, mais pas la bonne couleur (en anglais, la couleur vient avant le nom : « red book »)',
+  'en-nom': 'la bonne couleur, mais pas le bon objet',
+  'en-ordre': 'les bonnes choses, mais pas dans l’ordre (« then » = ensuite)',
+  'en-contenant': 'le bon objet, mais pas au bon endroit (basket / box)',
+};
+
+/**
+ * English, from the beginning up to the end of the period (research report on English: the honest measure is how many
+ * words she still knows 7 days or more later, and WHAT she confuses).
+ * - words met / known (first-try successes on 2 different days) / to review;
+ * - retention: of the words she got right, how many she still got right 7+ days later;
+ * - sound confusions: which wrong picture she chose for a sound-alike (heard «three», chose «tree»);
+ * - command mistakes by kind (colour, object, order, place);
+ * - «can-do» lines inspired by the CEFR for 7–10 year olds (the app's own indicators, not a certification).
+ */
+export function englishSection(c: Ctx, until: Date) {
+  const end = iso(until); // exclusive
+  const events = englishWordEvents(c).filter((e) => e.day < end);
+  const rounds = all(
+    c,
+    `SELECT a.exercise_id, a.snapshot_json, a.wrong_answers, t.result, t.help, t.difficulty FROM attempts t JOIN assignments a ON a.id = t.assignment_id
+     WHERE t.profile_id = ? AND t.skill_id IN ('en.listen-words', 'en.commands') AND t.created_at < ? ORDER BY t.created_at`,
+    PROFILE_ID,
+    until.toISOString(),
+  );
+  if (!events.length && !rounds.length) return null;
+  const sched = wordSchedule(events);
+  const states = Object.values(sched);
+  const ret = retention(events);
+  const confusions = new Map<string, { heard: string; picked: string; label: string; n: number }>();
+  const mistakes = new Map<string, number>();
+  const proven: Record<string, Record<number, number>> = { 'game.listen-garden': {}, 'game.garden-says': {} };
+  for (const r of rounds) {
+    const ex = JSON.parse(String(r.snapshot_json)) as ExerciseInstance;
+    const wrong = r.wrong_answers ? (JSON.parse(String(r.wrong_answers)) as string[]) : [];
+    const id = String(r.exercise_id);
+    if (r.result === 'correct' && r.help === 'none' && proven[id]) proven[id]![Number(r.difficulty)] = (proven[id]![Number(r.difficulty)] ?? 0) + 1;
+    if (id === 'game.listen-garden' && ex.expected.type === 'word') {
+      const target = ex.expected.value;
+      for (const w of wrong) {
+        const pair = soundAlikes(target).find((s) => s.id === w);
+        if (!pair) continue;
+        const key = `${target}>${w}`;
+        const cur = confusions.get(key) ?? { heard: englishWord(target)?.en ?? target, picked: englishWord(w)?.en ?? w, label: TAG_LABELS[pair.tag] ?? pair.tag, n: 0 };
+        cur.n += 1;
+        confusions.set(key, cur);
+      }
+    }
+    if (id === 'game.garden-says')
+      for (const w of wrong) {
+        const t = evaluate(ex, w).errorType;
+        if (t && COMMAND_MISTAKE[t]) mistakes.set(t, (mistakes.get(t) ?? 0) + 1);
+      }
+  }
+  // highest level with at least 2 first-try successes (what she has really shown)
+  const top = (id: string) => Math.max(0, ...Object.entries(proven[id] ?? {}).filter(([, n]) => n >= 2).map(([l]) => Number(l)));
+  const listen = top('game.listen-garden');
+  const cmd = top('game.garden-says');
+  const canDo = [
+    listen >= 1 && 'Reconnaît à l’oral des mots anglais simples (couleurs, nombres, animaux, objets de la classe).',
+    listen >= 3 && 'Comprend un mot connu dans une courte phrase entendue (« Where is the cat? »).',
+    listen >= 4 && 'Entend la différence entre des mots qui se ressemblent (ship / sheep, three / tree).',
+    listen >= 6 && 'Comprend une courte devinette entendue en anglais.',
+    cmd >= 1 && 'Fait une consigne simple entendue en anglais (« Touch the duck »).',
+    cmd >= 2 && 'Comprend la couleur placée avant le nom (« the red book »).',
+    cmd >= 3 && 'Suit deux consignes dans l’ordre (« then »).',
+    cmd >= 4 && 'Comprend « Put the … in the … ».',
+  ].filter((x): x is string => Boolean(x));
+  const lastDay = iso(addDays(until, -1));
+  const toReview = states
+    .filter((s) => s.misses > 0 && !isKnown(s))
+    .sort((a, b) => b.misses - a.misses)
+    .slice(0, 8)
+    .map((s) => englishWord(s.word)?.en ?? s.word);
+  return {
+    wordsMet: states.length,
+    wordsKnown: states.filter(isKnown).length,
+    dueNow: dueWords(sched, lastDay).length,
+    retention: { tested: ret.tested, kept: ret.kept },
+    confusions: [...confusions.values()].sort((a, b) => b.n - a.n).slice(0, 6),
+    commandMistakes: [...mistakes.entries()].sort((a, b) => b[1] - a[1]).map(([type, n]) => ({ type, label: COMMAND_MISTAKE[type] as string, n })),
+    canDo,
+    toReview,
+  };
+}
 
 export function buildReport(c: Ctx, kind: ReportKind, offset: number) {
   const now = c.now();
@@ -334,5 +422,6 @@ export function buildReport(c: Ctx, kind: ReportKind, offset: number) {
     home,
     talk,
     goal,
+    english: englishSection(c, cur.end),
   };
 }

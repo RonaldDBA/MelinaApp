@@ -626,8 +626,8 @@ def main():
             home = page.evaluate("""() => { const cards = [...document.querySelectorAll('.card-game')].map((c) => c.getBoundingClientRect());
               const paper = document.querySelector('.paper').getBoundingClientRect(); const st = document.querySelector('.stage').getBoundingClientRect();
               return { n: cards.length, below: cards.filter((r) => r.bottom > paper.top + 1).length, out: cards.filter((r) => r.right > st.right + 1 || r.left < st.left - 1).length }; }""")
-            check(home['n'] == 9 and home['below'] == 0 and home['out'] == 0, f'home screen: the 9 game cards fit above «Sur papier» and inside the stage {home}')
-            shot('24a-home-nine-games')
+            check(home['n'] == 10 and home['below'] == 0 and home['out'] == 0, f'home screen: the 10 game cards fit above «Sur papier» and inside the stage {home}')
+            shot('24a-home-ten-games')
             page.evaluate("window.__melinaAudioLog = []")
             page.locator('[data-game="game.listen-garden"]').click()
             page.locator('.game[data-phase=question]').wait_for(timeout=8000)
@@ -693,6 +693,78 @@ def main():
             check(opened == 0, 'Le potager qui écoute without an English voice: a French message for the parents, and no round is opened')
             nv.screenshot(path=str(OUT / '24f-listen-no-voice.png'))
             nv.close()
+
+            # 11a'. La jardinière dit (English commands): level 4 «Put the … in the …»; a wrong container is explained and the
+            # taps start over; the right taps finish the round; the result shows the command in English
+            def says_snap():
+                con = sqlite3.connect(db_file)
+                row = con.execute("SELECT snapshot_json FROM assignments WHERE exercise_id = 'game.garden-says' AND status = 'presented' ORDER BY created_at DESC LIMIT 1").fetchone()
+                con.close()
+                return json.loads(row[0])
+            urllib.request.urlopen(urllib.request.Request(f'{base}/api/settings', data=json.dumps({'parent.nextChoice': {'skillId': 'en.commands', 'difficulty': 4}}).encode(), method='PATCH', headers={'content-type': 'application/json', 'x-melina-client': '1', 'Origin': base}))
+            page.evaluate("window.__melinaAudioLog = []")
+            page.locator('[data-game="game.garden-says"]').click()
+            page.locator('.game[data-phase=question]').wait_for(timeout=8000)
+            page.wait_for_timeout(500)
+            sn = says_snap()
+            obj, place = sn['expected']['value'].split(',')
+            other = 'box' if place == 'basket' else 'basket'
+            en = page.evaluate("() => (window.__melinaAudioLog || []).filter((e) => e.ev === 'en').map((e) => e.what)")
+            text = page.locator('.stage').inner_text()
+            check(en == [sn['game']['say']] and sn['game']['say'] not in text and page.locator('.says-container').count() == 2 and page.locator('.says-item').count() == 4,
+                  f'La jardinière dit (level 4): 4 coloured objects, the basket and the box; the command is spoken, not written ({en})')
+            page.locator(f'.says-item[data-option="{obj}"]').click()
+            page.wait_for_timeout(200)
+            badge = page.locator(f'.says-item[data-option="{obj}"] .says-badge').inner_text()
+            shot('25a-says-first-tap')
+            page.locator(f'.says-container[data-option="{other}"]').click()
+            page.wait_for_timeout(800)
+            msg = page.locator('.bubble').inner_text()
+            badges = page.locator('.says-badge').count()
+            last = page.evaluate("() => (window.__melinaAudioLog || []).filter((e) => e.ev === 'en').map((e) => e.what).pop()")
+            check(badge == '1' and 'où le mettre' in msg and badges == 0 and last == 'slow:' + sn['game']['say'], f'La jardinière dit: numbered taps; a wrong container is explained, the taps start over and the command comes back slower ({msg[:50]})')
+            page.locator(f'.says-item[data-option="{obj}"]').click()
+            page.locator(f'.says-container[data-option="{place}"]').click()
+            page.locator('.game[data-phase=result]').wait_for()
+            page.wait_for_timeout(600)
+            ans = page.get_by_test_id('says-answer').inner_text()
+            check(sn['game']['say'] in ans, f'La jardinière dit: the result shows the command in English («{sn["game"]["say"]}»)')
+            panel_fit('La jardinière dit result')
+            shot('25b-says-result')
+            page.locator('.hud-btn').first.click()
+            page.locator('.card-game').first.wait_for()
+            # level 6: 6 objects and 2 containers, none overlapping, 3 steps
+            urllib.request.urlopen(urllib.request.Request(f'{base}/api/settings', data=json.dumps({'parent.nextChoice': {'skillId': 'en.commands', 'difficulty': 6}}).encode(), method='PATCH', headers={'content-type': 'application/json', 'x-melina-client': '1', 'Origin': base}))
+            page.locator('[data-game="game.garden-says"]').click()
+            page.locator('.game[data-phase=question]').wait_for(timeout=8000)
+            page.wait_for_timeout(600)
+            ov = page.evaluate("""() => { const r = (e) => e.getBoundingClientRect(); const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+              const things = [...document.querySelectorAll('.says-item, .says-container')].map(r); const others = [r(document.querySelector('.listen-speaker')), r(document.querySelector('.guide .bubble'))];
+              let n = 0; things.forEach((a, i) => { things.forEach((b, j) => { if (j > i && hit(a, b)) n++; }); others.forEach((o) => { if (hit(a, o)) n++; }); });
+              return { things: things.length, overlaps: n }; }""")
+            sn6 = says_snap()
+            check(ov == {'things': 8, 'overlaps': 0} and sn6['game']['steps'] == 3 and stage_ok(), f'La jardinière dit (level 6): 6 objects + 2 containers, no overlap, 3 steps {ov}')
+            # the 3 taps in the SAME frame (very fast fingers): they all count, in order, as one single answer
+            page.evaluate("(ids) => ids.forEach((id) => document.querySelector(`[data-option=\"${id}\"]`).click())", sn6['expected']['value'].split(','))
+            page.locator('.game[data-phase=result]').wait_for()
+            page.wait_for_timeout(500)
+            con = sqlite3.connect(db_file)
+            tries6 = con.execute("SELECT a.tries, t.result FROM assignments a JOIN attempts t ON t.assignment_id = a.id WHERE a.exercise_id = 'game.garden-says' ORDER BY a.created_at DESC LIMIT 1").fetchone()
+            con.close()
+            check(tuple(tries6) == (1, 'correct'), f'La jardinière dit: 3 taps in the same frame count in order, as one single answer {tries6}')
+            panel_fit('La jardinière dit level 6 result')
+            shot('25c-says-level6-result')
+            page.locator('.hud-btn').first.click()
+            page.locator('.card-game').first.wait_for()
+            # the parents' report has an English part (words heard, what she confuses, can-do lines)
+            open_parents_and_pass_gate()
+            page.get_by_role('button', name='Rapports').click()
+            page.locator('[data-testid=report-english]').wait_for(timeout=8000)
+            eng = page.locator('[data-testid=report-english]').inner_text()
+            check('Mots entendus' in eng and 'Encore sus après une semaine' in eng and 'Dans les consignes' in eng and 'Ce qu’elle sait faire' in eng, f'report: English part with words heard, «still known after a week», command mistakes and can-do lines')
+            page.locator('[data-testid=report-english]').screenshot(path=str(OUT / '25d-report-english.png'))
+            page.get_by_role('button', name=re.compile('Retour au jeu')).click()
+            page.locator('.card-game').first.wait_for()
 
             # 11b. Le chemin des nombres: empty stones, right stones locked after an error, hundred chart at level 3
             def path_values():
@@ -942,7 +1014,7 @@ def main():
             # 11e. Level 5 (the highest) in each game: 3-digit numbers, long texts, word groups; everything fits on the stage
             for level, gid, skill_id in [(lv, g, sk) for lv in (5, 6) for g, sk in [('apple-crates', 'math.place-value'), ('number-train', 'math.sequences'), ('frog-jump', 'math.add-sub'), ('word-fishing', 'fr.plural'),
                                   ('mystery-story', 'fr.comprehension'), ('number-path', 'math.counting'), ('dominoes', 'math.representations'), ('hidden-words', 'fr.spelling'),
-                                  ('listen-garden', 'en.listen-words')] if not (lv == 5 and g == 'hidden-words')]:
+                                  ('listen-garden', 'en.listen-words'), ('garden-says', 'en.commands')] if not (lv == 5 and g == 'hidden-words')]:
                 req = urllib.request.Request(f'{base}/api/settings', data=json.dumps({'parent.nextChoice': {'skillId': skill_id, 'difficulty': level}}).encode(), method='PATCH', headers={'content-type': 'application/json', 'x-melina-client': '1', 'Origin': base})
                 urllib.request.urlopen(req)
                 page.locator(f'[data-game="game.{gid}"]').click()

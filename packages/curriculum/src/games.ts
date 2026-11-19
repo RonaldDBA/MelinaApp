@@ -5,6 +5,7 @@ import { bigSequence, buildCountingPath, countingErrors, countingExplanation, co
 import { buildDominoRound, decoFace, dominoErrors, faceLabel } from './dominoes';
 import { evaluate } from './evaluate';
 import { buildListenRound, listenExplanation } from './english';
+import { buildCommandRound } from './commands';
 import { blanksFor, buildGrid, letterBank, letters, LEVELS, pickWords, soundHint } from './hiddenwords';
 import { schoolPool } from './schoolwords';
 import { pickPreferred } from './pick';
@@ -30,6 +31,8 @@ export interface GameDefinition {
 export interface GameOptions {
   /** Les mots cachés: the school-list week the class is at («3.2»); without it, the whole list. */
   schoolWeek?: string | null;
+  /** English: words due for review today (spaced ladder of days), the most overdue first. */
+  due?: string[];
   /** Keys of this game's latest rounds: Les mots cachés avoids repeating the same words. */
   recentKeys?: string[];
   /**
@@ -505,8 +508,8 @@ export const listenGarden: GameDefinition = {
   subject: 'english',
   responseType: 'word',
   roundsPerSession: 5,
-  generate(skillId, difficulty, rng, seed) {
-    const { target, spec } = buildListenRound(difficulty, rng);
+  generate(skillId, difficulty, rng, seed, opts) {
+    const { target, spec } = buildListenRound(difficulty, rng, opts.due);
     return {
       ...gameBase(this, skillId, difficulty, seed),
       questionKey: `lg-${target.id}`,
@@ -531,7 +534,38 @@ export const listenGarden: GameDefinition = {
   },
 };
 
-export const games: GameDefinition[] = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes, listenGarden];
+// ---------------------------------------------------------------- La jardinière dit (English commands)
+
+export const gardenSays: GameDefinition = {
+  id: 'game.garden-says',
+  version: 1,
+  title: 'La jardinière dit',
+  description: 'Anglais à l’oral : entendre une consigne en anglais et la faire en touchant les objets (« Touch the red book », « Put the apple in the basket », deux étapes avec « then »). Sans lecture.',
+  skills: ['en.commands'],
+  subject: 'english',
+  responseType: 'word',
+  roundsPerSession: 5,
+  generate(skillId, difficulty, rng, seed) {
+    const r = buildCommandRound(difficulty, rng);
+    return {
+      ...gameBase(this, skillId, difficulty, seed),
+      questionKey: `gs-${r.answer.join('-')}`,
+      instruction: r.spec.steps > 1 ? 'Écoute la consigne en anglais et fais-la, dans l’ordre.' : 'Écoute la consigne en anglais et fais-la.',
+      statement: 'Écoute bien.',
+      hint: 'Touche le haut-parleur pour entendre encore, plus lentement.',
+      answerFormat: r.spec.steps > 1 ? `${r.spec.steps} gestes dans l’ordre` : 'un geste',
+      readingHint: 'des objets touchés',
+      game: r.spec,
+      expected: { type: 'word', value: r.answer.join(','), accentsMatter: false },
+      explanation: r.explanation,
+      commonErrors: r.errors,
+      origin: 'Original — consignes écrites pour l’application.',
+      retryMessage: 'Pas tout à fait. Écoute encore la consigne.',
+    };
+  },
+};
+
+export const games: GameDefinition[] = [appleCrates, numberTrain, frogJump, wordFishing, mysteryStory, numberPath, hiddenWords, dominoes, listenGarden, gardenSays];
 
 export function getGame(id: string): GameDefinition {
   const g = games.find((x) => x.id === id);

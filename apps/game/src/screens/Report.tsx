@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, type ProgressReport, type ReportTag } from '../api';
+import { api, type EnglishReport, type ProgressReport, type ReportTag } from '../api';
 import { fmtDate } from '../dates';
 import { i18n, type Subject } from '@melina/shared';
 
@@ -28,7 +28,61 @@ export const SKILL_ICON: Record<string, string> = {
   'fr.comprehension': '📖',
   'fr.spelling': '🔍',
   'en.listen-words': '👂',
+  'en.commands': '🧺',
 };
+
+/** English: words still known after a week, what she confuses, and «can-do» lines (the app's indicators, not a certification). */
+function EnglishPart({ e }: { e: EnglishReport }) {
+  return (
+    <>
+      <h4 className="rp-h">🇬🇧 Anglais (depuis le début)</h4>
+      <div className="rp-english" data-testid="report-english">
+        <p>
+          <strong>👂 Mots entendus :</strong> {e.wordsMet} · <strong>sus</strong> (réussis du premier coup deux jours différents) : {e.wordsKnown}
+          {e.dueNow > 0 && <> · {e.dueNow} à revoir bientôt (le jeu les ramène tout seul)</>}
+        </p>
+        <p data-testid="report-english-retention">
+          <strong>🧠 Encore sus après une semaine ou plus :</strong>{' '}
+          {e.retention.tested > 0 ? `${e.retention.kept} sur ${e.retention.tested}` : 'on le saura quand des mots réussis reviendront 7 jours plus tard.'}
+        </p>
+        {e.confusions.length > 0 && (
+          <p data-testid="report-english-confusions">
+            <strong>🔀 Ce qu’elle confond :</strong>{' '}
+            {e.confusions.map((c, i) => (
+              <span key={`${c.heard}-${c.picked}`}>
+                {i > 0 && ' · '}entend <em lang="en">{c.heard}</em>, choisit <em lang="en">{c.picked}</em>
+                {c.n > 1 ? ` (${c.n} fois)` : ''}
+              </span>
+            ))}
+            . Le jeu fait revenir ces paires de sons.
+          </p>
+        )}
+        {e.commandMistakes.length > 0 && (
+          <p>
+            <strong>🧺 Dans les consignes :</strong> {e.commandMistakes.map((m) => `${m.label} (${m.n})`).join(' · ')}.
+          </p>
+        )}
+        {e.toReview.length > 0 && (
+          <p>
+            <strong>🔁 Mots à revoir :</strong> <span lang="en">{e.toReview.join(', ')}</span>
+          </p>
+        )}
+        {e.canDo.length > 0 && (
+          <>
+            <p>
+              <strong>✅ Ce qu’elle sait faire</strong> <span className="rp-soft">(repères inspirés du CECR pour les 7 à 10 ans, pas une certification)</span> :
+            </p>
+            <ul className="rp-recs">
+              {e.canDo.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
 
 export function Kpi({ emoji, value, caption, color, delta }: { emoji: string; value: string; caption: string; color: string; delta: React.ReactNode }) {
   return (
@@ -275,6 +329,8 @@ export function Report() {
               </div>
             </>
           )}
+
+          {r.english && <EnglishPart e={r.english} />}
 
           <h4 className="rp-h">🏡 À la maison</h4>
           <div className="rp-home" data-testid="report-home">

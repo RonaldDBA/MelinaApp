@@ -76,6 +76,7 @@ feedback + narrative progress ◀───────────────�
 - A mission step with an open exercise returns the same exercise on resume, without creating another.
 - The step's seed only sprouts with a **correct** answer (with or without a hint). With a wrong answer, the step stays open and comes back with another question, chosen as reinforcement of the same skill; nothing already earned is taken away.
 - **Sheet time:** the paper answer counts at the moment she FINISHED (`done_at`, migration 6), not when the parents confirmed. This applies to the «another day» rule and to the day shown in the report.
+- **Wrong tries (migration 7, 18/11/2026):** `assignments.wrong_answers` keeps, in order, the wrong answers of an on-screen round before the right one (JSON list). The model still learns only from the first try; this column tells the parents WHAT she confuses (heard «three», chose «tree»; right object, wrong colour). The app's own automatic backup runs before the migration.
 - **Paper routes** (done, photo, transcription, confirmation) refuse on-screen game rounds (`not-paper`). A hint opened in the app counts as help even if the parents mark «seule».
 - **AI reading:** a new photo or transcription cancels the reading in progress (its result is discarded); on startup, a reading stuck in «analyzing» goes back to «failed» (`interrupted`); during the analysis, the text cannot be edited.
 - **Resending the confirmation** returns the rewards that confirmation gave (if the 1st response got lost on the network, she still sees the seed).

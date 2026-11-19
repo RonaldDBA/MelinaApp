@@ -7,6 +7,7 @@ import { loadConfig } from './config';
 import { openDatabase } from './db';
 import { bootstrap, learnerProfile, recoverFiles, type Ctx } from './service';
 import { almostTags, conqueredTags, initialState as initialStateFor } from '@melina/adaptive-engine';
+import { soundAlikes } from '@melina/curriculum';
 
 process.env.MELINA_SKIP_ENV_FILE = '1';
 const fixtures = join(__dirname, '../../../tests/fixtures');
@@ -476,6 +477,82 @@ describe('on-screen mini-games', () => {
       clock = new Date(clock.getTime() + 20_000);
     }
     expect(found).toBe(true);
+  });
+
+  it('La jardinière dit (English commands): taps in order, predicted mistakes explained, wrong tries kept for the parents', async () => {
+    const app = await makeApp();
+    const start = async (difficulty?: number) => {
+      if (difficulty) await app.inject({ method: 'PATCH', url: '/api/settings', headers: H, payload: { 'parent.nextChoice': { skillId: 'en.commands', difficulty } } });
+      return (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.garden-says' } })).json();
+    };
+    const r = await start(4);
+    expect(r.exercise.game).toMatchObject({ game: 'commands', steps: 2, containers: ['basket', 'box'] });
+    expect(JSON.stringify(r)).not.toContain('"expected"');
+    const [obj, place] = expectedOf(r.id).split(',');
+    // exactly `steps` taps on things that are on the table
+    expect((await answer(app, r.id, obj as string)).statusCode).toBe(400);
+    expect((await answer(app, r.id, `${obj},garage`)).statusCode).toBe(400);
+    const other = place === 'basket' ? 'box' : 'basket';
+    const miss = (await answer(app, r.id, `${obj},${other}`)).json();
+    expect(miss.state).toBe('retry');
+    expect(miss.feedback.message).toMatch(/où le mettre/);
+    expect((await answer(app, r.id, `${obj},${place}`)).json().round.outcome).toMatchObject({ result: 'correct', help: 'hint' });
+    const kept = ctx.db.prepare('SELECT wrong_answers FROM assignments WHERE id = ?').get(r.id) as { wrong_answers: string };
+    expect(JSON.parse(kept.wrong_answers)).toEqual([`${obj},${other}`]);
+    // level 2: the colour comes before the noun; the right object in another colour is its own mistake
+    clock = new Date(clock.getTime() + 60_000);
+    const c2 = await start(2);
+    const target = expectedOf(c2.id);
+    const [colour, noun] = target.split('-');
+    const sameNoun = c2.exercise.game.items.find((i: string) => i !== target && i.endsWith(`-${noun}`));
+    expect(c2.exercise.game.say).toContain(`${colour} ${noun}`);
+    expect((await answer(app, c2.id, sameNoun)).json().feedback.message).toMatch(/couleur/);
+    await answer(app, c2.id, target);
+    // the parents' report counts the mistake by kind
+    const rep = (await app.inject({ method: 'GET', url: '/api/report?kind=week&offset=0', headers: H })).json();
+    expect(rep.english.commandMistakes.map((m: { type: string }) => m.type).sort()).toEqual(['en-contenant', 'en-couleur']);
+  });
+
+  it('English words: a missed sound-alike shows in the report, due words come back, and «still known after 7 days» is measured', async () => {
+    const app = await makeApp();
+    const play = async (difficulty: number, right: boolean) => {
+      await app.inject({ method: 'PATCH', url: '/api/settings', headers: H, payload: { 'parent.nextChoice': { skillId: 'en.listen-words', difficulty } } });
+      const r = (await app.inject({ method: 'POST', url: '/api/game-rounds', headers: H, payload: { gameId: 'game.listen-garden' } })).json();
+      const ok = expectedOf(r.id);
+      let pair: string | undefined;
+      if (!right) {
+        // she picks the sound-alike when there is one, otherwise any other picture
+        pair = soundAlikes(ok).map((p) => p.id).find((w) => r.exercise.game.options.includes(w));
+        await answer(app, r.id, pair ?? r.exercise.game.options.find((o: string) => o !== ok));
+      }
+      await answer(app, r.id, ok);
+      clock = new Date(clock.getTime() + 30_000);
+      return { word: ok, pair };
+    };
+    clock = new Date(2026, 10, 2, 16, 0);
+    const first: string[] = [];
+    for (let k = 0; k < 6; k++) first.push((await play(1, true)).word);
+    // 8 days later: the words she got right come back (due), and the report measures what she still knows
+    clock = new Date(2026, 10, 10, 16, 0);
+    const back: string[] = [];
+    for (let k = 0; k < 16; k++) back.push((await play(1, true)).word);
+    // about 4 rounds in 10 bring back a due word (random rounds: 16 rounds make «none» practically impossible)
+    expect(back.filter((w) => first.includes(w)).length).toBeGreaterThanOrEqual(1);
+    // a sound-alike confusion at level 4
+    let confused = false;
+    for (let k = 0; k < 30 && !confused; k++) {
+      confused = Boolean((await play(4, false)).pair);
+    }
+    expect(confused).toBe(true);
+    const e = (await app.inject({ method: 'GET', url: '/api/report?kind=week&offset=0', headers: H })).json().english;
+    expect(e.wordsMet).toBeGreaterThanOrEqual(6);
+    // the words that came back 8 days later were right: they are «still known»
+    expect(e.retention.kept).toBeGreaterThanOrEqual(1);
+    expect(e.retention.tested).toBeGreaterThanOrEqual(e.retention.kept);
+    expect(e.wordsKnown).toBeGreaterThanOrEqual(1);
+    expect(e.confusions.length).toBeGreaterThanOrEqual(1);
+    expect(e.confusions[0].label).toMatch(/anglais/);
+    expect(e.canDo[0]).toMatch(/Reconnaît/);
   });
 
   it('round: does not expose the answer, resumes the open round and evaluates on the server', async () => {

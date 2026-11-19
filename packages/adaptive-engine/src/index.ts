@@ -292,3 +292,4 @@ export function parentChoice(skillId: string, state: MasteryState | undefined, d
 }
 
 export * from './learner';
+export * from './words';

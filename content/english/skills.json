@@ -21,6 +21,28 @@
       },
       "curriculumRef": "PFEQ Anglais, langue seconde, 1er cycle du primaire (2006) — compétence 1 : réagir à des textes entendus (compréhension orale, sans attente en lecture ni en écriture). Niveaux 3 à 6 : vocabulaire thématique du 2e cycle (Progression des apprentissages, 2009).",
       "reviewStatus": "to-validate"
+    },
+    {
+      "id": "en.commands",
+      "version": 1,
+      "subject": "english",
+      "cycle": 1,
+      "grade": 2,
+      "title": "Comprendre des consignes en anglais",
+      "titleFr": "Je fais ce qu’on me dit en anglais",
+      "description": "Entend une consigne en anglais et la fait en touchant les objets (montrer qu’on a compris en agissant, sans lecture).",
+      "prerequisites": [],
+      "exerciseTypes": [],
+      "levels": {
+        "1": "« Touch the cat. » : un objet parmi 4.",
+        "2": "« Touch the red book. » : la couleur ET le nom (en anglais, la couleur vient avant le nom).",
+        "3": "« Touch the duck, then the frog. » : deux consignes dans l’ordre.",
+        "4": "« Put the green apple in the basket. » : un objet de couleur dans le panier ou la boîte.",
+        "5": "« Touch the blue heart, then the yellow square. » : deux objets de couleur dans l’ordre, parmi 6.",
+        "6": "Défi : « Put the red book in the box, then touch the green heart. » : trois étapes."
+      },
+      "curriculumRef": "PFEQ Anglais, langue seconde, 1er cycle du primaire (2006) — compétence 1 : réagir à des textes entendus (réponses non verbales, consignes de la classe). Couleurs et formes : vocabulaire du 2e cycle (Progression des apprentissages, 2009).",
+      "reviewStatus": "to-validate"
     }
   ]
 }
